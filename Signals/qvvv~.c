@@ -32,6 +32,14 @@
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.qvvv~";			// Class name
+const char* version = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
+
+// Assistance strings
+#define LPAssistIn1			"Float (Hurst factor)"
+#define LPAssistIn2			"Int (NN factor)"
+#define LPAssistOut1		"Signal (Colored noise)"
+
+
 
 	// We used to define these as const int, but that causes GCC (XCode) to barf.
 	// enum seems to work with all compilers we've tried so far, so we'll go with it.
@@ -98,11 +106,10 @@ static void Pvvv2Reflect(objBrown*);
 static void Pvvv2Tattle(objBrown*);
 static void	Pvvv2Assist(objBrown*, void* , long , long , char*);
 static void	Pvvv2Info(objBrown*);
-static void Pvvv2Bang(objBrown*);
 
 	// MSP Messages
-static void	Pvvv2DSP(objBrown*, t_signal**, short*);
-static int*	Pvvv2Perform(int*);
+//static void	Pvvv2DSP(objBrown*, t_signal**, short*);
+//static int*	Pvvv2Perform(int*);
 void Pvvv2DSP64(objBrown*, t_object *dsp64, short *count, double samplerate,
                 long maxvectorsize, long flags);
 void Pvvv2Perform64(objBrown*, t_object *dsp64, double **ins, long numins,
@@ -130,59 +137,16 @@ int C74_EXPORT main(void)
 	
 	{
         t_class *c;
-	//LITTER_CHECKTIMEOUT(kClassName);
-	
+        
 	// Standard Max/MSP initialization mantra
-        /*
-	setup(	&gObjectClass,				// Pointer to our class definition
-			(method) Pvvv2New,			// Instance creation function
-			(method) dsp_free,			// Default deallocation function
-			sizeof(objBrown),				// Class object size
-			NIL,						// No menu function
-										// Optional arguments:
-			A_DEFFLOAT,					//		-- Hurst factor
-			A_DEFLONG,					//		-- NN Factor
-			0);*/
-     /*
-    LitterSetupClass(kClassName, (method)Pvvv2New, (method) dsp_free,
-                         (short)sizeof(objBrown),
-                         0L, A_DEFFLOAT, A_DEFLONG);
-	*/
-    
     c = class_new(kClassName, (method)Pvvv2New, (method) dsp_free, (short)sizeof(objBrown), 0L, A_DEFFLOAT, A_DEFLONG, 0L);
         
 	//dsp_initclass();
     
-
-        /*
-	// Messages
-	//addfloat((method) Pvvv2Hurst);
-        LitterAddFloat((method)Pvvv2Hurst);
-	addftx	((method) Pvvv2FloatNN, 1);
-	addinx	((method) Pvvv2IntNN, 1);
-	
-	// Range correction
-	addmess ((method) Pvvv2Clip,		"clip",		A_NOTHING);
-	addmess ((method) Pvvv2Wrap,		"wrap",		A_NOTHING);
-	addmess ((method) Pvvv2Reflect,	"reflect",	A_NOTHING);
-	addmess ((method) Pvvv2Stet,		"stet",		A_NOTHING);
-	
-	// Information messages
-	addmess	((method) Pvvv2Tattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) Pvvv2Tattle,	"tattle",	A_NOTHING);
-	addmess	((method) Pvvv2Assist,	"assist",	A_CANT, 0);
-	addmess	((method) Pvvv2Info,		"info",		A_CANT, 0);
-	
-	// MSP-Level messages
-	//LITTER_TIMEBOMB addmess	((method) Pvvv2DSP,		"dsp",		A_CANT, 0);
-    addmess	((method) Pvvv2DSP,		"dsp",		A_CANT, 0);
-*/
-        
         // Messages
-        class_addmethod(c, (method) Pvvv2Bang, "bang", 0);
-        class_addmethod(c, (method) Pvvv2Hurst, "float", A_FLOAT, 0);
-        class_addmethod(c, (method) Pvvv2FloatNN,"ft1", A_FLOAT, 0);
-        class_addmethod(c, (method) Pvvv2IntNN, "int", A_LONG, 0);
+        class_addmethod(c, (method) Pvvv2Hurst,     "float",    A_FLOAT, 0);
+        class_addmethod(c, (method) Pvvv2FloatNN,   "ft1",      A_FLOAT, 0);
+        class_addmethod(c, (method) Pvvv2IntNN,     "int",      A_LONG, 0);
         
         // Range correction
         class_addmethod(c, (method) Pvvv2Clip,		"clip",		A_NOTHING);
@@ -198,7 +162,7 @@ int C74_EXPORT main(void)
         
         // MSP-Level messages
         //class_addmethod(c, (method) Pvvv2DSP,		"dsp",		A_CANT, 0);
-        class_addmethod(c, (method) Pvvv2DSP64,		"dsp64",		A_CANT, 0);
+        class_addmethod(c, (method) Pvvv2DSP64,		"dsp64",	A_CANT, 0);
         
         class_dspinit(c);
         class_register(CLASS_BOX, c);
@@ -207,7 +171,9 @@ int C74_EXPORT main(void)
 	//Initialize Litter Library
 	//LitterInit(kClassName, 0);
 	Taus88Init();
-        post("lp.qvvv~ test");
+        //post("hoollo");
+        post("%s: %s", kClassName, version);
+
         return 0;
 	}
 
@@ -248,7 +214,7 @@ Pvvv2New(
 	// Let Max/MSP allocate us, our inlets, and outlets.
 	//me = (objBrown*) newobject(gObjectClass);
     me = object_alloc(gObjectClass);
-    //me = LitterAllocateObject();
+
 	dsp_setup(&(me->coreObject), 1);				// Signal inlet for benefit of begin~
 													// Otherwise left inlet does "NN" only
 													// or, with the multi-color object, the
@@ -413,7 +379,21 @@ void Pvvv2Assist(objBrown* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void Pvvv2Info(objBrown* me)
@@ -517,112 +497,6 @@ void Pvvv2DSP64(objBrown* me, t_object *dsp64, short *count, double samplerate,
 		me->bufPos = 0;
 		}
 
-
-void Pvvv2Bang(objBrown* me) {
- 
-    int i;
-    float *curSamp;
-    GenerateNewBuffer(me);
-    
-    curSamp	= me->buffer;
-    for(i=0; i<100; i++)
-        post("%f", *curSamp++);
-    
-}
-	
-int*
-Pvvv2Perform(
-	int* iParams)
-	
-	{
-	enum {
-		paramFuncAddress	= 0,
-		paramMe,
-		paramVectorSize,
-		paramOut,
-		
-		paramNextLink
-		};
-	
-	float*			curSamp;
-	long			vecSize;
-	tSampleVector	outNoise;			// Do integer arithmetic in buffer, then convert
-										// to floating point before exit.
-	objBrown*			me = (objBrown*) iParams[paramMe];
-	
-	if (me->coreObject.z_disabled) goto exit;
-	
-	// Copy parameters into registers
-	vecSize		= (long) iParams[paramVectorSize];
-	outNoise	= (tSampleVector) iParams[paramOut];
-	
-	// Time to generate new buffer?
-	// Condition must also take possibility of vector size changing mid-buffer
-	if (me->bufPos + vecSize > kMaxBuf) {
-		GenerateNewBuffer(me);
-		}
-	curSamp	= me->buffer + me->bufPos;
-	me->bufPos += vecSize;
-	
-	// Do we have to deal with NN factor and/or Range actions?
-	switch(me->action) {
-	default:
-		// actStet
-		if (me->nn == 0)
-			do { *outNoise++ = *curSamp++; } while (--vecSize > 0);
-		else {
-			float	factor	= me->factor,
-					factor1	= me->factor1,
-					offset	= me->offset;
-			
-			do { *outNoise++ = factor1 * floor(factor * (*curSamp++)) + offset; } 
-			while (--vecSize > 0);
-			}
-		break;
-	
-	case actClip:
-		if (me->nn == 0)
-			do { *outNoise++ = ClipSignal(*curSamp++); } while (--vecSize > 0);
-		else {
-			float	factor	= me->factor,
-					factor1	= me->factor1,
-					offset	= me->offset;
-			
-			do { *outNoise++ = factor1 * floor(factor * ClipSignal(*curSamp++)) + offset; }
-			while (--vecSize > 0);
-			}
-		break;
-	
-	case actWrap:
-		if (me->nn == 0)
-			do { *outNoise++ = WrapSignal(*curSamp++); } while (--vecSize > 0);
-		else {
-			float	factor	= me->factor,
-					factor1	= me->factor1,
-					offset	= me->offset;
-			
-			do { *outNoise++ = factor1 * floor(factor * WrapSignal(*curSamp++)) + offset; }
-			while (--vecSize > 0);
-			}
-		break;
-	
-	case actReflect:
-		if (me->nn == 0)
-			do { *outNoise++ = ReflectSignal(*curSamp++); } while (--vecSize > 0);
-		else {
-			float	factor	= me->factor,
-					factor1	= me->factor1,
-					offset	= me->offset;
-			
-			do { *outNoise++ = factor1 * floor(factor * ReflectSignal(*curSamp++)) + offset; }
-			while (--vecSize > 0);
-			}
-		break;
-		}
-	
-exit:
-	return iParams + paramNextLink;
-	}
 
 
 void Pvvv2Perform64(objBrown* me, t_object *dsp64, double **ins, long numins,

@@ -4,7 +4,7 @@
 #include "ext_common.h"
 
 /*
-	a dummy object for signel level externals
+	a dummy object for signal level externals
 */
 
 
@@ -39,7 +39,7 @@ void myObj_assist(t_myObj *x, void *b, long m, long a, char *s);
 int C74_EXPORT main(void) {
 	t_class *c;
 	
-	c = class_new("adummy~", (method)myObj_new, (method)dsp_free, (short)sizeof(t_myObj), 0L,
+	c = class_new("lp.adummy~", (method)myObj_new, (method)dsp_free, (short)sizeof(t_myObj), 0L,
 				  A_GIMME, 0L);
 	class_addmethod(c, (method)myObj_dsp, "dsp", A_CANT, 0);
 	class_addmethod(c, (method)myObj_dsp64, "dsp64", A_CANT, 0);
@@ -60,7 +60,7 @@ int C74_EXPORT main(void) {
 	CLASS_ATTR_MAX(c, "interp", 0, "1");
 	*/
 	
-	post("adummy~ a new dummy object");
+	post("lp.adummy~ a new dummy object");
 	
 	return 0;
 }

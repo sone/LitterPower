@@ -169,7 +169,8 @@ MoveC2PStr(
 	if (len >= sizeof(Str255))
 		len = sizeof(Str255) - 1;
 		
-	BlockMoveData(iCStr, oPStr + 1, (Size) len);
+	//BlockMoveData(iCStr, oPStr + 1, (Size) len);
+        memmove( oPStr + 1 , iCStr, (Size) len ); // NOT TESTED YET
 	oPStr[0] = len;	// Do this after BlockMoveData(), that allows input and output
 					// parameters to overlap!
 	}
@@ -184,7 +185,8 @@ MoveP2CStr(
 	{
 	long 	len = iPStr[0];
 	
-	BlockMoveData(iPStr + 1, oCStr, len);
+	//BlockMoveData(iPStr + 1, oCStr, len);
+        memmove( oCStr, iPStr + 1 , (Size) len ); // NOT TESTED YET
 	oCStr[len] = '\0';
 	}
 	
@@ -303,7 +305,7 @@ KeyMapToMods(void)
  *	Sets the  control item iItemNr in iDlog to the given value.
  *	
  ********************************************************************************/
-
+/*
 void
 SetControlItemValue(
 	DialogPtr	iDlog,
@@ -319,7 +321,7 @@ SetControlItemValue(
 	SetControlValue((ControlHandle) itemData, iVal);
 	
 	}
-
+*/
 
 /********************************************************************************
  *
@@ -328,7 +330,7 @@ SetControlItemValue(
  *	Returns the  value of the given control item in iDlog.
  *	
  ********************************************************************************/
-
+/*
 short 
 GetControlItemValue(
 	DialogPtr	iDlog,
@@ -344,7 +346,7 @@ GetControlItemValue(
 	return GetControlValue((ControlHandle) itemData);
 	}
 
-
+*/
 /********************************************************************************
  *
  *	HiliteControlItem (iDlog, iItemNr, iPartCode)
@@ -353,7 +355,7 @@ GetControlItemValue(
  *	(referenced by the parameter iDlog).
  *	
  ********************************************************************************/
-
+/*
 void HiliteControlItem(
 		DialogPtr	iDlog,
 		short		iItemNr,
@@ -368,7 +370,7 @@ void HiliteControlItem(
 	HiliteControl((ControlHandle) itemData, iPartCode);
 	
 	}
-
+*/
 
 /********************************************************************************
  *
@@ -376,7 +378,7 @@ void HiliteControlItem(
  *	
  *	
  ********************************************************************************/
-
+/*
 void SetTextItemStr(
 	DialogPtr			iDlogPtr,
 	short				iItemNr,
@@ -391,7 +393,7 @@ void SetTextItemStr(
 	SetDialogItemText(itemData, iStr);
 	
 	}
-
+*/
 
 /********************************************************************************
  *
@@ -399,7 +401,7 @@ void SetTextItemStr(
  *	
  *	
  ********************************************************************************/
-
+/*
 void GetTextItemStr(
 	DialogPtr	iDlogPtr,
 	short		iItemNr,
@@ -415,7 +417,7 @@ void GetTextItemStr(
 	
 	}
 
-
+*/
 #pragma mark -
 #pragma mark • Resource Manager Utilities
 
@@ -577,7 +579,7 @@ DateCString(
 	UInt32	iDate,
 	short	iStyle)
 	
-#ifdef __LITTER_MAX5__
+//#ifdef __LITTER_MAX5__
 	{
 	t_datetime	dt;
 	long		dFlags;		// Time flags parameter
@@ -592,6 +594,7 @@ DateCString(
 	sysdateformat_formatdatetime(&dt, dFlags, 0, oString, kMaxResourceStrSize);
 	
 	}
+/*
 #else
 	{
 	Str255 ds;
@@ -601,7 +604,7 @@ DateCString(
 	
 	}
 #endif
-
+*/
 
 
 /******************************************************************************************
@@ -827,7 +830,7 @@ ParseAtom(
  *	
  ******************************************************************************************/
 
-#ifdef __LITTER_MAX5__
+//#ifdef __LITTER_MAX5__
 void
 AtomToString(
 	AtomPtr	iAtom,
@@ -837,15 +840,18 @@ AtomToString(
 	
 	switch (iAtom->a_type) {
 	case A_LONG:
-		sprintf(oBuf, "%ld", iAtom->a_w.w_long);
+		//sprintf(oBuf, "%ld", iAtom->a_w.w_long);
+        sprintf(oBuf, "%lld", atom_getlong(iAtom));
 		break;
 	
 	case A_FLOAT:
-		sprintf(oBuf, "%lf", (double) iAtom->a_w.w_float);
+		//sprintf(oBuf, "%lf", (double) iAtom->a_w.w_float);
+        sprintf(oBuf, "%lf", (double) atom_getfloat(iAtom));
 		break;
 	
 	case A_SYM:
-		strcpy(oBuf, iAtom->a_w.w_sym->s_name);
+		//strcpy(oBuf, iAtom->a_w.w_sym->s_name);
+        strcpy(oBuf, atom_getsym(iAtom)->s_name);
 		break;
 	
 	case A_SEMI:
@@ -867,7 +873,7 @@ AtomToString(
 		}
 	
 	}
-
+/*
 #else
 void
 AtomToString(
@@ -930,7 +936,7 @@ AtomDraw(
 	
 	}
 #endif
-
+*/
 /******************************************************************************************
  *
  *	ForwardBang(iRecip)
@@ -943,10 +949,10 @@ AtomDraw(
 
 void
 ForwardBang(
-	Symbol*	iRecip)
+	t_symbol*	iRecip)
 	
 	{
-	static Symbol* sSymBang = NIL;
+	static t_symbol* sSymBang = NIL;
 	
 	if (sSymBang == NIL)
 		sSymBang = gensym("bang");
@@ -958,13 +964,13 @@ ForwardBang(
 	
 void
 ForwardLong(
-	Symbol*	iRecip,
+	t_symbol*	iRecip,
 	long	iVal)
 	
 	{
-	static Symbol* sSymInt = NIL;
+	static t_symbol* sSymInt = NIL;
 	
-	Atom intAtom;
+	t_atom intAtom;
 	
 	if (sSymInt == NIL)
 		sSymInt = gensym("int");
@@ -978,13 +984,13 @@ ForwardLong(
 	
 void
 ForwardFloat(
-	Symbol*	iRecip,
+	t_symbol*	iRecip,
 	double	iVal)
 
 	{
-	static Symbol* sSymFloat = NIL;
+	static t_symbol* sSymFloat = NIL;
 	
-	Atom floatAtom;
+	t_atom floatAtom;
 	
 	if (sSymFloat == NIL)
 		sSymFloat = gensym("float");
@@ -998,12 +1004,12 @@ ForwardFloat(
 
 void
 ForwardList(
-	Symbol*	iRecip,
+	t_symbol*	iRecip,
 	short	iArgC,
-	Atom	iArgV[])
+	t_atom	iArgV[])
 
 	{
-	static Symbol* sSymList = NIL;
+	static t_symbol* sSymList = NIL;
 	
 	if (sSymList == NIL)
 		sSymList = gensym("list");
@@ -1016,15 +1022,15 @@ ForwardList(
 
 void
 ForwardAnything(
-	Symbol*	iRecip,
-	Symbol*	iMsg,
+	t_symbol*	iRecip,
+	t_symbol*	iMsg,
 	short	iArgC,
-	Atom	iArgV[])
+	t_atom	iArgV[])
 	
 	{
-	static Symbol* sSymThrough = NIL;
+	static t_symbol* sSymThrough = NIL;
 	
-	Object* thing = (Object*) iRecip->s_thing;
+	t_object* thing = (t_object*) iRecip->s_thing;
 	
 	// Initialize our static symbol first time through
 	if (sSymThrough == NIL)

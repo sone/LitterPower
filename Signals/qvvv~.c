@@ -22,7 +22,7 @@
 #include <stdlib.h>		// For rand(), RAND_MAX
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 
@@ -98,10 +98,15 @@ static void Pvvv2Reflect(objBrown*);
 static void Pvvv2Tattle(objBrown*);
 static void	Pvvv2Assist(objBrown*, void* , long , long , char*);
 static void	Pvvv2Info(objBrown*);
+static void Pvvv2Bang(objBrown*);
 
 	// MSP Messages
 static void	Pvvv2DSP(objBrown*, t_signal**, short*);
 static int*	Pvvv2Perform(int*);
+void Pvvv2DSP64(objBrown*, t_object *dsp64, short *count, double samplerate,
+                long maxvectorsize, long flags);
+void Pvvv2Perform64(objBrown*, t_object *dsp64, double **ins, long numins,
+                    double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -121,13 +126,14 @@ static int*	Pvvv2Perform(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max/MSP initialization mantra
+        /*
 	setup(	&gObjectClass,				// Pointer to our class definition
 			(method) Pvvv2New,			// Instance creation function
 			(method) dsp_free,			// Default deallocation function
@@ -136,12 +142,22 @@ main(void)
 										// Optional arguments:
 			A_DEFFLOAT,					//		-- Hurst factor
 			A_DEFLONG,					//		-- NN Factor
-			0);		
-	
-	dsp_initclass();
+			0);*/
+     /*
+    LitterSetupClass(kClassName, (method)Pvvv2New, (method) dsp_free,
+                         (short)sizeof(objBrown),
+                         0L, A_DEFFLOAT, A_DEFLONG);
+	*/
+    
+    c = class_new(kClassName, (method)Pvvv2New, (method) dsp_free, (short)sizeof(objBrown), 0L, A_DEFFLOAT, A_DEFLONG, 0L);
+        
+	//dsp_initclass();
+    
 
+        /*
 	// Messages
-	addfloat((method) Pvvv2Hurst);
+	//addfloat((method) Pvvv2Hurst);
+        LitterAddFloat((method)Pvvv2Hurst);
 	addftx	((method) Pvvv2FloatNN, 1);
 	addinx	((method) Pvvv2IntNN, 1);
 	
@@ -158,12 +174,41 @@ main(void)
 	addmess	((method) Pvvv2Info,		"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) Pvvv2DSP,		"dsp",		A_CANT, 0);
-
+	//LITTER_TIMEBOMB addmess	((method) Pvvv2DSP,		"dsp",		A_CANT, 0);
+    addmess	((method) Pvvv2DSP,		"dsp",		A_CANT, 0);
+*/
+        
+        // Messages
+        class_addmethod(c, (method) Pvvv2Bang, "bang", 0);
+        class_addmethod(c, (method) Pvvv2Hurst, "float", A_FLOAT, 0);
+        class_addmethod(c, (method) Pvvv2FloatNN,"ft1", A_FLOAT, 0);
+        class_addmethod(c, (method) Pvvv2IntNN, "int", A_LONG, 0);
+        
+        // Range correction
+        class_addmethod(c, (method) Pvvv2Clip,		"clip",		A_NOTHING);
+        class_addmethod(c, (method) Pvvv2Wrap,		"wrap",		A_NOTHING);
+        class_addmethod(c, (method) Pvvv2Reflect,	"reflect",	A_NOTHING);
+        class_addmethod(c, (method) Pvvv2Stet,		"stet",		A_NOTHING);
+        
+        // Information messages
+        class_addmethod(c, (method) Pvvv2Tattle,	"dblclick",	A_CANT, 0);
+        class_addmethod(c, (method) Pvvv2Tattle,	"tattle",	A_NOTHING);
+        class_addmethod(c, (method) Pvvv2Assist,	"assist",	A_CANT, 0);
+        class_addmethod(c, (method) Pvvv2Info,		"info",		A_CANT, 0);
+        
+        // MSP-Level messages
+        //class_addmethod(c, (method) Pvvv2DSP,		"dsp",		A_CANT, 0);
+        class_addmethod(c, (method) Pvvv2DSP64,		"dsp64",		A_CANT, 0);
+        
+        class_dspinit(c);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
-	
+        post("lp.qvvv~ test");
+        return 0;
 	}
 
 
@@ -201,7 +246,9 @@ Pvvv2New(
 	// Ditto for Hurst factor
 
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (objBrown*) newobject(gObjectClass);
+	//me = (objBrown*) newobject(gObjectClass);
+    me = object_alloc(gObjectClass);
+    //me = LitterAllocateObject();
 	dsp_setup(&(me->coreObject), 1);				// Signal inlet for benefit of begin~
 													// Otherwise left inlet does "NN" only
 													// or, with the multi-color object, the
@@ -382,7 +429,7 @@ void Pvvv2Info(objBrown* me)
  *	Pvvv2DSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 Pvvv2DSP(
 	objBrown*		me,
@@ -404,7 +451,14 @@ Pvvv2DSP(
 		);
 	
 	}
-	
+	*/
+
+void Pvvv2DSP64(objBrown* me, t_object *dsp64, short *count, double samplerate,
+                long maxvectorsize, long flags)
+{
+    object_method(dsp64, gensym("dsp_add64"), me, Pvvv2Perform64, 0, NULL);
+    post("dsp64");
+}
 
 /******************************************************************************************
  *
@@ -463,6 +517,19 @@ Pvvv2DSP(
 		
 		me->bufPos = 0;
 		}
+
+
+void Pvvv2Bang(objBrown* me) {
+ 
+    int i;
+    float *curSamp;
+    GenerateNewBuffer(me);
+    
+    curSamp	= me->buffer;
+    for(i=0; i<100; i++)
+        post("%f", *curSamp++);
+    
+}
 	
 int*
 Pvvv2Perform(
@@ -557,3 +624,86 @@ Pvvv2Perform(
 exit:
 	return iParams + paramNextLink;
 	}
+
+
+void Pvvv2Perform64(objBrown* me, t_object *dsp64, double **ins, long numins,
+                    double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    float*		curSamp;
+    long			vecSize;
+    t_sample*       outNoise;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    // Copy parameters into registers
+    vecSize		= sampleframes;
+    outNoise	= outs[0];      // Do integer arithmetic in buffer, then convert
+    // to floating point before exit.
+    
+    // Time to generate new buffer?
+    // Condition must also take possibility of vector size changing mid-buffer
+    if (me->bufPos + vecSize > kMaxBuf) {
+        GenerateNewBuffer(me);
+    }
+    curSamp	= me->buffer + me->bufPos;
+    me->bufPos += vecSize;
+    
+    // Do we have to deal with NN factor and/or Range actions?
+    switch(me->action) {
+        default:
+            // actStet
+            if (me->nn == 0)
+                do { *outNoise++ = (double)(*curSamp++); } while (--vecSize > 0);
+            else {
+                float	factor	= me->factor,
+                factor1	= me->factor1,
+                offset	= me->offset;
+                
+                do { *outNoise++ = factor1 * floor(factor * (*curSamp++)) + offset; }
+                while (--vecSize > 0);
+            }
+            break;
+            
+        case actClip:
+            if (me->nn == 0)
+                do { *outNoise++ = ClipSignal(*curSamp++); } while (--vecSize > 0);
+            else {
+                float	factor	= me->factor,
+                factor1	= me->factor1,
+                offset	= me->offset;
+                
+                do { *outNoise++ = factor1 * floor(factor * ClipSignal(*curSamp++)) + offset; }
+                while (--vecSize > 0);
+            }
+            break;
+            
+        case actWrap:
+            if (me->nn == 0)
+                do { *outNoise++ = WrapSignal(*curSamp++); } while (--vecSize > 0);
+            else {
+                float	factor	= me->factor,
+                factor1	= me->factor1,
+                offset	= me->offset;
+                
+                do { *outNoise++ = factor1 * floor(factor * WrapSignal(*curSamp++)) + offset; }
+                while (--vecSize > 0);
+            }
+            break;
+            
+        case actReflect:
+            if (me->nn == 0)
+                do { *outNoise++ = ReflectSignal(*curSamp++); } while (--vecSize > 0);
+            else {
+                float	factor	= me->factor,
+                factor1	= me->factor1,
+                offset	= me->offset;
+                
+                do { *outNoise++ = factor1 * floor(factor * ReflectSignal(*curSamp++)) + offset; }
+                while (--vecSize > 0);
+            }
+            break;
+    }
+    
+    
+}
+

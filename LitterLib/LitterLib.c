@@ -531,7 +531,8 @@ LitterCopyStrListResourceByName(
 		
 		result = (tStrList*) NewPtr(strTableSize);
 		if (result != NULL) {
-			BlockMoveData((*rHandle), result, strTableSize);
+			//BlockMoveData((*rHandle), result, strTableSize);
+            memmove(result, (*rHandle), strTableSize);      // NOT TESTED YET
 			}
 		
 		ReleaseResource(rHandle);
@@ -627,11 +628,11 @@ LitterSetupClassGimme(
 	}
 	
 
-Object* LitterAllocateObject(void)
+t_object* LitterAllocateObject(void)
 #if LITTER_USE_OBEX
-	{ return (Object*) object_alloc(gObjectClass); }
+	{ return (t_object*) object_alloc(gObjectClass); }
 #else
-	{ return (Object*) newobject(gObjectClass); }
+	{ return (t_object*) newobject(gObjectClass); }
 #endif
 
 
@@ -655,12 +656,12 @@ Object* LitterAllocateObject(void)
 
 	#if LITTER_USE_OBEX
 	
-	t_max_err LitterGetAttrAtom(Atom* iAtom, long* ioArgC, Atom** ioArgV)
+	t_max_err LitterGetAttrAtom(t_atom* iAtom, long* ioArgC, t_atom** ioArgV)
 		{
 		
 		if (ioArgC == 0 || *ioArgV == NIL) {
 			// Need to allocate memory
-			*ioArgV = (Atom*) getbytes(sizeof(Atom));
+			*ioArgV = (t_atom*) getbytes(sizeof(t_atom));
 			if (*ioArgV == NIL) return MAX_ERR_OUT_OF_MEM;
 			}
 		
@@ -671,27 +672,27 @@ Object* LitterAllocateObject(void)
 		}
 
 	
-	t_max_err LitterGetAttrInt(long iVal, long* ioArgC, Atom** ioArgV)
+	t_max_err LitterGetAttrInt(long iVal, long* ioArgC, t_atom** ioArgV)
 		{
-		Atom a;
+		t_atom a;
 		
 		AtomSetLong(&a, iVal);
 		
 		return LitterGetAttrAtom(&a, ioArgC, ioArgV);
 		}
 		
-	t_max_err LitterGetAttrFloat(double iVal, long* ioArgC, Atom** ioArgV)
+	t_max_err LitterGetAttrFloat(double iVal, long* ioArgC, t_atom** ioArgV)
 		{
-		Atom a;
+		t_atom a;
 		
 		AtomSetFloat(&a, iVal);
 		
 		return LitterGetAttrAtom(&a, ioArgC, ioArgV);
 		}
 		
-	t_max_err LitterGetAttrSym(Symbol* iSym, long* ioArgC, Atom** ioArgV)
+	t_max_err LitterGetAttrSym(t_symbol* iSym, long* ioArgC, t_atom** ioArgV)
 		{
-		Atom a;
+		t_atom a;
 		
 		AtomSetSym(&a, iSym);
 		
@@ -699,7 +700,7 @@ Object* LitterAllocateObject(void)
 		}
 	
 	void LitterGetVersStr(long, long, char[]);
-	static t_max_err LitterGetVers(Object* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LitterGetVers(t_object* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{
 		#pragma unused(me, iAttr)
 		
@@ -829,7 +830,7 @@ void LitterInit(
 	
 #if LITTER_USE_OBEX
 	{
-	Object*	attr;
+	t_object*	attr;
 	
 	// Add global message/attribute that all Litter objects implement uniformly
 	class_addmethod	(gObjectClass, (method) LitterVers,	"vers",	A_DEFLONG, A_DEFLONG, 0);
@@ -1002,9 +1003,9 @@ LitterInfo(
 void
 LitterExpect(
 	tExpectFunc	iExpFunc,
-	Object*		iObj,
-	Symbol*		iSel,
-	Symbol*		iTarg,
+	t_object*		iObj,
+	t_symbol*		iSel,
+	t_symbol*		iTarg,
 	Boolean		iLabel)
 	
 	{
@@ -1033,7 +1034,7 @@ LitterExpect(
 	
 	if (expSel < expCount) {										// Valid selector
 		double	expVal = iExpFunc(iObj, expSel);
-		Atom	msgParam;
+		t_atom	msgParam;
 		
 		if (iLabel) AtomSetFloat(&msgParam, expVal);
 		
@@ -1265,9 +1266,9 @@ LitterGetVersVal(
 	
 #else
 
-#if LITTER_POST_MAX4
+//#if LITTER_POST_MAX4
 
-	if (LitterGetMaxVersion() >= 0x0500) {
+	//if (LitterGetMaxVersion() >= 0x0500) {
 		// With Max 5 we finally move to Carbon/Cocoa Bundle-based resources
 		if (gLPObjBundle != NULL) {
 			if (iVersID == lpVersIDObject)
@@ -1283,7 +1284,8 @@ LitterGetVersVal(
 			//		(I'm not) so this gets a low priority to fix.
 			 }
 		else result = 0;
-		}
+		//}
+        /*
 	else {
 
 #endif			// LITTER_POST_MAX4
@@ -1299,7 +1301,7 @@ LitterGetVersVal(
 #if LITTER_POST_MAX4
 		}
 #endif			// LITTER_POST_MAX4
-		
+		*/
 	#endif
 	
 	return result;
@@ -1307,7 +1309,7 @@ LitterGetVersVal(
 
 void
 LitterVers(
-	Object*	iObject,
+	t_object*	iObject,
 	long	iVersID,
 	long	iVersType)
 	

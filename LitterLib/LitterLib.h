@@ -239,7 +239,7 @@ typedef enum Symmetry	eSymmetry;		// Need to rename to eSymmetry ??
 typedef enum ActionType	eActionType;
 
 typedef enum Expect		eExpectSelector;
-typedef double (*tExpectFunc)(Object*, eExpectSelector);
+typedef double (*tExpectFunc)(t_object*, eExpectSelector);
 
 typedef enum LitterLicense	eLitterLicense;
 typedef enum CategoryClass	eCategoryClass;
@@ -298,7 +298,7 @@ void	LitterSetupClassGimme(const char	iName[],
 void	LitterInit			(const char[], UInt32);
 
 	// Pattr-agnostice wrapper for object_alloc()/newobject()
-Object* LitterAllocateObject(void);
+t_object* LitterAllocateObject(void);
 
 
 	// Useful & common functions
@@ -308,7 +308,7 @@ void	LitterAssistVA		(long, long, short, short, char[], ...);
 void	LitterAssistResFrag	(long, long, short, short, char[], short);
 void	LitterGetVersStr	(long, long, char[]);
 long	LitterGetVersVal	(long);
-void	LitterVers			(Object*, long, long);
+void	LitterVers			(t_object*, long, long);
 void	LitterGetIndString	(short, char[]);
 void	LitterHello			(const char[]);
 
@@ -317,14 +317,14 @@ void	LitterGetCStringFromStrList(char[kMaxResourceStrSize], const tStrListPtr, i
 
 #if LITTER_USE_OBEX
 	// Attribute helper functions
-t_max_err LitterGetAttrAtom(Atom*, long*, Atom**);
-t_max_err LitterGetAttrInt(long, long*, Atom**);
-t_max_err LitterGetAttrFloat(double, long*, Atom**);
-t_max_err LitterGetAttrSym(Symbol*, long*, Atom**);
+t_max_err LitterGetAttrAtom(t_atom*, long*, t_atom**);
+t_max_err LitterGetAttrInt(long, long*, t_atom**);
+t_max_err LitterGetAttrFloat(double, long*, t_atom**);
+t_max_err LitterGetAttrSym(t_symbol*, long*, t_atom**);
 #endif
 
 void	LitterInfo			(const char[], tObjectPtr, method);
-void	LitterExpect		(tExpectFunc, Object*, Symbol*, Symbol*, Boolean);
+void	LitterExpect		(tExpectFunc, t_object*, t_symbol*, t_symbol*, Boolean);
 
 
 

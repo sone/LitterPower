@@ -11,14 +11,8 @@
 		042BE11E0A94770D0008B638 /* MaxUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1F980A5D781D00991CC7 /* MaxUtils.c */; };
 		042BE1230A94770D0008B638 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		042BEA4E0A94F9090008B638 /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3D0A5D702200991CC7 /* LitterLib.c */; };
-		046B793F0D1F015C00B77640 /* MiscUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3F0A5D702200991CC7 /* MiscUtils.c */; };
-		046B79400D1F015C00B77640 /* MaxUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1F980A5D781D00991CC7 /* MaxUtils.c */; };
-		046B79410D1F015C00B77640 /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3D0A5D702200991CC7 /* LitterLib.c */; };
-		046B79420D1F015C00B77640 /* Taus88.c in Sources */ = {isa = PBXBuildFile; fileRef = 042BEE550A9507350008B638 /* Taus88.c */; };
 		046B79450D1F015C00B77640 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		046B79470D1F015C00B77640 /* MaxAudioAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04E4A2640A95E65A004B0E9C /* MaxAudioAPI.framework */; };
-		046CDDFE0D44E3B5003E1133 /* qvvv~.c in Sources */ = {isa = PBXBuildFile; fileRef = 046CDDFD0D44E3B5003E1133 /* qvvv~.c */; };
-		046CDE020D44E3EA003E1133 /* qvvv~.r in Rez */ = {isa = PBXBuildFile; fileRef = 046CDE010D44E3EA003E1133 /* qvvv~.r */; };
 		04E4A26B0A95E65A004B0E9C /* MaxAudioAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04E4A2640A95E65A004B0E9C /* MaxAudioAPI.framework */; };
 		04E4A2A60A95E992004B0E9C /* MiscUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3F0A5D702200991CC7 /* MiscUtils.c */; };
 		04E4A2A70A95E992004B0E9C /* MaxUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1F980A5D781D00991CC7 /* MaxUtils.c */; };
@@ -71,20 +65,25 @@
 		04E4A4770A95F500004B0E9C /* pfff~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A45E0A95F36F004B0E9C /* pfff~.c */; };
 		04E4A47E0A95F5A3004B0E9C /* pfff~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A45E0A95F36F004B0E9C /* pfff~.c */; };
 		04E4A48B0A95F681004B0E9C /* Taus88.c in Sources */ = {isa = PBXBuildFile; fileRef = 042BEE550A9507350008B638 /* Taus88.c */; };
+		353801D320275E910092DA61 /* qvvv~.c in Sources */ = {isa = PBXBuildFile; fileRef = 046CDDFD0D44E3B5003E1133 /* qvvv~.c */; };
+		353801D420275EB40092DA61 /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3D0A5D702200991CC7 /* LitterLib.c */; };
+		353801D520275EB80092DA61 /* MaxUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1F980A5D781D00991CC7 /* MaxUtils.c */; };
+		353801D620275EBE0092DA61 /* MiscUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3F0A5D702200991CC7 /* MiscUtils.c */; };
+		353801D720275ECC0092DA61 /* Taus88.c in Sources */ = {isa = PBXBuildFile; fileRef = 042BEE550A9507350008B638 /* Taus88.c */; };
 		357EC1D620274D9500F0A976 /* MaxAudioAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04E4A2640A95E65A004B0E9C /* MaxAudioAPI.framework */; };
 		357EC1E020274DDB00F0A976 /* adummy~.c in Sources */ = {isa = PBXBuildFile; fileRef = 357EC1C920274D8600F0A976 /* adummy~.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		041C1E3D0A5D702200991CC7 /* LitterLib.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = LitterLib.c; sourceTree = "<group>"; };
-		041C1E3E0A5D702200991CC7 /* LitterLib.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = LitterLib.h; sourceTree = "<group>"; };
-		041C1E3F0A5D702200991CC7 /* MiscUtils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = MiscUtils.c; sourceTree = "<group>"; };
-		041C1E400A5D702200991CC7 /* MiscUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MiscUtils.h; sourceTree = "<group>"; };
-		041C1F980A5D781D00991CC7 /* MaxUtils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = MaxUtils.c; sourceTree = "<group>"; };
-		041C1F990A5D781D00991CC7 /* MaxUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MaxUtils.h; sourceTree = "<group>"; };
+		041C1E3D0A5D702200991CC7 /* LitterLib.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = LitterLib.c; path = ../LitterLib/LitterLib.c; sourceTree = "<group>"; };
+		041C1E3E0A5D702200991CC7 /* LitterLib.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = LitterLib.h; path = ../LitterLib/LitterLib.h; sourceTree = "<group>"; };
+		041C1E3F0A5D702200991CC7 /* MiscUtils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = MiscUtils.c; path = ../LitterLib/MiscUtils.c; sourceTree = "<group>"; };
+		041C1E400A5D702200991CC7 /* MiscUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = MiscUtils.h; path = ../LitterLib/MiscUtils.h; sourceTree = "<group>"; };
+		041C1F980A5D781D00991CC7 /* MaxUtils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = MaxUtils.c; path = ../LitterLib/MaxUtils.c; sourceTree = "<group>"; };
+		041C1F990A5D781D00991CC7 /* MaxUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = MaxUtils.h; path = ../LitterLib/MaxUtils.h; sourceTree = "<group>"; };
 		042BE12D0A94770D0008B638 /* lp.shhh~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.shhh~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
 		042BEA5C0A94F9810008B638 /* Litter Globals.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "Litter Globals.r"; path = "../Resources/Litter Globals.r"; sourceTree = "<group>"; };
-		042BEE550A9507350008B638 /* Taus88.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = Taus88.c; sourceTree = "<group>"; };
+		042BEE550A9507350008B638 /* Taus88.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = Taus88.c; path = ../LitterLib/Taus88.c; sourceTree = "<group>"; };
 		046B794F0D1F015C00B77640 /* lp.qvvv~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.qvvv~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
 		046CDDFD0D44E3B5003E1133 /* qvvv~.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = "qvvv~.c"; sourceTree = "<group>"; };
 		046CDE010D44E3EA003E1133 /* qvvv~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "qvvv~.r"; path = "../Resources/Signals/qvvv~.r"; sourceTree = "<group>"; };
@@ -203,8 +202,8 @@
 				041C1E3E0A5D702200991CC7 /* LitterLib.h */,
 				041C1F980A5D781D00991CC7 /* MaxUtils.c */,
 				041C1F990A5D781D00991CC7 /* MaxUtils.h */,
-				041C1E3F0A5D702200991CC7 /* MiscUtils.c */,
 				041C1E400A5D702200991CC7 /* MiscUtils.h */,
+				041C1E3F0A5D702200991CC7 /* MiscUtils.c */,
 				042BEE550A9507350008B638 /* Taus88.c */,
 			);
 			name = LitterLib;
@@ -374,13 +373,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 046B794B0D1F015C00B77640 /* Build configuration list for PBXNativeTarget "Multicolor FP (UB)" */;
 			buildPhases = (
-				046B793B0D1F015C00B77640 /* ShellScript */,
 				046B793C0D1F015C00B77640 /* Headers */,
 				046B793D0D1F015C00B77640 /* Resources */,
-				046B793E0D1F015C00B77640 /* Sources */,
+				353801D020275C570092DA61 /* Sources */,
 				046B79440D1F015C00B77640 /* Frameworks */,
 				046B79480D1F015C00B77640 /* Rez */,
-				046B794A0D1F015C00B77640 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -655,7 +652,6 @@
 			isa = PBXRezBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				046CDE020D44E3EA003E1133 /* qvvv~.r in Rez */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -745,35 +741,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = Resources/InstallSPIcon.bash;
-		};
-		046B793B0D1F015C00B77640 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/../Resources/Signals/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/../Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/../Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/../Resources/Signals/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/../Resources/Signals/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		046B794A0D1F015C00B77640 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/../Resources/IconSuites/LitterIconSuite.mxo.Pro/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "\"$SRCROOT\"/../Resources/InstallIcon.bash";
 		};
 		04E4A2A20A95E992004B0E9C /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -964,18 +931,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		046B793E0D1F015C00B77640 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				046B793F0D1F015C00B77640 /* MiscUtils.c in Sources */,
-				046B79400D1F015C00B77640 /* MaxUtils.c in Sources */,
-				046B79410D1F015C00B77640 /* LitterLib.c in Sources */,
-				046B79420D1F015C00B77640 /* Taus88.c in Sources */,
-				046CDDFE0D44E3B5003E1133 /* qvvv~.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		04E4A2A50A95E992004B0E9C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1048,6 +1003,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		353801D020275C570092DA61 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				353801D720275ECC0092DA61 /* Taus88.c in Sources */,
+				353801D420275EB40092DA61 /* LitterLib.c in Sources */,
+				353801D620275EBE0092DA61 /* MiscUtils.c in Sources */,
+				353801D520275EB80092DA61 /* MaxUtils.c in Sources */,
+				353801D320275E910092DA61 /* qvvv~.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		357EC1CE20274D9500F0A976 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1094,6 +1061,7 @@
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				HEADER_SEARCH_PATHS_QUOTED_1 = "";
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
@@ -1107,6 +1075,7 @@
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				HEADER_SEARCH_PATHS_QUOTED_1 = "";
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
@@ -1120,6 +1089,7 @@
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				HEADER_SEARCH_PATHS_QUOTED_1 = "";
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
@@ -1377,6 +1347,7 @@
 					"\"$(C74SUPPORT)/max-includes\"",
 					"\"$(C74SUPPORT)/msp-includes\"",
 					"\"$(C74SUPPORT)/jit-includes\"",
+					"$(SRCROOT)/../LitterLib",
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../C74 Support/Universal Binary\"/**";
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
@@ -1408,7 +1379,7 @@
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = "non-global";
 				SYMROOT = "$(PROJECT_DIR)/xcodebuild";
-				USER_HEADER_SEARCH_PATHS = "$(inherited) Sources/**";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../LitterLib/**";
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
@@ -1462,6 +1433,7 @@
 					"\"$(C74SUPPORT)/max-includes\"",
 					"\"$(C74SUPPORT)/msp-includes\"",
 					"\"$(C74SUPPORT)/jit-includes\"",
+					"$(SRCROOT)/../LitterLib",
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../C74 Support/Universal Binary\"/**";
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
@@ -1492,7 +1464,7 @@
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = "non-global";
 				SYMROOT = "$(PROJECT_DIR)/xcodebuild";
-				USER_HEADER_SEARCH_PATHS = "$(inherited) Sources/**";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../LitterLib/**";
 				WRAPPER_EXTENSION = mxo;
 			};
 			name = Deployment;
@@ -1539,6 +1511,7 @@
 					"\"$(C74SUPPORT)/max-includes\"",
 					"\"$(C74SUPPORT)/msp-includes\"",
 					"\"$(C74SUPPORT)/jit-includes\"",
+					"$(SRCROOT)/../LitterLib",
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../C74 Support/Universal Binary\"/**";
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
@@ -1569,7 +1542,7 @@
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = "non-global";
 				SYMROOT = "$(PROJECT_DIR)/xcodebuild";
-				USER_HEADER_SEARCH_PATHS = "$(inherited) Sources/**";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../LitterLib/**";
 				WRAPPER_EXTENSION = mxo;
 			};
 			name = Default;

@@ -109,9 +109,9 @@
 #else
 
 	#ifdef MAC_VERSION
-          long proxy_getinlet(Object*);	// Provisional, should be defined in SDK headers someday
+          long proxy_getinlet(t_object*);	// Provisional, should be defined in SDK headers someday
 
-          static inline long ObjectGetInlet(Object* iObj, long recepticle)
+          static inline long ObjectGetInlet(t_object* iObj, long recepticle)
 				{
 			    #pragma unused(recepticle)
 				
@@ -179,9 +179,9 @@ enum keyCode {
 
 
 	// Sometimes useful to have these:
-typedef Atom*		AtomPtr;
-typedef Symbol*		SymbolPtr;
-typedef Object*		tObjectPtr;
+typedef t_atom*		AtomPtr;
+typedef t_symbol*		SymbolPtr;
+typedef t_object*		tObjectPtr;
 typedef union word	tWord;
 typedef t_atombuf	AtomBuf, *AtomBufPtr;
 
@@ -322,19 +322,20 @@ void		PostHello(const char[], short, short, short);
 short		ParseAtom(AtomPtr, Boolean, Boolean, short, SymbolPtr[], const char*);
 
 	// Other atom utilities
-#ifdef __LITTER_MAX5__
-	void	AtomToString(Atom*, char[]);
+//#ifdef __LITTER_MAX5__
+	void	AtomToString(t_atom*, char[]);
+/*
 #else
 	void	AtomToString(AtomPtr, StringPtr);
 	void	AtomDraw(AtomPtr iAtom);
 #endif
-
+*/
 	// Code to forward arbitrary messages to receive objects
-void		ForwardBang		(Symbol*);
-void		ForwardLong		(Symbol*, long);
-void		ForwardFloat	(Symbol*, double);
-void		ForwardList		(Symbol*, short, Atom[]);
-void		ForwardAnything	(Symbol*, Symbol*, short, Atom[]);
+void		ForwardBang		(t_symbol*);
+void		ForwardLong		(t_symbol*, long);
+void		ForwardFloat	(t_symbol*, double);
+void		ForwardList		(t_symbol*, short, t_atom[]);
+void		ForwardAnything	(t_symbol*, t_symbol*, short, t_atom[]);
 
 #if __MICRO_STDLIB__
 		// We grab a few choice functions from the Standard C library so
@@ -407,19 +408,19 @@ static inline long AtomGetLong(AtomPtr iAtom)
 static inline Boolean AtomIsNumeric(AtomPtr iAtom)
 	{ return iAtom->a_type == A_LONG || iAtom->a_type == A_FLOAT; }
 
-static inline Symbol* AtomGetSym(AtomPtr iAtom)
+static inline t_symbol* AtomGetSym(AtomPtr iAtom)
 	{ return (iAtom->a_type == A_SYM) ? iAtom->a_w.w_sym : NIL; }
 	
 	// Helpers for postatom()
 static inline void PostSymbol(SymbolPtr iSym)
-	{ Atom symAtom; AtomSetSym(&symAtom, iSym); postatom(&symAtom); }
+	{ t_atom symAtom; AtomSetSym(&symAtom, iSym); postatom(&symAtom); }
 static inline void PostLong(long iVal)
-	{ Atom longAtom; AtomSetLong(&longAtom, iVal); postatom(&longAtom); }
+	{ t_atom longAtom; AtomSetLong(&longAtom, iVal); postatom(&longAtom); }
 static inline void PostFloat(double iVal)
-	{ Atom floatAtom; AtomSetFloat(&floatAtom, iVal); postatom(&floatAtom); }
+	{ t_atom floatAtom; AtomSetFloat(&floatAtom, iVal); postatom(&floatAtom); }
 	
-static inline void AtomSwap(Atom* a1, Atom* a2)
-	{ Atom temp = *a1; *a1 = *a2; *a2 = temp; }
+static inline void AtomSwap(t_atom* a1, t_atom* a2)
+	{ t_atom temp = *a1; *a1 = *a2; *a2 = temp; }
 
 	// Little helpers to get System strings into the C-style format so loved by Max
 	// NOTE: As of Max 5.0 an external's resource fork is only available during main()
@@ -431,7 +432,7 @@ static inline void AtomSwap(Atom* a1, Atom* a2)
 	//		 LitterGetIndString(), which has its own private string table.
 static inline void GetIndCString(char oString[], short iID, short iIndex)
 	{
-	GetIndString((StringPtr) oString, iID, iIndex);
+	//GetIndString((StringPtr) oString, iID, iIndex);
 	MoveP2CStr((StringPtr) oString, oString);
 	}
 

@@ -211,8 +211,12 @@ Taus88Init(void)
  *	
  ******************************************************************************************/
 
-	static inline unsigned long AddPepper(unsigned long n)
+	static inline UInt32 AddPepper(UInt32 n)
 		{ n = (n >> 16) * (n & 0x0000ffff); return (n == 0) ? 0xfedcfedc : n; }
+/*
+ static inline unsigned long AddPepper(unsigned long n)
+ { n = (n >> 16) * (n & 0x0000ffff); return (n == 0) ? 0xfedcfedc : n; }
+ */
 
 void
 Taus88Seed(
@@ -220,11 +224,11 @@ Taus88Seed(
 	UInt32          iSalt)
 	
 	{
-	const unsigned long kSeed1 = 0x4a1fcf79,
+	const UInt32 kSeed1 = 0x4a1fcf79,    //unsigned long
 						kSeed2 = 0xb86271cc,
 						kSeed3 = 0x6c986d11;
 	
-	unsigned long	s;
+	UInt32	s;      //unsigned long
 	if (iData == NULL)
 		iData = &gTausData;
 	
@@ -265,7 +269,8 @@ Taus88New(
 	UInt32	iSalt)
 	
 	{
-	tTaus88DataPtr newTaus88 = (tTaus88DataPtr) NewPtr(sizeof(tTaus88Data));
+	//tTaus88DataPtr newTaus88 = (tTaus88DataPtr) NewPtr(sizeof(tTaus88Data));
+    tTaus88DataPtr newTaus88 = (tTaus88DataPtr) malloc(sizeof(tTaus88Data));
 	
 	if (newTaus88 != NULL)
 		Taus88Seed(newTaus88, iSalt);
@@ -276,5 +281,8 @@ Taus88New(
 	}
 
 void Taus88Free(tTaus88DataPtr iTaus)
-	{ if (iTaus != NIL) DisposePtr((Ptr) iTaus); }
+	{
+        //if (iTaus != NIL) DisposePtr((Ptr) iTaus);
+        if (iTaus != NIL) free((Ptr) iTaus);
+    }
 

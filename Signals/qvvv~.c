@@ -457,7 +457,6 @@ void Pvvv2DSP64(objBrown* me, t_object *dsp64, short *count, double samplerate,
                 long maxvectorsize, long flags)
 {
     object_method(dsp64, gensym("dsp_add64"), me, Pvvv2Perform64, 0, NULL);
-    post("dsp64");
 }
 
 /******************************************************************************************

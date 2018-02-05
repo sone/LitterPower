@@ -504,7 +504,7 @@ void Pvvv2Perform64(objBrown* me, t_object *dsp64, double **ins, long numins,
 {
     float*		curSamp;
     long			vecSize;
-    t_sample*       outNoise;
+    tSampleVector   outNoise;
     
     if (me->coreObject.z_disabled) return;
     

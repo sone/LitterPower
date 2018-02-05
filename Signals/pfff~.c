@@ -28,30 +28,7 @@
 
 #pragma mark • Identify Target
 
-#ifdef __MWERKS__
-	// With Metrowerks CodeWarrior make use of the __ide_target() preprocessor function
-	// to identify which variant of the scamp family we're generating.
-	// On other platforms (like GCC) we have to use a command-line flag or something
-	// when building the individual targets.
-	#if		__ide_target("Brown (Classic)")			\
-			|| __ide_target("Brown (Carbon)")		\
-			|| __ide_target("Brown (Windows)")
-		#define BROWN 1
 
-	#elif	__ide_target("Black (Classic)")			\
-			|| __ide_target("Black (Carbon)")		\
-			|| __ide_target("Black (Windows)")
-		#define BLACK 1
-
-	#elif	__ide_target("Multicolor (Classic)")	\
-			|| __ide_target("Multicolor (Carbon)")	\
-			|| __ide_target("Multicolor (Windows)")
-		#define VARICOLOR 1
-
-	#else
-		#error "Undefined target"
-	#endif
-#endif
 
 // Kludge
 #ifndef TARGET_CPU_X86
@@ -65,7 +42,7 @@
 #endif
 
 #if (!TARGET_CPU_PPC && !TARGET_CPU_X86)
-	#error This file can currently only compiler for PPC or Intel (X86) processors
+	//#error This file can currently only compiler for PPC or Intel (X86) processors
 #endif
 	
 
@@ -74,7 +51,7 @@
 #include <stdlib.h>		// For rand(), RAND_MAX
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 
@@ -90,6 +67,8 @@
 #elif	defined(VARICOLOR)
 	const char*	kClassName		= "lp.pvvv~";			// Class name
 #endif
+
+const char* version = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 
 const int	kMaxNN			= 31;
@@ -178,8 +157,12 @@ static void	PvvvAssist(tBrown*, void* , long , long , char*);
 static void	PvvvInfo(tBrown*);
 
 	// MSP Messages
-static void	PvvvDSP(tBrown*, t_signal**, short*);
-static int*	PvvvPerform(int*);
+//static void	PvvvDSP(tBrown*, t_signal**, short*);
+//static int*	PvvvPerform(int*);
+void PvvvDSP64(tBrown*, t_object *dsp64, short *count, double samplerate,
+                long maxvectorsize, long flags);
+void PvvvPerform64(tBrown*, t_object *dsp64, double **ins, long numins,
+                    double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -199,14 +182,15 @@ static int*	PvvvPerform(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
+        t_class *c;
+        
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,
 			(method) PvvvNew,			// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(tBrown),				// Class object size
@@ -217,11 +201,14 @@ main(void)
 #endif		
 			A_DEFLONG,					//		All				-- NN Factor
 			A_DEFLONG,					//		All				-- Mode/Architecture
-			0);		
+			0);
+        
 	
-	dsp_initclass();
+	//dsp_initclass();
+    class_dspinit(c);
 
 	// Messages
+        /*
 #ifdef VARICOLOR
 	addfloat((method) PvvvHurst);
 	addinx	((method) PvvvNN, 1);
@@ -236,10 +223,32 @@ main(void)
 	
 	// MSP-Level messages
 	LITTER_TIMEBOMB addmess	((method) PvvvDSP,		"dsp",		A_CANT, 0);
+    */
+        
+#ifdef VARICOLOR
+        class_addmethod(c, (method) PvvvHurst, "float",     A_FLOAT, 0);
+        class_addmethod(c, (method) PvvvNN,     "int1",     A_LONG, 0);
+#else
+        class_addmethod(c, (method) PvvvNN,     "int",      A_LONG, 0);
+#endif
+        class_addmethod(c, (method) PvvvMode,	"mode",		A_DEFLONG, 0);
+        class_addmethod(c, (method) PvvvTattle,	"dblclick",	A_CANT, 0);
+        class_addmethod(c, (method) PvvvTattle,	"tattle",	A_NOTHING);
+        class_addmethod(c, (method) PvvvAssist,	"assist",	A_CANT, 0);
+        class_addmethod(c, (method) PvvvInfo,	"info",		A_CANT, 0);
+        
+        // MSP-Level messages
+        class_addmethod(c, (method) PvvvDSP64,	"dsp64",		A_CANT, 0);
 
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
 	Taus88Init();
+     
+    post("%s: %s", kClassName, version);
+        return 0;
 	
 	}
 
@@ -281,7 +290,8 @@ PvvvNew(
 	// Ditto for Hurst factor (if we're compiling the multi-color object)
 
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (tBrown*) newobject(gObjectClass);
+	//me = (tBrown*) newobject(gObjectClass);
+    me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 1);				// Signal inlet for benefit of begin~
 													// Otherwise left inlet does "NN" only
 													// or, with the multi-color object, the
@@ -335,7 +345,7 @@ void PvvvNN(
 			
 		mask = -1 << iNN;
 		
-		me->nn		= iNN;
+		me->nn		= (int)iNN;
 		me->mask	= (mask);
 		me->offset	= ((~mask) >> 1);
 		}
@@ -374,7 +384,7 @@ void PvvvNN(
 		}
 	
 	me->arch = (eArch) iMode;
-	
+        post("mode: %d", me->arch);
 	}
 
 
@@ -395,7 +405,7 @@ PvvvTattle(
 	char*	archStr;
 	
 	switch (me->arch) {
-		default: archStr = "Native "
+		default: archStr = "Native ";
 	#if		TARGET_CPU_PPC
 							"(PPC)";
 	#elif	TARGET_CPU_X86
@@ -454,7 +464,7 @@ void PvvvInfo(tBrown* me)
  *	PvvvDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 PvvvDSP(
 	tBrown*		me,
@@ -476,6 +486,13 @@ PvvvDSP(
 		);
 	
 	}
+*/
+
+void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
+                long maxvectorsize, long flags)
+{
+    object_method(dsp64, gensym("dsp_add64"), me, PvvvPerform64, 0, NULL);
+}
 	
 
 /******************************************************************************************
@@ -493,6 +510,7 @@ PvvvDSP(
 
 	static void GNB_NativeLoop(long* ioBuf, int iStride, double iHurst)
 		{
+            post("native");
 		int		i,
 				stride	= iStride,
 				offset	= iStride / 2;
@@ -526,6 +544,7 @@ PvvvDSP(
 	// See GNB_NativeLoop for more extensive comments
 	static void GNB_PPCLoop(long* ioBuf, int iStride, double iHurst)
 		{
+            post("ppc");
 		const double	kLongMaxAsDouble	= kLongMax,
 						kLongMinAsDouble	= kLongMin;
 		
@@ -591,6 +610,7 @@ PvvvDSP(
 	// typecasts by taking the integer part of the double value modulo 2^32.
 	static void GNB_PC415Loop(long* ioBuf, int iStride, double iHurst)
 		{
+            post("pc415");
 		const double	kLongMaxAsDouble	= kLongMax,
 						kLongMinAsDouble	= kLongMin;
 						
@@ -654,49 +674,46 @@ PvvvDSP(
 							// higher values. However, I am loathe to change things now.
 							// At some stage an 'autoscale' option similar to pvvv2 might
 							// be hip.
-		
 		switch (me->arch) {
-			default:		GNB_NativeLoop(buf, stride, hurstFac);	break;
+			default:		GNB_NativeLoop(buf, stride, hurstFac);
+                break;
 			// The conditional compilation conveniently  causes the object to use the
 			// 'native' loop when the host architecture matches the specified float-to-int
 			// conversion type
+                
 #if !TARGET_CPU_PPC
-			case archPPC:	GNB_PPCLoop(buf, stride, hurstFac);		break;
+			case archPPC:	GNB_PPCLoop(buf, stride, hurstFac);
+                post("ppc");
+                break;
 #endif
 #if !TARGET_CPU_X86
-			case archIntel:	GNB_IntelLoop(buf, stride, hurstFac);	break;
+			case archIntel:	GNB_IntelLoop(buf, stride, hurstFac);
+                post("x86"); break;
 #endif
-			case archPC415: GNB_PC415Loop(buf, stride, hurstFac);	break;
+			case archPC415: GNB_PC415Loop(buf, stride, hurstFac);
+                break;
+                
 			}
 				
 		me->bufPos = 0;
 		}
-	
-int*
-PvvvPerform(
-	int* iParams)
-	
-	{
-	enum {
-		paramFuncAddress	= 0,
-		paramMe,
-		paramVectorSize,
-		paramOut,
-		
-		paramNextLink
-		};
+
+
+
+void PvvvPerform64(tBrown* me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
 	
 	long*			curSamp;
 	long			vecSize;
 	tSampleVector	outNoise;			// Do integer arithmetic in buffer, then convert
 										// to floating point before exit.
-	tBrown*			me = (tBrown*) iParams[paramMe];
+	//tBrown*			me = (tBrown*) iParams[paramMe];
 	
-	if (me->coreObject.z_disabled) goto exit;
+	if (me->coreObject.z_disabled) return;
 	
 	// Copy parameters into registers
-	vecSize		= (long) iParams[paramVectorSize];
-	outNoise	= (tSampleVector) iParams[paramOut];
+	vecSize		= sampleframes;
+	outNoise	= outs[0];
 	
 	// Time to generate new buffer?
 	// Condition must also take possibility of vector size changing mid-buffer
@@ -718,6 +735,57 @@ PvvvPerform(
 			} while (--vecSize > 0);
 		}
 	
-exit:
-	return iParams + paramNextLink;
 	}
+
+
+
+/*
+int*
+PvvvPerform(
+            int* iParams)
+
+{
+    enum {
+        paramFuncAddress	= 0,
+        paramMe,
+        paramVectorSize,
+        paramOut,
+        
+        paramNextLink
+    };
+    
+    long*			curSamp;
+    long			vecSize;
+    tSampleVector	outNoise;			// Do integer arithmetic in buffer, then convert
+    // to floating point before exit.
+    tBrown*			me = (tBrown*) iParams[paramMe];
+    
+    if (me->coreObject.z_disabled) goto exit;
+    
+    // Copy parameters into registers
+    vecSize		= (long) iParams[paramVectorSize];
+    outNoise	= (tSampleVector) iParams[paramOut];
+    
+    // Time to generate new buffer?
+    // Condition must also take possibility of vector size changing mid-buffer
+    if (me->bufPos + vecSize > kMaxBuf) {
+        GenerateNewBuffer(me);
+    }
+    curSamp	= me->buffer + me->bufPos;
+    me->bufPos += vecSize;
+    
+    // Do we have to deal with NN factor?
+    if (me->nn == 0)
+        do { *outNoise++ = Long2Signal(*curSamp++); } while (--vecSize > 0);
+    else {
+        long	mask	= me->mask,
+        offset	= me->offset;
+        
+        do {
+            *outNoise++ = Long2Signal((*curSamp++ & mask) + offset);
+        } while (--vecSize > 0);
+    }
+    
+exit:
+    return iParams + paramNextLink;
+}*/

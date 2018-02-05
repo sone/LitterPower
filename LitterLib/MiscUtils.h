@@ -130,6 +130,7 @@ inline float	ULong2Signal(UInt32 iVal)			// Return range: -1 <= x < 1
 					return *((float*) &iVal) - 3.0f; 
 					}
 
+//inline float	Long2Signal(long iVal)
 inline float	Long2Signal(long iVal)						// Return range: -1 <= x < 1
 					{
 					const double kScale = 1.0 / ((double) kLongMax + 1.0);

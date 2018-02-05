@@ -1230,7 +1230,7 @@ LitterGetVersStr(
 			else {
 				// Plan B
 				UInt32 versNum = CFBundleGetVersionNumber(gLPObjBundle);
-				sprintf(oDestCStr, "0x%lx", versNum);
+				sprintf(oDestCStr, "0x%x", (unsigned int)versNum);
 				//	strcpy(	oDestCStr, (iVersType == lpVersTypeShort) ? "0.0" : "Unknown");
 				}
 			}

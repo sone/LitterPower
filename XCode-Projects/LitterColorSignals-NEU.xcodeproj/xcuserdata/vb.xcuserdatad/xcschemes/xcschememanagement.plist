@@ -14,6 +14,11 @@
 			<key>orderHint</key>
 			<integer>2</integer>
 		</dict>
+		<key>Gray.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>5</integer>
+		</dict>
 		<key>Multicolor.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -48,6 +53,11 @@
 			<true/>
 		</dict>
 		<key>3599B8212029D7AD000C3442</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>35B6A4F4202A011600057149</key>
 		<dict>
 			<key>primary</key>
 			<true/>

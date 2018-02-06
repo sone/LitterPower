@@ -70,7 +70,7 @@ static inline double	ULong2Unit_ZO	(UInt32);
 static inline float		ULong2Signal	(UInt32);				// ! returns a simple float !
 static inline float		Long2Signal		(long);
 static inline double	Long2Signal_D   (long);                 // vb
-
+static inline double	ULong2Signal_D  (UInt32);
 
 
 
@@ -130,8 +130,17 @@ inline float	ULong2Signal(UInt32 iVal)			// Return range: -1 <= x < 1
 					
 					return *((float*) &iVal) - 3.0f; 
 					}
+// NOT READY YET!
+inline double	ULong2Signal_D(UInt32 iVal)			// Return range: -1 <= x < 1
+{
+    // This may not to be as highly optimized as it appears
+    // ?? !! Investigate !! ??
+    iVal >>= 9;
+    iVal  |= 0x40000000;
+    
+    return *((double*) &iVal) - 3.0;
+}
 
-//inline float	Long2Signal(long iVal)
 inline float	Long2Signal(long iVal)						// Return range: -1 <= x < 1
 					{
 					const double kScale = 1.0 / ((double) kLongMax + 1.0);

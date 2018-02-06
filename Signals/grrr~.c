@@ -25,21 +25,28 @@
 /******************************************************************************************
  ******************************************************************************************/
 
-#pragma mark • Include Files
+#pragma mark Include Files
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 
 
 
-#pragma mark • Constants
+#pragma mark Constants
 
 const char*	kClassName		= "lp.grrr~";			// Class name
 
+#define LPAssistIn1			"Signal (begin~)"
+#define LPAssistOut1		"Signal (Gray noise)"
+
+
+const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
+
 const int	kMaxNN			= 31;
 
+/*
 	// Indices for STR# resource
 enum {
 	strIndexInNN		= lpStrIndexLastStandard + 1,
@@ -53,25 +60,26 @@ enum {
 	
 	outletGray
 	};
+*/
+#pragma mark Type Definitions
 
-#pragma mark • Type Definitions
 
 
-
-#pragma mark • Object Structure
+#pragma mark Object Structure
 
 typedef struct {
 	t_pxobject		coreObject;
 	
-	unsigned long	prev;
+	//unsigned long	prev;
+    t_uint32        prev;
 	} tGray;
 
 
-#pragma mark • Global Variables
+#pragma mark Global Variables
 
 
 
-#pragma mark • Function Prototypes
+#pragma mark Function Prototypes
 
 	// Class message functions
 void*	GrrrNew(void);
@@ -82,14 +90,16 @@ static void	GrrrAssist(tGray*, void* , long , long , char*);
 static void	GrrrInfo(tGray*);
 
 	// MSP Messages
-static void	GrrrDSP(tGray*, t_signal**, short*);
-static int*	GrrrPerform(int*);
+//static void	GrrrDSP(tGray*, t_signal**, short*);
+//static int*	GrrrPerform(int*);
+void GrrrDSP64(tGray*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void GrrrPerform64(tGray*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
 /*****************************  I M P L E M E N T A T I O N  ******************************/
 
-#pragma mark • Inline Functions
+#pragma mark Inline Functions
 
 
 
@@ -103,41 +113,47 @@ static int*	GrrrPerform(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,
 			(method) GrrrNew,			// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(tGray),				// Class object size
 			NIL,						// No menu function
 			A_NOTHING);					// Not even any arguments.
 	
-	dsp_initclass();
+	//dsp_initclass();
+        class_dspinit(c);
 
 	// Messages
-	addmess	((method) GrrrTattle,		"dblclick",	A_CANT, 0);
-	addmess	((method) GrrrTattle,		"tattle",	A_NOTHING);
-	addmess	((method) GrrrAssist,		"assist",	A_CANT, 0);
-	addmess	((method) GrrrInfo,		"info",		A_CANT, 0);
+	class_addmethod(c, (method) GrrrTattle,		"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) GrrrTattle,		"tattle",	A_NOTHING);
+	class_addmethod(c, (method) GrrrAssist,		"assist",	A_CANT, 0);
+	class_addmethod(c, (method) GrrrInfo,		"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) GrrrDSP, "dsp",		A_CANT, 0);
+	class_addmethod(c, (method) GrrrDSP64,      "dsp64",	A_CANT, 0);
 
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
 	Taus88Init();
+        
+        post("%s: %s", kClassName, lpversion);
+        return 0;
 	
 	}
 
 
 
 #pragma mark -
-#pragma mark • Class Message Handlers
+#pragma mark Class Message Handlers
 
 /******************************************************************************************
  *
@@ -152,7 +168,8 @@ GrrrNew(void)
 	tGray*		me			= NIL;
 	
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (tGray*) newobject(gObjectClass);
+	//me = (tGray*) newobject(gObjectClass);
+        me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 1);				// Signal inlet for benefit of begin~
 													// Otherwise left inlet does "NN" only
 	outlet_new(me, "signal");
@@ -165,7 +182,7 @@ GrrrNew(void)
 	}
 
 #pragma mark -
-#pragma mark • Object Message Handlers
+#pragma mark Object Message Handlers
 
 /******************************************************************************************
  *
@@ -200,7 +217,19 @@ void GrrrAssist(tGray* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInNN, strIndexOutGray, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInNN, strIndexOutGray, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void GrrrInfo(tGray* me)
@@ -209,14 +238,14 @@ void GrrrInfo(tGray* me)
 
 
 #pragma mark -
-#pragma mark • DSP Methods
+#pragma mark DSP Methods
 
 /******************************************************************************************
  *
  *	GrrrDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 GrrrDSP(
 	tGray*		me,
@@ -232,45 +261,28 @@ GrrrDSP(
 		);
 	
 	}
-	
+*/
 
-/******************************************************************************************
- *
- *	GrrrPerform(iParams)
- *
- *	Parameter block for PerformSync contains 8 values:
- *		- Address of this function
- *		- The performing schhh~ object
- *		- Vector size
- *		- output signal
- *		- Imaginary output signal
- *
- ******************************************************************************************/
+void GrrrDSP64(tGray* me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags) {
+    
+    object_method(dsp64, gensym("dsp_add64"), me, GrrrPerform64, 0, NULL);
+    
+}
 
-int*
-GrrrPerform(
-	int* iParams)
+
+void GrrrPerform64(tGray* me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
 	
-	{
-	enum {
-		paramFuncAddress	= 0,
-		paramMe,
-		paramVectorSize,
-		paramOut,
-		
-		paramNextLink
-		};
-	
-	unsigned long	vecCounter,
-					prev;	
+	//unsigned long	vecCounter,
+    long            vecCounter;
+    t_uint32        prev;
 	tSampleVector	outNoise;
-	tGray*			me = (tGray*) iParams[paramMe];
-	
-	if (me->coreObject.z_disabled) goto exit;
+
+	if (me->coreObject.z_disabled) return;
 	
 	// Copy parameters into registers
-	vecCounter	= (long) iParams[paramVectorSize];
-	outNoise	= (tSampleVector) iParams[paramOut];
+	vecCounter	= sampleframes;
+	outNoise	= outs[0];
 	prev		= me->prev;
 	
 	// Do our stuff
@@ -279,6 +291,6 @@ GrrrPerform(
 		*outNoise++ = ULong2Signal(prev);
 		} while (--vecCounter > 0);
 	
-exit:
-	return iParams + paramNextLink;
-	}
+    // me->prev = prev;  NO???
+
+}

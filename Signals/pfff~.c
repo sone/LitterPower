@@ -86,7 +86,7 @@
 #endif
 
 
-const char* version = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
+const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 
 const int	kMaxNN			= 31;
@@ -128,11 +128,11 @@ enum architecture {
 		};
 #endif
 
-#pragma mark • Type Definitions
+#pragma mark Type Definitions
 
 typedef enum architecture eArch;
 
-#pragma mark • Object Structure
+#pragma mark Object Structure
 
 typedef struct {
 	t_pxobject		coreObject;
@@ -151,11 +151,11 @@ typedef struct {
 	} tBrown;
 
 
-#pragma mark • Global Variables
+#pragma mark Global Variables
 
 
 
-#pragma mark • Function Prototypes
+#pragma mark Function Prototypes
 
 	// Class message functions
 #ifdef VARICOLOR
@@ -186,7 +186,7 @@ void PvvvPerform64(tBrown*, t_object *dsp64, double **ins, long numins,
 #pragma mark -
 /*****************************  I M P L E M E N T A T I O N  ******************************/
 
-#pragma mark • Inline Functions
+#pragma mark Inline Functions
 
 
 
@@ -265,7 +265,7 @@ int C74_EXPORT main(void)
         gObjectClass = c;
 	Taus88Init();
      
-    post("%s: %s", kClassName, version);
+    post("%s: %s", kClassName, lpversion);
         return 0;
 	
 	}
@@ -273,7 +273,7 @@ int C74_EXPORT main(void)
 
 
 #pragma mark -
-#pragma mark • Class Message Handlers
+#pragma mark Class Message Handlers
 
 /******************************************************************************************
  *

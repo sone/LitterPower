@@ -95,9 +95,9 @@
 		04E4A3270A95EB5E004B0E9C /* lp.pvvv~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.pvvv~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
 		04E4A3410A95EB95004B0E9C /* lp.grrr~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.grrr~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
 		04E4A4560A95F33E004B0E9C /* grrr~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "grrr~.r"; path = "Resources/Signals/grrr~.r"; sourceTree = "<group>"; };
-		04E4A4570A95F33E004B0E9C /* pfff~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "pfff~.r"; path = "Resources/Signals/pfff~.r"; sourceTree = "<group>"; };
-		04E4A4580A95F33E004B0E9C /* phhh~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "phhh~.r"; path = "Resources/Signals/phhh~.r"; sourceTree = "<group>"; };
-		04E4A4590A95F33E004B0E9C /* pvvv~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "pvvv~.r"; path = "Resources/Signals/pvvv~.r"; sourceTree = "<group>"; };
+		04E4A4570A95F33E004B0E9C /* pfff~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "pfff~.r"; path = "../Resources/Signals/pfff~.r"; sourceTree = "<group>"; };
+		04E4A4580A95F33E004B0E9C /* phhh~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "phhh~.r"; path = "../Resources/Signals/phhh~.r"; sourceTree = "<group>"; };
+		04E4A4590A95F33E004B0E9C /* pvvv~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "pvvv~.r"; path = "../Resources/Signals/pvvv~.r"; sourceTree = "<group>"; };
 		04E4A45A0A95F33E004B0E9C /* schhh~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "schhh~.r"; path = "Resources/Signals/schhh~.r"; sourceTree = "<group>"; };
 		04E4A45B0A95F33E004B0E9C /* sss~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "sss~.r"; path = "Resources/Signals/sss~.r"; sourceTree = "<group>"; };
 		04E4A45C0A95F33E004B0E9C /* zzz~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "zzz~.r"; path = "Resources/Signals/zzz~.r"; sourceTree = "<group>"; };

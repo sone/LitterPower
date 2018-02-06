@@ -17,6 +17,16 @@
 		3599B8172029D3F8000C3442 /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 35F9FC5F202777D80052D67D /* LitterLib.c */; };
 		3599B8182029D3F8000C3442 /* pfff~.c in Sources */ = {isa = PBXBuildFile; fileRef = 35F9FC70202778510052D67D /* pfff~.c */; };
 		3599B81A2029D3F8000C3442 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35F9FC50202775560052D67D /* Carbon.framework */; };
+		3599B8232029D7AD000C3442 /* LitterLib.h in Headers */ = {isa = PBXBuildFile; fileRef = 35F9FC60202777D80052D67D /* LitterLib.h */; };
+		3599B8242029D7AD000C3442 /* MaxUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 35F9FC62202777D80052D67D /* MaxUtils.h */; };
+		3599B8252029D7AD000C3442 /* MiscUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 35F9FC64202777D80052D67D /* MiscUtils.h */; };
+		3599B8262029D7AD000C3442 /* Taus88.h in Headers */ = {isa = PBXBuildFile; fileRef = 35F9FC66202777D80052D67D /* Taus88.h */; };
+		3599B8292029D7AD000C3442 /* Taus88.c in Sources */ = {isa = PBXBuildFile; fileRef = 35F9FC65202777D80052D67D /* Taus88.c */; };
+		3599B82A2029D7AD000C3442 /* MiscUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 35F9FC63202777D80052D67D /* MiscUtils.c */; };
+		3599B82B2029D7AD000C3442 /* MaxUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 35F9FC61202777D80052D67D /* MaxUtils.c */; };
+		3599B82C2029D7AD000C3442 /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 35F9FC5F202777D80052D67D /* LitterLib.c */; };
+		3599B82D2029D7AD000C3442 /* pfff~.c in Sources */ = {isa = PBXBuildFile; fileRef = 35F9FC70202778510052D67D /* pfff~.c */; };
+		3599B82F2029D7AD000C3442 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35F9FC50202775560052D67D /* Carbon.framework */; };
 		359C196E1EB504F000821BC3 /* adummy~.c in Sources */ = {isa = PBXBuildFile; fileRef = 359C196D1EB504F000821BC3 /* adummy~.c */; };
 		35BF42AE2028865100F8BA3A /* LitterLib.h in Headers */ = {isa = PBXBuildFile; fileRef = 35F9FC60202777D80052D67D /* LitterLib.h */; };
 		35BF42AF2028865100F8BA3A /* MaxUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 35F9FC62202777D80052D67D /* MaxUtils.h */; };
@@ -45,6 +55,8 @@
 		22CF10220EE984600054F513 /* maxmspsdk.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = maxmspsdk.xcconfig; path = ../maxmspsdk.xcconfig; sourceTree = SOURCE_ROOT; };
 		2FBBEAE508F335360078DB84 /* lp.adummy~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.adummy~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3599B81F2029D3F8000C3442 /* lp.phhh~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.phhh~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3599B8342029D7AD000C3442 /* lp.pvvv~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.pvvv~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3599B8352029D7AE000C3442 /* Black copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Black copy-Info.plist"; path = "/Users/vb/Documents/coding/GitHub/LitterPower/XCode-Projects/Black copy-Info.plist"; sourceTree = "<absolute>"; };
 		359C196D1EB504F000821BC3 /* adummy~.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "adummy~.c"; path = "../Signals/adummy~.c"; sourceTree = "<group>"; };
 		35BF42BF2028865100F8BA3A /* lp.pfff~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.pfff~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
 		35F9FC50202775560052D67D /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/Carbon.framework; sourceTree = DEVELOPER_DIR; };
@@ -82,6 +94,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3599B82E2029D7AD000C3442 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3599B82F2029D7AD000C3442 /* Carbon.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		35BF42B92028865100F8BA3A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -110,6 +130,7 @@
 				35F9FC4E202775020052D67D /* LitterLib */,
 				19C28FB4FE9D528D11CA2CBB /* Products */,
 				35F9FC4F202775560052D67D /* Frameworks */,
+				3599B8352029D7AE000C3442 /* Black copy-Info.plist */,
 			);
 			name = iterator;
 			sourceTree = "<group>";
@@ -121,6 +142,7 @@
 				35F9FC5D202776CC0052D67D /* lp.qvvv~.mxo */,
 				35BF42BF2028865100F8BA3A /* lp.pfff~.mxo */,
 				3599B81F2029D3F8000C3442 /* lp.phhh~.mxo */,
+				3599B8342029D7AD000C3442 /* lp.pvvv~.mxo */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -179,6 +201,17 @@
 				3599B80F2029D3F8000C3442 /* MaxUtils.h in Headers */,
 				3599B8102029D3F8000C3442 /* MiscUtils.h in Headers */,
 				3599B8112029D3F8000C3442 /* Taus88.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3599B8222029D7AD000C3442 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3599B8232029D7AD000C3442 /* LitterLib.h in Headers */,
+				3599B8242029D7AD000C3442 /* MaxUtils.h in Headers */,
+				3599B8252029D7AD000C3442 /* MiscUtils.h in Headers */,
+				3599B8262029D7AD000C3442 /* Taus88.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -245,6 +278,25 @@
 			productReference = 3599B81F2029D3F8000C3442 /* lp.phhh~.mxo */;
 			productType = "com.apple.product-type.bundle";
 		};
+		3599B8212029D7AD000C3442 /* Multicolor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3599B8312029D7AD000C3442 /* Build configuration list for PBXNativeTarget "Multicolor" */;
+			buildPhases = (
+				3599B8222029D7AD000C3442 /* Headers */,
+				3599B8272029D7AD000C3442 /* Resources */,
+				3599B8282029D7AD000C3442 /* Sources */,
+				3599B82E2029D7AD000C3442 /* Frameworks */,
+				3599B8302029D7AD000C3442 /* Rez */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Multicolor;
+			productName = iterator;
+			productReference = 3599B8342029D7AD000C3442 /* lp.pvvv~.mxo */;
+			productType = "com.apple.product-type.bundle";
+		};
 		35BF42AC2028865100F8BA3A /* Brown */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 35BF42BC2028865100F8BA3A /* Build configuration list for PBXNativeTarget "Brown" */;
@@ -306,6 +358,7 @@
 				35F9FC52202776CC0052D67D /* qvvv~ */,
 				35BF42AC2028865100F8BA3A /* Brown */,
 				3599B80C2029D3F8000C3442 /* Black */,
+				3599B8212029D7AD000C3442 /* Multicolor */,
 			);
 		};
 /* End PBXProject section */
@@ -319,6 +372,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3599B8122029D3F8000C3442 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3599B8272029D7AD000C3442 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -350,6 +410,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3599B81B2029D3F8000C3442 /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3599B8302029D7AD000C3442 /* Rez */ = {
 			isa = PBXRezBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -390,6 +457,18 @@
 				3599B8162029D3F8000C3442 /* MaxUtils.c in Sources */,
 				3599B8172029D3F8000C3442 /* LitterLib.c in Sources */,
 				3599B8182029D3F8000C3442 /* pfff~.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3599B8282029D7AD000C3442 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3599B8292029D7AD000C3442 /* Taus88.c in Sources */,
+				3599B82A2029D7AD000C3442 /* MiscUtils.c in Sources */,
+				3599B82B2029D7AD000C3442 /* MaxUtils.c in Sources */,
+				3599B82C2029D7AD000C3442 /* LitterLib.c in Sources */,
+				3599B82D2029D7AD000C3442 /* pfff~.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -540,6 +619,49 @@
 			};
 			name = Deployment;
 		};
+		3599B8322029D7AD000C3442 /* Development */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 22CF10220EE984600054F513 /* maxmspsdk.xcconfig */;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"\"DENORM_WANT_FIX = 1\"",
+					"\"NO_TRANSLATION_SUPPORT = 1\"",
+					__MAX_MSP_OBJECT__,
+					"__LITTER_UB__=1",
+					"\"LITTER_USE_OBEX = 1\"",
+					"VARICOLOR=1",
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
+				PRODUCT_NAME = "lp.$(PRODUCT_SHORT_NAME)";
+				PRODUCT_SHORT_NAME = "pvvv~";
+				SDKROOT = macosx10.11;
+			};
+			name = Development;
+		};
+		3599B8332029D7AD000C3442 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 22CF10220EE984600054F513 /* maxmspsdk.xcconfig */;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"\"DENORM_WANT_FIX = 1\"",
+					"\"NO_TRANSLATION_SUPPORT = 1\"",
+					__MAX_MSP_OBJECT__,
+					"__LITTER_UB__=1",
+					"\"LITTER_USE_OBEX = 1\"",
+					"VARICOLOR=1",
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
+				PRODUCT_NAME = "lp.$(PRODUCT_SHORT_NAME)";
+				PRODUCT_SHORT_NAME = "pvvv~";
+				SDKROOT = macosx10.11;
+			};
+			name = Deployment;
+		};
 		35BF42BD2028865100F8BA3A /* Development */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 22CF10220EE984600054F513 /* maxmspsdk.xcconfig */;
@@ -650,6 +772,15 @@
 			buildConfigurations = (
 				3599B81D2029D3F8000C3442 /* Development */,
 				3599B81E2029D3F8000C3442 /* Deployment */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Development;
+		};
+		3599B8312029D7AD000C3442 /* Build configuration list for PBXNativeTarget "Multicolor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3599B8322029D7AD000C3442 /* Development */,
+				3599B8332029D7AD000C3442 /* Deployment */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Development;

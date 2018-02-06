@@ -72,6 +72,20 @@
 	const char*	kClassName		= "lp.pvvv~";			// Class name
 #endif
 
+// Assistance Strings (from resource files)
+#if defined(VARICOLOR)
+    #define LPAssistIn1			"Float (Hurst factor)"
+    #define LPAssistIn2			"Int (NN factor)"
+    #define LPAssistOut1		"Signal (Colored noise)"
+#elif defined(BROWN)
+    #define LPAssistIn1			"Int (NN factor)"
+    #define LPAssistOut1		"Signal (""Brownian"" noise)"
+#elif defined(BLACK)
+    #define LPAssistIn1			"Int (NN factor)"
+    #define LPAssistOut1		"Signal (Black noise)"
+#endif
+
+
 const char* version = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 
@@ -231,7 +245,7 @@ int C74_EXPORT main(void)
         
 #ifdef VARICOLOR
         class_addmethod(c, (method) PvvvHurst, "float",     A_FLOAT, 0);
-        class_addmethod(c, (method) PvvvNN,     "int1",     A_LONG, 0);
+        class_addmethod(c, (method) PvvvNN,     "in1",     A_LONG, 0);
 #else
         class_addmethod(c, (method) PvvvNN,     "int",      A_LONG, 0);
 #endif
@@ -354,7 +368,6 @@ void PvvvNN(
 		me->mask	= (mask);
 		me->offset	= ((~mask) >> 1);
 		}
-	
 	}
 
 #ifdef VARICOLOR
@@ -453,7 +466,22 @@ void PvvvAssist(tBrown* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+#if defined(VARICOLOR)
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+#endif
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void PvvvInfo(tBrown* me)

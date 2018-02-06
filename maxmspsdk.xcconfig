@@ -17,7 +17,7 @@ FRAMEWORK_SEARCH_PATHS = "$(C74SUPPORT)/max-includes" "$(C74SUPPORT)/msp-include
 DSTROOT = $(PROJECT_DIR)
 // DSTROOT = $(SRCROOT)/build/$CONFIGURATION/
 // (This next path is relative to DSTROOT)
-INSTALL_PATH = /../sysbuild/$(CONFIGURATION)/externals
+INSTALL_PATH = /../sysbuild/$(CONFIGURATION)
 
 
 // Special Files

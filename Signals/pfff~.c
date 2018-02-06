@@ -26,6 +26,10 @@
 /******************************************************************************************
  ******************************************************************************************/
 
+/**** vb: HAD TO CHANGE BUFFER FROM 'LONG' TO 'INT32' 
+            TO GET PFF~ TO RUN ****/
+/**** DOES THAT ALSO WORK FOR THE REST ??? ****/
+
 #pragma mark • Identify Target
 
 
@@ -126,7 +130,7 @@ typedef struct {
 	
 	int		nn,							// Number of bits to mask out
 			bufPos;
-	long	buffer[kBufferSize],
+    t_int32 buffer[kBufferSize],
 			mask,						// Values depends on nn
 			offset;
 	eArch	arch;
@@ -338,14 +342,15 @@ void PvvvNN(
 		me->offset	= 0;
 		}
 	else {
-		long mask;
+		//long mask;
+        t_int32 mask;
 		
 		if (iNN > kMaxNN)
 			iNN = kMaxNN;
 			
 		mask = -1 << iNN;
 		
-		me->nn		= (int)iNN;
+		me->nn		= (t_int32)iNN;
 		me->mask	= (mask);
 		me->offset	= ((~mask) >> 1);
 		}
@@ -384,7 +389,7 @@ void PvvvNN(
 		}
 	
 	me->arch = (eArch) iMode;
-        post("mode: %d", me->arch);
+        //post("mode: %d", me->arch);
 	}
 
 
@@ -492,6 +497,12 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
                 long maxvectorsize, long flags)
 {
     object_method(dsp64, gensym("dsp_add64"), me, PvvvPerform64, 0, NULL);
+    /*
+    post("kULongMax: %lu", kULongMax);
+    post("kLongMax: %d", kLongMax);
+    post("kLongMin: %d", kLongMin);
+    post("kUShortMax: %d", kUShortMax);
+     */
 }
 	
 
@@ -508,9 +519,8 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
  *
  ******************************************************************************************/
 
-	static void GNB_NativeLoop(long* ioBuf, int iStride, double iHurst)
+	static void GNB_NativeLoop(t_int32* ioBuf, int iStride, double iHurst)
 		{
-            post("native");
 		int		i,
 				stride	= iStride,
 				offset	= iStride / 2;
@@ -530,7 +540,8 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 			// Add noise with reduced variance
 			scale *= iHurst;
 			for (i = offset; i <= kMaxBuf; i += offset) {	
-				ioBuf[i] += (long) Taus88(NIL) * scale;
+				//ioBuf[i] += (long) Taus88(NIL) * scale;
+                ioBuf[i] += (t_int32) Taus88(NIL) * scale;
 				} 
 			
 			// Next generation: halve stride and offset
@@ -542,9 +553,8 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 #if !TARGET_CPU_PPC
 	// Need to be able to emulate PPC handling of double-to-int overflow
 	// See GNB_NativeLoop for more extensive comments
-	static void GNB_PPCLoop(long* ioBuf, int iStride, double iHurst)
+	static void GNB_PPCLoop(t_int32* ioBuf, int iStride, double iHurst)
 		{
-            post("ppc");
 		const double	kLongMaxAsDouble	= kLongMax,
 						kLongMinAsDouble	= kLongMin;
 		
@@ -560,12 +570,12 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 			scale *= iHurst;
 			for (i = offset; i <= kMaxBuf; i += offset) {	
 				// Here's where we emulate PPC
-				double t = (long) Taus88(NIL) * scale + ioBuf[i];
-				
+				//double t = (long) Taus88(NIL) * scale + ioBuf[i];
+				double t = (t_int32) Taus88(NIL) * scale + ioBuf[i];
 				ioBuf[i] = (t > kLongMaxAsDouble)
 							? kLongMax
-							: (t < kLongMinAsDouble) ? kLongMin : (long) t;
-				} 
+							: (t < kLongMinAsDouble) ? kLongMin : (t_int32) t;
+				}
 			
 			stride = offset;
 			offset /= 2;
@@ -576,7 +586,7 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 #if !TARGET_CPU_X86
 	// Need to be able to emulate Intel handling of double-to-int overflow
 	// See GNB_NativeLoop for more extensive comments
-	static void GNB_IntelLoop(long* ioBuf, int iStride, double iHurst)
+	static void GNB_IntelLoop(t_int32* ioBuf, int iStride, double iHurst)
 		{
 		const double	kLongMaxAsDouble	= kLongMax,
 						kLongMinAsDouble	= kLongMin;
@@ -592,11 +602,12 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 			scale *= iHurst;
 			for (i = offset; i <= kMaxBuf; i += offset) {	
 				// Here's where we emulate Intel
-				double t = (long) Taus88(NIL) * scale + ioBuf[i];
-				
+				//double t = (long) Taus88(NIL) * scale + ioBuf[i];
+				double t = (t_int32) Taus88(NIL) * scale + ioBuf[i];
+                
 				ioBuf[i] = (t > kLongMaxAsDouble || t < kLongMinAsDouble)
 							? kLongMin
-							: (long) t;
+							: (t_int32) t;
 				} 
 			
 			stride = offset;
@@ -608,9 +619,8 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 	// This emulates the behavior of the PC415 processor, a mythical processor that
 	// exists only in the imagination of Peter Castine. It handles overflow in double-to-int
 	// typecasts by taking the integer part of the double value modulo 2^32.
-	static void GNB_PC415Loop(long* ioBuf, int iStride, double iHurst)
+	static void GNB_PC415Loop(t_int32* ioBuf, int iStride, double iHurst)
 		{
-            post("pc415");
 		const double	kLongMaxAsDouble	= kLongMax,
 						kLongMinAsDouble	= kLongMin;
 						
@@ -628,13 +638,14 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 				// We take advantage of the fact that -2^32 <= t < 2^32, allowing us to
 				// substitute a simple addition or subtraction for a more expensive modulo
 				// operation
-				double t = (long) Taus88(NIL) * scale + ioBuf[i];
-				
+				//double t = (long) Taus88(NIL) * scale + ioBuf[i];
+				double t = (t_int32) Taus88(NIL) * scale + ioBuf[i];
+                
 				ioBuf[i] = (t > kLongMaxAsDouble)
-							? (long) (t + kLongMinAsDouble)
+							? (t_int32) (t + kLongMinAsDouble)
 							: (t < kLongMinAsDouble)
-								? (long) (t - kLongMinAsDouble)
-								: (long) t;
+								? (t_int32) (t - kLongMinAsDouble)
+								: (t_int32) t;
 				} 
 			
 			stride = offset;
@@ -653,7 +664,7 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 		const double hurstFac	= me->hurstFac;
 #endif
 		
-		long*	buf			= me->buffer;
+		t_int32*	buf			= me->buffer;
 		int		stride		= kMaxBuf / 2;
 		
 		//
@@ -665,7 +676,7 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 		// modification to the Voss algorithm made in this implementation.)
 		//
 		buf[0]			= buf[kMaxBuf];
-// ouch! in 32bit mode natural overflow of long is used to map to signed range! have to use 'int' in 64bit mode!?
+// vb: ouch! in 32bit mode natural overflow of long is used to map to signed range! have to use 'int' in 64bit mode!?
 		//buf[stride]		= (long) Taus88(NIL) / 4;
         buf[stride]		= (int) Taus88(NIL) / 4;
             // ASSERT: stride = kMaxBuffer/2
@@ -687,12 +698,11 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
                 
 #if !TARGET_CPU_PPC
 			case archPPC:	GNB_PPCLoop(buf, stride, hurstFac);
-                post("ppc");
                 break;
 #endif
 #if !TARGET_CPU_X86
 			case archIntel:	GNB_IntelLoop(buf, stride, hurstFac);
-                post("x86"); break;
+                break;
 #endif
 			case archPC415: GNB_PC415Loop(buf, stride, hurstFac);
                 break;
@@ -707,12 +717,11 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 void PvvvPerform64(tBrown* me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
 {
 	
-	long*			curSamp;
+	t_int32*		curSamp;
 	long			vecSize;
 	tSampleVector	outNoise;			// Do integer arithmetic in buffer, then convert
 										// to floating point before exit.
-	//tBrown*			me = (tBrown*) iParams[paramMe];
-	
+
 	if (me->coreObject.z_disabled) return;
 	
 	// Copy parameters into registers
@@ -729,67 +738,14 @@ void PvvvPerform64(tBrown* me, t_object *dsp64, double **ins, long numins, doubl
 	
 	// Do we have to deal with NN factor?
 	if (me->nn == 0)
-		do { *outNoise++ = Long2Signal(*curSamp++); } while (--vecSize > 0);
+		do { *outNoise++ = Long2Signal_D(*curSamp++); } while (--vecSize > 0);
 	else {
-		long	mask	= me->mask,
+		t_int32	mask	= me->mask,
 				offset	= me->offset;
 
 		do {
-			*outNoise++ = Long2Signal((*curSamp++ & mask) + offset);
+			*outNoise++ = Long2Signal_D((*curSamp++ & mask) + offset);
 			} while (--vecSize > 0);
 		}
 	
 	}
-
-
-
-/*
-int*
-PvvvPerform(
-            int* iParams)
-
-{
-    enum {
-        paramFuncAddress	= 0,
-        paramMe,
-        paramVectorSize,
-        paramOut,
-        
-        paramNextLink
-    };
-    
-    long*			curSamp;
-    long			vecSize;
-    tSampleVector	outNoise;			// Do integer arithmetic in buffer, then convert
-    // to floating point before exit.
-    tBrown*			me = (tBrown*) iParams[paramMe];
-    
-    if (me->coreObject.z_disabled) goto exit;
-    
-    // Copy parameters into registers
-    vecSize		= (long) iParams[paramVectorSize];
-    outNoise	= (tSampleVector) iParams[paramOut];
-    
-    // Time to generate new buffer?
-    // Condition must also take possibility of vector size changing mid-buffer
-    if (me->bufPos + vecSize > kMaxBuf) {
-        GenerateNewBuffer(me);
-    }
-    curSamp	= me->buffer + me->bufPos;
-    me->bufPos += vecSize;
-    
-    // Do we have to deal with NN factor?
-    if (me->nn == 0)
-        do { *outNoise++ = Long2Signal(*curSamp++); } while (--vecSize > 0);
-    else {
-        long	mask	= me->mask,
-        offset	= me->offset;
-        
-        do {
-            *outNoise++ = Long2Signal((*curSamp++ & mask) + offset);
-        } while (--vecSize > 0);
-    }
-    
-exit:
-    return iParams + paramNextLink;
-}*/

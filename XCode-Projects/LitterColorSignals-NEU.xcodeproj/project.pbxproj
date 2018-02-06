@@ -36,7 +36,6 @@
 		2FBBEAE508F335360078DB84 /* lp.adummy~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.adummy~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
 		359C196D1EB504F000821BC3 /* adummy~.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "adummy~.c"; path = "../Signals/adummy~.c"; sourceTree = "<group>"; };
 		35BF42BF2028865100F8BA3A /* lp.pfff~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.pfff~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
-		35BF42C02028865100F8BA3A /* qvvv~ copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "qvvv~ copy-Info.plist"; path = "/Users/vb/Documents/coding/GitHub/LitterPower/XCode-Projects/qvvv~ copy-Info.plist"; sourceTree = "<absolute>"; };
 		35F9FC50202775560052D67D /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/Carbon.framework; sourceTree = DEVELOPER_DIR; };
 		35F9FC5D202776CC0052D67D /* lp.qvvv~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.qvvv~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
 		35F9FC5F202777D80052D67D /* LitterLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LitterLib.c; path = ../LitterLib/LitterLib.c; sourceTree = "<group>"; };
@@ -92,7 +91,6 @@
 				35F9FC4E202775020052D67D /* LitterLib */,
 				19C28FB4FE9D528D11CA2CBB /* Products */,
 				35F9FC4F202775560052D67D /* Frameworks */,
-				35BF42C02028865100F8BA3A /* qvvv~ copy-Info.plist */,
 			);
 			name = iterator;
 			sourceTree = "<group>";
@@ -436,7 +434,7 @@
 					"\"LITTER_USE_OBEX = 1\"",
 					"BROWN=1",
 				);
-				INFOPLIST_FILE = "qvvv~ copy-Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "lp.$(PRODUCT_SHORT_NAME)";
 				PRODUCT_SHORT_NAME = "pfff~";
@@ -457,7 +455,7 @@
 					"\"LITTER_USE_OBEX = 1\"",
 					"BROWN=1",
 				);
-				INFOPLIST_FILE = "qvvv~ copy-Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "lp.$(PRODUCT_SHORT_NAME)";
 				PRODUCT_SHORT_NAME = "pfff~";

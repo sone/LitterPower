@@ -665,8 +665,12 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 		// modification to the Voss algorithm made in this implementation.)
 		//
 		buf[0]			= buf[kMaxBuf];
-		buf[stride]		= (long) Taus88(NIL) / 4;			// ASSERT: stride = kMaxBuffer/2
-		buf[kMaxBuf]	= (long) Taus88(NIL) / 4;
+// ouch! in 32bit mode natural overflow of long is used to map to signed range! have to use 'int' in 64bit mode!?
+		//buf[stride]		= (long) Taus88(NIL) / 4;
+        buf[stride]		= (int) Taus88(NIL) / 4;
+            // ASSERT: stride = kMaxBuffer/2
+		//buf[kMaxBuf]	= (long) Taus88(NIL) / 4;
+        buf[kMaxBuf]	= (int) Taus88(NIL) / 4;
 							// Taking random values in the signed int equivalent of
 							// [-.25 .. .25) was a completely arbitrary decision made
 							// in the first implementation. It works well enough for

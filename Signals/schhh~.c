@@ -27,7 +27,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 
 
@@ -35,8 +35,14 @@
 
 const char*	kClassName		= "lp.shhh~";			// Class name
 
+#define LPAssistIn1			"Int (NN factor)"
+#define LPAssistOut1		"Signal (White noise)"
+
+const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
+
 const int	kMaxNN			= 31;
 
+/*
 	// Indices for STR# resource
 enum {
 	strIndexInNN		= lpStrIndexLastStandard + 1,
@@ -50,7 +56,7 @@ enum {
 	
 	outletWhite
 	};
-
+*/
 #pragma mark • Type Definitions
 
 
@@ -61,8 +67,10 @@ typedef struct {
 	t_pxobject		coreObject;
 	
 	int				nn;					// Number of bits to mask out
-	unsigned long	mask,				// Values depend on nn
-					offset;
+	//unsigned long	mask,				// Values depend on nn
+	//				offset;
+    t_uint32        mask,
+                    offset;
 	} tWhite;
 
 
@@ -82,8 +90,10 @@ static void	ShhhAssist(tWhite*, void* , long , long , char*);
 static void	ShhhInfo(tWhite*);
 
 	// MSP Messages
-static void	ShhhDSP(tWhite*, t_signal**, short*);
-static int*	ShhhPerform(int*);
+//static void	ShhhDSP(tWhite*, t_signal**, short*);
+//static int*	ShhhPerform(int*);
+void ShhhDSP64(tWhite*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void ShhhPerform64(tWhite*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -103,14 +113,14 @@ static int*	ShhhPerform(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
-	
+	//LITTER_CHECKTIMEOUT(kClassName);
+	t_class *c;
+        
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,
 			(method) ShhhNew,			// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(tWhite),				// Class object size
@@ -118,22 +128,28 @@ main(void)
 			A_DEFLONG,					// Optional arguments:	1. NN Factor
 			0);		
 	
-	dsp_initclass();
+	//dsp_initclass();
+        class_dspinit(c);
 
 	// Messages
-	addint	((method) ShhhNN);
-	addmess	((method) ShhhTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) ShhhTattle,	"tattle",	A_NOTHING);
-	addmess	((method) ShhhAssist,	"assist",	A_CANT, 0);
-	addmess	((method) ShhhInfo,		"info",		A_CANT, 0);
+	//class_addmethod(c, (method) ShhhNN);    // something is missing here, no?
+    class_addmethod(c, (method) ShhhNN,     "int",      A_LONG, 0);
+	class_addmethod(c, (method) ShhhTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) ShhhTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c, (method) ShhhAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) ShhhInfo,	"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) ShhhDSP,		"dsp",		A_CANT, 0);
+	class_addmethod(c, (method) ShhhDSP64,		"dsp64",		A_CANT, 0);
 
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
 	Taus88Init();
 	
+        post("%s: %s", kClassName, lpversion);
+        return 0;
 	}
 
 
@@ -157,7 +173,8 @@ ShhhNew(
 	// Default NN value doesn't need massaging
 
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (tWhite*) newobject(gObjectClass);
+	//me = (tWhite*) newobject(gObjectClass);
+      me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 1);				// Signal inlet for benefit of begin~
 													// Otherwise left inlet does "NN" only
 	outlet_new(me, "signal");
@@ -193,8 +210,8 @@ void ShhhNN(
 	else {
 		if (iNN > kMaxNN)
 			iNN = kMaxNN;
-		me->nn		= iNN;
-		me->mask	= kULongMax << iNN;
+		me->nn		= (int)iNN;
+		me->mask	= kULongMax << (t_uint32)iNN;
 		me->offset	= (~me->mask) >> 1;
 		}
 	
@@ -237,7 +254,19 @@ void ShhhAssist(tWhite* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInNN, strIndexOutWhite, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInNN, strIndexOutWhite, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void ShhhInfo(tWhite* me)
@@ -255,7 +284,7 @@ void ShhhInfo(tWhite* me)
  *	ShhhDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 ShhhDSP(
 	tWhite*		me,
@@ -271,50 +300,29 @@ ShhhDSP(
 		);
 	
 	}
-	
-
-/******************************************************************************************
- *
- *	ShhhPerform(iParams)
- *
- *	Parameter block for PerformSync contains 8 values:
- *		- Address of this function
- *		- The performing schhh~ object
- *		- Vector size
- *		- output signal
- *		- Imaginary output signal
- *
- ******************************************************************************************/
-
-int*
-ShhhPerform(
-	int iParams[])
+*/
+void ShhhDSP64(tWhite* me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags) {
+    object_method(dsp64, gensym("dsp_add64"), me, ShhhPerform64, 0, NULL);
+    
+}
+void ShhhPerform64(tWhite* me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
 	
 	{
-	enum {
-		paramFuncAddress	= 0,
-		paramMe,
-		paramVectorSize,
-		paramOut,
-		
-		paramNextLink
-		};
 	
-	long			vecCounter;
+	t_uint32			vecCounter;
 	tSampleVector	outNoise;
-	tWhite*			me = (tWhite*) iParams[paramMe];
+	//tWhite*			me = (tWhite*) iParams[paramMe];
 	
-	if (me->coreObject.z_disabled) goto exit;
+	if (me->coreObject.z_disabled) return;
 	
 	// Copy parameters into registers
-	vecCounter	= (long) iParams[paramVectorSize];
-	outNoise	= (tSampleVector) iParams[paramOut];
+        vecCounter	= (t_uint32)sampleframes;
+	outNoise	= outs[0];
 	
 	// Do our stuff
 	if (me->nn == 0)
 			Taus88SigVector(outNoise, vecCounter);
 	else	Taus88SigVectorMasked(outNoise, vecCounter, me->mask, me->offset);
 	
-exit:
-	return iParams + paramNextLink;
+
 	}

@@ -24,6 +24,21 @@
 			<key>orderHint</key>
 			<integer>4</integer>
 		</dict>
+		<key>Pink (McCartney).xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>8</integer>
+		</dict>
+		<key>Pink (Voss).xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>7</integer>
+		</dict>
+		<key>White.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>6</integer>
+		</dict>
 		<key>brown (pfff~).xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -43,6 +58,21 @@
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>2FBBEAD608F335360078DB84</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>355ECEC3202A11D2002E46E9</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>355ECED9202A27B4002E46E9</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>355ECEEE202A28B6002E46E9</key>
 		<dict>
 			<key>primary</key>
 			<true/>

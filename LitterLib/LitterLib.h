@@ -187,7 +187,8 @@ enum CategoryClass {
 	// Some constants we need. This stuff is simple enough to handle with macros
 // vb: had to change these from long to int to make pfff~ work - ok???
 #ifndef kULongMax
-	#define kULongMax			((unsigned long) 0xffffffff)
+	//#define kULongMax			((unsigned long) 0xffffffff)
+    #define kULongMax			((unsigned int) 0xffffffff)
 	//#define kLongMax			((long) 0x7fffffff)
     #define kLongMax			((int) 0x7fffffff)
 	//#define kLongMin			((long) 0x80000000)

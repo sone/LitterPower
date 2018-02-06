@@ -26,7 +26,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 
@@ -34,6 +34,12 @@
 #pragma mark • Constants
 
 const char*			kClassName		= "lp.sss~";			// Class name
+
+#define LPAssistIn1			"Int (NN factor)"
+#define LPAssistOut1		"Signal (Pink noise)"
+
+const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
+
 
 #ifdef __MWERKS__
 	const int			kArraySize		= 32,
@@ -44,7 +50,7 @@ const char*			kClassName		= "lp.sss~";			// Class name
 	#define kArraySize	32
 	#define kMaxNN		31
 #endif
-
+/*
 	// Indices for STR# resource
 enum {
 	strIndexInNN		= lpStrIndexLastStandard + 1,
@@ -59,6 +65,7 @@ enum {
 	
 	outletPink
 	};
+ */
 
 #pragma mark • Type Definitions
 
@@ -71,10 +78,16 @@ typedef struct {
 	
 	unsigned short	counter;
 	int				nn;					// Number of bits to mask out
+    /*
 	unsigned long	mask,				// Value depends on nn
 					offset,				// ditto
 					sum,
 					dice[kArraySize];
+     */
+    t_uint32        mask,				// Value depends on nn
+                    offset,				// ditto
+                    sum,
+                    dice[kArraySize];
 	} tPink;
 
 
@@ -94,8 +107,10 @@ static void	SssAssist(tPink*, void* , long , long , char*);
 static void	SssInfo(tPink*);
 
 	// MSP Messages
-static void	SssDSP(tPink*, t_signal**, short*);
-static int*	SssPerform(int*);
+//static void	SssDSP(tPink*, t_signal**, short*);
+//static int*	SssPerform(int*);
+void SssDSP64(tPink*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void SssPerform64(tPink*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -115,14 +130,14 @@ static int*	SssPerform(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,
 			(method) SssNew,			// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(tPink),				// Class object size
@@ -130,21 +145,27 @@ main(void)
 			A_DEFLONG,					// Optional arguments:	1. NN Factor
 			0);		
 	
-	dsp_initclass();
+	//dsp_initclass();
+        class_dspinit(c);
 
 	// Messages
-	addint	((method) SssNN);
-	addmess	((method) SssTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) SssTattle,	"tattle",	A_NOTHING);
-	addmess	((method) SssAssist,	"assist",	A_CANT, 0);
-	addmess	((method) SssInfo,		"info",		A_CANT, 0);
+	class_addmethod(c, (method) SssNN,      "int",      A_LONG, 0);
+	class_addmethod(c, (method) SssTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) SssTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c, (method) SssAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) SssInfo,	"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) SssDSP,		"dsp",		A_CANT, 0);
+	class_addmethod(c, (method) SssDSP64,	"dsp64",	A_CANT, 0);
 
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
 	Taus88Init();
+        
+        post("%s: %s", kClassName, lpversion);
+        return 0;
 	
 	}
 
@@ -164,8 +185,8 @@ main(void)
 	static void InitDice(tPink* me)
 		{
 		int				i		= kArraySize;
-		unsigned long	sum		= 0;
-		unsigned long*	curDie	= me->dice;
+		t_uint32	sum		= 0;
+		t_uint32*	curDie	= me->dice;
 		
 		do { sum += *curDie++ = Taus88(NULL) / kArraySize; }
 			while (--i > 0);
@@ -184,7 +205,7 @@ SssNew(
 	// Default NN value doesn't need massaging
 
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (tPink*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 1);				// Signal inlet for benefit of begin~
 													// Otherwise left inlet does "NN" only
 	outlet_new(me, "signal");
@@ -222,7 +243,7 @@ void SssNN(
 	else {
 		if (iNN > kMaxNN)
 			iNN = kMaxNN;
-		me->nn		= iNN;
+		me->nn		= (t_uint32)iNN;
 		me->mask	= kULongMax << iNN;
 		me->offset	= (~me->mask) >> 1;
 		}
@@ -266,7 +287,19 @@ void SssAssist(tPink* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInNN, strIndexOutPink, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInNN, strIndexOutPink, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void SssInfo(tPink* me)
@@ -280,7 +313,7 @@ void SssInfo(tPink* me)
  *	SssDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 SssDSP(
 	tPink*		me,
@@ -295,50 +328,30 @@ SssDSP(
 		me, (long) ioDSPVectors[outletPink]->s_n, ioDSPVectors[outletPink]->s_vec
 		);
 	
-	}
-	
+	}*/
 
-/******************************************************************************************
- *
- *	PerformWhite(iParams)
- *
- *	Parameter block for PerformSync contains 8 values:
- *		- Address of this function
- *		- The performing schhh~ object
- *		- Vector size
- *		- output signal
- *		- Imaginary output signal
- *
- ******************************************************************************************/
+void SssDSP64(tPink* me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags) {
+    
+    object_method(dsp64, gensym("dsp_add64"), me, SssPerform64, 0, NULL);
+}
 
-int*
-SssPerform(
-	int* iParams)
-	
+void SssPerform64(tPink* me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
 	{
-	enum {
-		paramFuncAddress	= 0,
-		paramMe,
-		paramVectorSize,
-		paramOut,
-		
-		paramNextLink
-		};
-	
+        
 	long			vecCounter;
 	tSampleVector	outNoise;
-	tPink*			me = (tPink*) iParams[paramMe];
-	unsigned long*	firstDie;
-	unsigned long	sum,
+	//unsigned long*	firstDie;
+    t_uint32*       firstDie;
+	t_uint32        sum,            // unsigned long
 					mask,
 					offset;
 	unsigned short	counter;				// Must be 16-bit value to match "dice" array
 	
-	if (me->coreObject.z_disabled) goto exit;
+	if (me->coreObject.z_disabled) return;
 	
 	// Copy parameters into registers
-	vecCounter	= (long) iParams[paramVectorSize];
-	outNoise	= (tSampleVector) iParams[paramOut];
+	vecCounter	= sampleframes;
+	outNoise	= outs[0];
 	sum			= me->sum;
 	firstDie	= me->dice;
 	mask		= me->mask;
@@ -347,7 +360,8 @@ SssPerform(
 	
 	// Do our stuff
 	do {
-		unsigned long*		curDie		= firstDie;
+		//unsigned long*		curDie		= firstDie;
+        t_uint32*           curDie		= firstDie;
 		int				 	bitCount	= CountBits(counter);
 		unsigned			bit			= 0x01;
 		
@@ -403,6 +417,4 @@ SssPerform(
 	me->sum		= sum;
 	me->counter	= counter;
 	
-exit:
-	return iParams + paramNextLink;
 	}

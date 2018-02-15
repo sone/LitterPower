@@ -33,20 +33,14 @@ Previous history:
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
-
-#ifdef __MWERKS__
-	// Used to need to include this for CodeWarrior
-	// GCC doesn't know about it, and whatever's needed is #included anyway
-	#include <cfloat>			// For FLT_EPSILON
-#endif
-
 #include <math.h>			// For fabs(), log()
 
 #pragma mark • Constants
 
 	// These are common to all varieties
 const char	kClassName[]		= "lp.poppy";			// Class name
+
+const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 	// The following three macros used to be "properly" defined as const doubles, but with
 	// changes to <cfloat> I can't figure out how to assign the new value of FLT_EPSILON
@@ -82,7 +76,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object			coreObject;
+	t_object		coreObject;
 	
 	double			seed,
 					curPop,
@@ -97,22 +91,18 @@ typedef struct {
 	} tPoppy;
 
 
-#pragma mark • Global Variables
-
-//t_messlist*	gPoppyClass		= NIL;
-
 
 #pragma mark • Function Prototypes
 
 	// Class message functions
-void*		NewPoppy(Symbol*, short, Atom*);
+void*		NewPoppy(t_symbol*, short, t_atom*);
 void		FreePoppy(tPoppy*);
 
 	// Object message functions
 static void DoBang(tPoppy*);
 static void Do1Rate(tPoppy*, double);					// Rate can be a single float...
-static void DoRates(tPoppy*, Symbol*, short, Atom*);	// ... or a list
-static void DoSet(tPoppy*, Symbol*, short, Atom*);
+static void DoRates(tPoppy*, t_symbol*, short, t_atom*);	// ... or a list
+static void DoSet(tPoppy*, t_symbol*, short, t_atom*);
 static void DoSeed(tPoppy*, double);
 static void DoReset(tPoppy*);
 
@@ -122,7 +112,7 @@ static void	DoInfo(tPoppy*);
 
 	// Helper methods
 static void Set1Rate(tPoppy*, double);
-static Boolean SetRates(tPoppy*, short, Atom*);
+static Boolean SetRates(tPoppy*, short, t_atom*);
 
 #pragma mark -
 /*****************************  I M P L E M E N T A T I O N  ******************************/
@@ -142,14 +132,13 @@ static inline double NextPop(double iPop, double iGrowth)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,
 			(method) NewPoppy,			// Instance creation function
 			(method) FreePoppy,			// Custom deallocation function
 			sizeof(tPoppy),				// Class object size
@@ -158,21 +147,26 @@ main(void)
 			0);							//		followed by list of Growth Rates
 		
 	// Messages
-	LITTER_TIMEBOMB	addbang	((method) DoBang);
-	LITTER_TIMEBOMB	addfloat((method) Do1Rate);
-	LITTER_TIMEBOMB	addmess	((method) DoRates,	"list",		A_GIMME, 0);
-	addmess	((method) DoSet,	"set",		A_GIMME, 0);
-	addftx	((method) DoSeed,	1);
-	addmess	((method) DoReset,	"reset",	A_NOTHING);
+	class_addmethod(c, (method) DoBang,     "bang", 0);
+	class_addmethod(c, (method) Do1Rate,    "float",    A_FLOAT, 0);
+	class_addmethod(c, (method) DoRates,	"list",		A_GIMME, 0);
+	class_addmethod(c, (method) DoSet,      "set",		A_GIMME, 0);
+	class_addmethod(c, (method) DoSeed,     "ft1",      A_FLOAT, 0);
+	class_addmethod(c, (method) DoReset,	"reset",	A_NOTHING);
 	
-	addmess	((method) DoTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) DoTattle,	"tattle",	A_NOTHING);
-	addmess	((method) DoAssist,	"assist",	A_CANT, 0);
-	addmess	((method) DoInfo,	"info",		A_CANT, 0);
+	class_addmethod(c, (method) DoTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) DoTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c, (method) DoAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) DoInfo,     "info",		A_CANT, 0);
 	
 		
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, lpversion);
+        return 0;
 	
 	}
 
@@ -194,9 +188,9 @@ main(void)
 
 void*
 NewPoppy(
-	Symbol*	sym,
+	t_symbol*	sym,
 	short	iArgC,
-	Atom*	iArgV)
+	t_atom*	iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -204,14 +198,14 @@ NewPoppy(
 	tPoppy*	me			= NIL;
 	double	seed		= kDefSeed,
 			growth		= kDefGrowth;
-	long	cycleLen	= kMinCycle,
-			allocation	= 0;
-	float*	rates		= NIL;
+	//long	cycleLen	= kMinCycle,
+	//		allocation	= 0;
+	//float*	rates		= NIL;
 	
 	//
 	// Let Max allocate us, our inlets, and outlets
 	//
-	me = (tPoppy*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 		if (me == NIL) goto punt;
 	
 		// One extra inlet
@@ -235,9 +229,9 @@ NewPoppy(
 		// Check if there is more than one argument. In this case, the last argument is
 		// a seed, which we chop from the list
 	if (iArgC > 1) {
-		Atom* seedAtom = iArgV + --iArgC;
+		t_atom* seedAtom = iArgV + --iArgC;
 		if ( ParseAtom(seedAtom, false, true, 0, NIL, NIL) ) {
-			seed = seedAtom->a_w.w_float;
+            seed = atom_getfloat(seedAtom); //seedAtom->a_w.w_float;
 			}
 		}
 	DoSeed(me, seed);
@@ -245,7 +239,7 @@ NewPoppy(
 	switch (iArgC) {
 		case 1:
 			if ( ParseAtom(iArgV, false, true, 0, NIL, NIL) )
-				growth = iArgV->a_w.w_float;
+                growth = atom_getfloat(iArgV);  //iArgV->a_w.w_float;
 			// fall into next case
 		case 0:
 			Set1Rate(me, growth);
@@ -354,7 +348,7 @@ DoBang(
 		me->curElem		= 0;
 		}
 	
-	static Boolean SetRates(tPoppy* me, short iArgC, Atom* iArgV)
+	static Boolean SetRates(tPoppy* me, short iArgC, t_atom* iArgV)
 		{
 		long	allocation = iArgC * sizeof(float);
 				// We could check for (iArgC < 8096), but that seems unnecessarily
@@ -364,11 +358,11 @@ DoBang(
 		// Only allocate new memory if we don't already have enough
 		if (allocation > me->allocation) {
 			// Make sure we can allocate before dropping any memory we have.
-			float*	rates = (float*) getbytes(allocation);
+			float*	rates = (float*) sysmem_newptr(allocation);
 					if (rates == NIL) goto punt;
 			
 			if (me->rates != NIL)
-				freebytes(me->rates, me->allocation);
+				sysmem_freeptr(me->rates);
 			
 			me->rates		= rates;
 			me->allocation	= allocation;
@@ -416,9 +410,9 @@ Do1Rate(
 static void
 DoRates(
 	tPoppy*	me,
-	Symbol*	sym,			// Will be either list or nil symbol, but we don't care.
+	t_symbol*	sym,			// Will be either list or nil symbol, but we don't care.
 	short	iArgC,
-	Atom*	iArgV)
+	t_atom*	iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -430,9 +424,9 @@ DoRates(
 static void
 DoSet(
 	tPoppy*	me,
-	Symbol*	sym,			// Will be set symbol, but we don't care.
+	t_symbol*	sym,			// Will be set symbol, but we don't care.
 	short	iArgC,
-	Atom*	iArgV)
+	t_atom*	iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -441,7 +435,7 @@ DoSet(
 		SetRates(me, iArgC, iArgV);
 	else {
 		double growth = (iArgC > 0 && ParseAtom(iArgV, false, true, 0, NIL, NIL))
-							? iArgV->a_w.w_float
+							? atom_getfloat(iArgV)      //iArgV->a_w.w_float
 							: kDefGrowth;
 		Set1Rate(me, growth);
 		}
@@ -523,7 +517,7 @@ void DoAssist(tPoppy* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
 	}
 
 void DoInfo(tPoppy* me)

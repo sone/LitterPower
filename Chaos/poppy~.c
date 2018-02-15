@@ -37,16 +37,13 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
-
-#ifdef __MWERKS__
-	#include <cfloat>									// For FLT_EPSILON
-#endif													// Don't seem to need for GCC
 
 
 #pragma mark • Constants
 
 const char	kClassName[]	= "lp.poppy~";			// Class name
+
+const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 
 
@@ -110,7 +107,7 @@ typedef struct {
 #pragma mark • Function Prototypes
 
 	// Class message functions
-void*		NewPoppy(Symbol*, short, Atom*);
+void*		NewPoppy(t_symbol*, short, t_atom*);
 
 	// Object message functions
 static void DoGrowth(tPoppy*, double);
@@ -124,9 +121,13 @@ static void	DoAssist(tPoppy*, void* , long , long , char*);
 static void	DoInfo(tPoppy*);
 
 	// MSP Messages
-static void	DoDSP(tPoppy*, t_signal**, short*);
-static int*	PerformPoppyDynamic(int*);
-static int*	PerformPoppyStatic(int*);
+//static void	DoDSP(tPoppy*, t_signal**, short*);
+//static int*	PerformPoppyDynamic(int*);
+//static int*	PerformPoppyStatic(int*);
+
+void DoDSP(tPoppy*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void Perform64Dynamic(tPoppy*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
+void Perform64Static(tPoppy*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 /*****************************  I M P L E M E N T A T I O N  ******************************/
@@ -163,14 +164,13 @@ static inline double QuadSlope(double iNow, double iGoal, unsigned long iSteps, 
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
-	
+	t_class *c;
+        
 	// Standard Max setup() call
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,
 			(method) NewPoppy,			// Instance creation function
 			(method) dsp_free,			// Std. MSP deallocation function
 			sizeof(tPoppy),				// Class object size
@@ -182,25 +182,32 @@ main(void)
 										// list, but the original design required A_GIMME
 										// handling, so we'll stick to this approach.
 										 
-	dsp_initclass();
+	//dsp_initclass();
+        class_dspinit(c);
 	
 	// Messages
-	addfloat((method) DoGrowth);
-	addftx	((method) DoSeed,		1);
-	addftx	((method) DoBaseFreq,	2);
-	addinx	((method) DoInterp,		3);
+	class_addmethod(c, (method) DoGrowth,   "float", A_FLOAT, 0);
+	class_addmethod(c, (method) DoSeed,     "ft1",  A_FLOAT, 0);
+	class_addmethod(c, (method) DoBaseFreq, "ft2",  A_FLOAT, 0);
+	class_addmethod(c, (method) DoInterp,   "in3",  A_LONG, 0);
 	
-	addmess	((method) DoReset,	"reset",	A_NOTHING);
-	addmess	((method) DoTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) DoTattle,	"tattle",	A_NOTHING);
-	addmess	((method) DoAssist,	"assist",	A_CANT, 0);
-	addmess	((method) DoInfo,	"info",		A_CANT, 0);
+	class_addmethod(c, (method) DoReset,	"reset",	A_NOTHING);
+	class_addmethod(c, (method) DoTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) DoTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c, (method) DoAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) DoInfo,     "info",		A_CANT, 0);
 	
 	// MSP messages
-	LITTER_TIMEBOMB addmess	((method) DoDSP,	"dsp",	A_CANT, 0);
+	class_addmethod(c, (method) DoDSP,	"dsp64",	A_CANT, 0);
 
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, lpversion);
+        return 0;
 
 	}
 
@@ -264,9 +271,9 @@ static inline void UpdateBaseFreq(tPoppy* me)
 
 void*
 NewPoppy(
-	Symbol*	sym,
+	t_symbol*	sym,
 	short	iArgC,
-	Atom*	iArgV)
+	t_atom*	iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -316,7 +323,7 @@ NewPoppy(
 	// Let Max allocate us, our inlets, and outlets
 	//
 	
-	me = (tPoppy*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 		if (me == NIL) goto punt;
 	dsp_setup(&(me->coreObject), 1);			// Rate inlet is the only one accepting
 												// signal vectors
@@ -551,44 +558,35 @@ void DoInfo(tPoppy* me)
  *
  ******************************************************************************************/
 
-void
-DoDSP(
-	tPoppy*		me,
-	t_signal**	iDSPVectors,
-	short*		iConnectCounts)
-	
-	{
-	enum {
-		inletGrowth			= 0,
-		outletPoppy
-		};
+void DoDSP(tPoppy* me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
 
+	{
 	
-	if (iConnectCounts[outletPoppy] == 0)
-		return;
+	//if (count[outletPoppy] == 0) // ??
+		//return;
 	
-	me->curSR = iDSPVectors[outletPoppy]->s_sr;
+	me->curSR = samplerate;
 	UpdateBaseFreq(me);
 	
-	if ( iConnectCounts[inletGrowth] > 0 ) {
+	if ( count[0] > 0 ) {
 	
-		dsp_add(
+		/*dsp_add(
 			PerformPoppyDynamic, 4, me,
 			(long) iDSPVectors[outletPoppy]->s_n,
 			iDSPVectors[inletGrowth]->s_vec,
 			iDSPVectors[outletPoppy]->s_vec
-			);
-		
+			);*/
+		object_method(dsp64, gensym("dsp_add64"), me, Perform64Dynamic, 0, NULL);
 		}
 	
 	else {
 		
-		dsp_add(
+		/*dsp_add(
 			PerformPoppyStatic, 3, me, 
 			(long) iDSPVectors[outletPoppy]->s_n,
 			iDSPVectors[outletPoppy]->s_vec
-			);
-		
+			);*/
+		object_method(dsp64, gensym("dsp_add64"), me, Perform64Static, 0, NULL);
 		}
 	
 	}
@@ -606,6 +604,7 @@ DoDSP(
  *		- Address of the next link in the parameter chain
  *
  ******************************************************************************************/
+
 
 	static void PoppyStat1Step(tPoppy* me, long iVecSize, tSampleVector oPoppy)
 		{
@@ -837,25 +836,16 @@ DoDSP(
 		me->slope		= slope;
 		}
 
-int*
-PerformPoppyStatic(
-	int* iParams)
-	
+
+void Perform64Static(tPoppy* me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+
 	{
-	enum {
-		paramFuncAddress	= 0,
-		paramMe,
-		paramVectorSize,
-		paramOut,
-		
-		paramNextLink
-		};
 	
 	unsigned long	spc;
 	tInterp			interp;
-	tPoppy*			me = (tPoppy*) iParams[paramMe];
+	//tPoppy*			me = (tPoppy*) iParams[paramMe];
 	
-	if (me->coreObject.z_disabled) goto exit;
+	if (me->coreObject.z_disabled) return;
 	
 	// Copy parameters into registers
 	spc			= me->spc;
@@ -865,43 +855,41 @@ PerformPoppyStatic(
 		case 1:
 			// We don't need to worry about interpolation
 			PoppyStat1Step(
-				me, (long) iParams[paramVectorSize], (tSampleVector) iParams[paramOut]);
+				me, (long) sampleframes, (tSampleVector) outs[0]);
 			break;
 		
 		case 2:
 			// We can optimize interpolation
 			PoppyStat2Step(
-				me, (long) iParams[paramVectorSize], interp, (tSampleVector) iParams[paramOut]);
+				me, (long) sampleframes, interp, (tSampleVector) outs[0]);
 			break;
 		
 		default:
 			switch (me->interp) {
 				case interpNone:
 					PoppyStatNoInterp(
-						me, (long) iParams[paramVectorSize], spc, (tSampleVector) iParams[paramOut]);
+						me, (long) sampleframes, spc, (tSampleVector) outs[0]);
 					break;
 				
 				case interpQuad:
 					PoppyStatQuad(
-						me, (long) iParams[paramVectorSize], spc, (tSampleVector) iParams[paramOut]);
+						me, (long) sampleframes, spc, (tSampleVector) outs[0]);
 					break;
 				
 				case interpLin:
 					PoppyStatLin
-						(me, (long) iParams[paramVectorSize], spc, (tSampleVector) iParams[paramOut]);
+						(me, (long) sampleframes, spc, (tSampleVector) outs[0]);
 					break;
 				
 				default:
 					// Must be interpGeo
 					PoppyStatGeo(
-						me, (long) iParams[paramVectorSize], spc, (tSampleVector) iParams[paramOut]);
+						me, (long) sampleframes, spc, (tSampleVector) outs[0]);
 					break;
 				}
 			break;
 		}
 			
-exit:
-	return iParams + paramNextLink;
 	}
 
 
@@ -1164,9 +1152,7 @@ exit:
 		}
 
 
-int*
-PerformPoppyDynamic(
-	int* iParams)
+void Perform64Dynamic(tPoppy* me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
 	
 	{
 	enum {
@@ -1181,9 +1167,9 @@ PerformPoppyDynamic(
 	
 	unsigned long	spc;
 	tInterp			interp;
-	tPoppy*			me = (tPoppy*) iParams[paramMe];
+	//tPoppy*			me = (tPoppy*) iParams[paramMe];
 	
-	if (me->coreObject.z_disabled) goto exit;
+	if (me->coreObject.z_disabled) return;
 	
 	// Copy parameters into registers
 	spc			= me->spc;
@@ -1193,18 +1179,18 @@ PerformPoppyDynamic(
 		case 1:
 			// We don't need to worry about interpolation
 			PoppyDyn1Step(	me,
-							(long) iParams[paramVectorSize],
-							(tSampleVector) iParams[paramGrowth],
-							(tSampleVector) iParams[paramOut] );
+							(long) sampleframes,
+							(tSampleVector) ins[0],
+							(tSampleVector) outs[0] );
 			break;
 		
 		case 2:
 			// We can optimize interpolation
 			PoppyDyn2Step(	me,
-							(long) iParams[paramVectorSize],
+							(long) sampleframes,
 							interp,
-							(tSampleVector) iParams[paramGrowth],
-							(tSampleVector) iParams[paramOut] );
+							(tSampleVector) ins[0],
+							(tSampleVector) outs[0] );
 			break;
 		
 		default:
@@ -1212,40 +1198,38 @@ PerformPoppyDynamic(
 				case interpNone:
 					PoppyDynNoInterp(
 									me,
-									(long) iParams[paramVectorSize],
+									(long) sampleframes,
 									spc,
-									(tSampleVector) iParams[paramGrowth],
-									(tSampleVector) iParams[paramOut]);
+									(tSampleVector) ins[0],
+									(tSampleVector) outs[0]);
 					break;
 				
 				case interpLin:
 					PoppyDynLin(	me,
-									(long) iParams[paramVectorSize],
+									(long) sampleframes,
 									spc,
-									(tSampleVector) iParams[paramGrowth],
-									(tSampleVector) iParams[paramOut]);
+									(tSampleVector) ins[0],
+									(tSampleVector) outs[0]);
 					break;
 				
 				case interpQuad:
 					PoppyDynQuad(	me,
-									(long) iParams[paramVectorSize],
+									(long) sampleframes,
 									spc,
-									(tSampleVector) iParams[paramGrowth],
-									(tSampleVector) iParams[paramOut]);
+									(tSampleVector) ins[0],
+									(tSampleVector) outs[0]);
 					break;
 				
 				default:
 					// Must be interpGeo
 					PoppyDynGeo(	me,
-									(long) iParams[paramVectorSize],
+									(long) sampleframes,
 									spc,
-									(tSampleVector) iParams[paramGrowth],
-									(tSampleVector) iParams[paramOut]);
+									(tSampleVector) ins[0],
+									(tSampleVector) outs[0]);
 					break;
 				}
 			break;
 		}
 	
-exit:
-	return iParams + paramNextLink;
 	}

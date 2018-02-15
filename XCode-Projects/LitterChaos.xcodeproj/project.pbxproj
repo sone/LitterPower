@@ -15,11 +15,8 @@
 		04E4A0E50A95BF98004B0E9C /* ccc.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A0E00A95BF98004B0E9C /* ccc.c */; };
 		04E4A0EE0A95D527004B0E9C /* ccc~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A0E10A95BF98004B0E9C /* ccc~.c */; };
 		04E4A0F30A95D7F5004B0E9C /* poppy.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A0E30A95BF98004B0E9C /* poppy.c */; };
-		04E4A0F40A95D7FA004B0E9C /* poppy.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A0D50A95BDA4004B0E9C /* poppy.r */; };
 		04E4A0F60A95D8B3004B0E9C /* poppy~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A0E40A95BF98004B0E9C /* poppy~.c */; };
-		04E4A0F70A95D8B8004B0E9C /* poppy~.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A0D60A95BDA4004B0E9C /* poppy~.r */; };
 		04E4A0FC0A95D90A004B0E9C /* lya.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A0E20A95BF98004B0E9C /* lya.c */; };
-		04E4A0FD0A95D910004B0E9C /* lya.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A0D40A95BDA4004B0E9C /* lya.r */; };
 		35C401842035D2CE0033221D /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 35C4017E2035D2CE0033221D /* LitterLib.c */; };
 		35C401852035D2CE0033221D /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 35C4017E2035D2CE0033221D /* LitterLib.c */; };
 		35C401862035D2CE0033221D /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 35C4017E2035D2CE0033221D /* LitterLib.c */; };
@@ -254,13 +251,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 042BE9D80A94F6B80008B638 /* Build configuration list for PBXNativeTarget "Population Grown/Signals (UB)" */;
 			buildPhases = (
-				042BE9CB0A94F6B80008B638 /* ShellScript */,
 				042BE9CC0A94F6B80008B638 /* Headers */,
 				042BE9CD0A94F6B80008B638 /* Resources */,
 				042BE9CE0A94F6B80008B638 /* Sources */,
 				042BE9D20A94F6B80008B638 /* Frameworks */,
-				042BE9D50A94F6B80008B638 /* Rez */,
-				042BE9D70A94F6B80008B638 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -276,13 +270,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 042BEAAE0A94FAB20008B638 /* Build configuration list for PBXNativeTarget "Population Growth/Control (UB)" */;
 			buildPhases = (
-				042BEAA00A94FAB20008B638 /* ShellScript */,
 				042BEAA10A94FAB20008B638 /* Headers */,
 				042BEAA20A94FAB20008B638 /* Resources */,
 				042BEAA30A94FAB20008B638 /* Sources */,
 				042BEAA80A94FAB20008B638 /* Frameworks */,
-				042BEAAB0A94FAB20008B638 /* Rez */,
-				042BEAAD0A94FAB20008B638 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -336,13 +327,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 042BEBB90A9502A20008B638 /* Build configuration list for PBXNativeTarget "Lyapunov/Control (UB)" */;
 			buildPhases = (
-				042BEBAB0A9502A20008B638 /* ShellScript */,
 				042BEBAC0A9502A20008B638 /* Headers */,
 				042BEBAD0A9502A20008B638 /* Resources */,
 				042BEBAE0A9502A20008B638 /* Sources */,
 				042BEBB30A9502A20008B638 /* Frameworks */,
-				042BEBB60A9502A20008B638 /* Rez */,
-				042BEBB80A9502A20008B638 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -419,123 +407,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXRezBuildPhase section */
-		042BE9D50A94F6B80008B638 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A0F70A95D8B8004B0E9C /* poppy~.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		042BEAAB0A94FAB20008B638 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A0F40A95D7FA004B0E9C /* poppy.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		042BEBB60A9502A20008B638 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A0FD0A95D910004B0E9C /* lya.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXRezBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		042BE9CB0A94F6B80008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Chaos/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Chaos/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Chaos/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/Resources/Chaos/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		042BE9D70A94F6B80008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Starter/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallSPIcon.bash;
-		};
-		042BEAA00A94FAB20008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Chaos/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Chaos/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Chaos/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/Resources/Chaos/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		042BEAAD0A94FAB20008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Starter/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallSPIcon.bash;
-		};
-		042BEBAB0A9502A20008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Chaos/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Chaos/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Chaos/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/Resources/Chaos/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		042BEBB80A9502A20008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Pro/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallIcon.bash;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		042BE9CE0A94F6B80008B638 /* Sources */ = {
@@ -806,7 +677,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Chaos/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/externals";
 				LIBRARY_STYLE = Bundle;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
@@ -882,7 +753,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Chaos/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/externals";
 				LIBRARY_STYLE = Bundle;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -949,7 +820,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Chaos/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/externals";
 				LIBRARY_STYLE = Bundle;
 				OTHER_LDFLAGS = (
 					"-framework",

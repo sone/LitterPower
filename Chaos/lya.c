@@ -28,17 +28,13 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
-
-#ifdef __MWERKS__
-	#include <cfloat>		// For FLT_EPSILON
-#endif
-
 #include <math.h>			// For fabs(), log()
 
 #pragma mark • Constants
 
 const char	kClassName[]		= "lp.lya";			// Class name
+
+const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 
 	// The following macro used to be "properly" defined as const doubles, but with
@@ -79,7 +75,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object			coreObject;
+	t_object		coreObject;
 	
 	double			growth,				// Used for single-value growth rate
 					lya;				// Lyapunov exponent
@@ -107,8 +103,8 @@ void		FreeLya(tLya*);
 	// Object message functions
 static void DoBang(tLya*);
 static void Do1Rate(tLya*, double);					// Rate can be a single float...
-static void DoRates(tLya*, Symbol*, short, Atom*);	// ... or a list
-static void DoSet(tLya*, Symbol*, short, Atom*);
+static void DoRates(tLya*, t_symbol*, short, t_atom*);	// ... or a list
+static void DoSet(tLya*, t_symbol*, short, t_atom*);
 static void DoPrecision(tLya*, long);
 
 static void DoTattle(tLya*);
@@ -117,7 +113,7 @@ static void	DoInfo(tLya*);
 
 	// Helper methods
 static void		Set1Rate(tLya*, double);
-static Boolean	SetRates(tLya*, short, Atom*);
+static Boolean	SetRates(tLya*, short, t_atom*);
 
 #pragma mark -
 /*****************************  I M P L E M E N T A T I O N  ******************************/
@@ -135,14 +131,13 @@ static Boolean	SetRates(tLya*, short, Atom*);
  *	
  ******************************************************************************************/
 
-void
-main(void)				// Parameter is obsolete (68k legacy)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
-		
+        t_class *c;
+        
 	// Standard Max setup() call
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,
 			(method) NewLya,			// Instance creation function
 			(method) FreeLya,			// Custom deallocation function
 			sizeof(tLya),				// Class object size
@@ -151,19 +146,24 @@ main(void)				// Parameter is obsolete (68k legacy)
 			0);
 		
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) DoBang);
-	LITTER_TIMEBOMB addfloat((method) Do1Rate);
-	LITTER_TIMEBOMB addmess	((method) DoRates,	"list",		A_GIMME, 0);
-	addmess	((method) DoSet,	"set",		A_GIMME, 0);
-	addinx	((method) DoPrecision,	1);
+	class_addmethod(c, (method) DoBang, "bang", 0);
+	class_addmethod(c, (method) Do1Rate, "float", A_FLOAT, 0);
+	class_addmethod(c, (method) DoRates,	"list",		A_GIMME, 0);
+	class_addmethod(c, (method) DoSet,	"set",		A_GIMME, 0);
+	class_addmethod(c, (method) DoPrecision, "in1", A_LONG,	0);
 	
-	addmess	((method) DoTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) DoTattle,	"tattle",	A_NOTHING);
-	addmess	((method) DoAssist,	"assist",	A_CANT, 0);
-	addmess	((method) DoInfo,	"info",		A_CANT, 0);
+	class_addmethod(c, (method) DoTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) DoTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c, (method) DoAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) DoInfo,     "info",		A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, lpversion);
+        return 0;
 
 	}
 
@@ -191,7 +191,7 @@ NewLya(
 	//
 	// Let Max allocate us, our inlets, and outlets
 	//
-	me = (tLya*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 		if (me == NIL) goto punt;
 	
 		// One extra inlet
@@ -384,7 +384,7 @@ static void Set1Rate(tLya* me, double iGrowth)
 	me->lya = CalcLya1Rate(iGrowth, me->iter);
 	}
 
-static Boolean SetRates(tLya* me, short iArgC, Atom* iArgV)
+static Boolean SetRates(tLya* me, short iArgC, t_atom* iArgV)
 	{
 	long	allocation = iArgC * sizeof(float);
 			// We could check for (iArgC < 8096), but that seems unnecessarily
@@ -394,11 +394,14 @@ static Boolean SetRates(tLya* me, short iArgC, Atom* iArgV)
 	// Only allocate new memory if we don't already have enough
 	if (allocation > me->allocation) {
 		// Make sure we can allocate before dropping any memory we have.
-		float*	rates = (float*) getbytes(allocation);
+		//float*	rates = (float*) getbytes(allocation);
+        float*	rates = (float*) sysmem_newptr(allocation);
 				if (rates == NIL) goto punt;
 		
-		if (me->rates != NIL)
-			freebytes(me->rates, me->allocation);
+        if (me->rates != NIL) {
+			//freebytes(me->rates, me->allocation);
+            sysmem_freeptr(me->rates);
+        }
 		
 		me->rates		= rates;
 		me->allocation	= allocation;
@@ -430,7 +433,7 @@ static Boolean SetRates(tLya* me, short iArgC, Atom* iArgV)
 	
 punt:
 	// Cheesy exception handling
-	error("%s: couldn't allocate memory for %ld growth rates", kClassName, (long) iArgC);
+	object_error((t_object *)me, "couldn't allocate memory for %ld growth rates", (long) iArgC);
 	return false;
 	}
 
@@ -454,9 +457,9 @@ static void Do1Rate(tLya* me, double iGrowth)
 
 static void DoRates(
 				tLya*	me,
-				Symbol*	sym,			// Will be either list or nil symbol, but we don't care.
+				t_symbol*	sym,			// Will be either list or nil symbol, but we don't care.
 				short	iArgC,
-				Atom*	iArgV)
+				t_atom*	iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -466,9 +469,9 @@ static void DoRates(
 
 static void DoSet(
 			tLya*	me,
-			Symbol*	sym,			// Will be set symbol, but we don't care.
+			t_symbol*	sym,			// Will be set symbol, but we don't care.
 			short	iArgC,
-			Atom*	iArgV)
+			t_atom*	iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -477,7 +480,7 @@ static void DoSet(
 		SetRates(me, iArgC, iArgV);
 	else {
 		double growth = (iArgC > 0 && ParseAtom(iArgV, false, true, 0, NIL, NIL))
-							? iArgV->a_w.w_float
+							? atom_getfloat(iArgV)        // iArgV->a_w.w_float
 							: kDefGrowth;
 		Set1Rate(me, growth);
 		}
@@ -537,7 +540,7 @@ void DoAssist(tLya* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me,  box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
 	}
 
 void DoInfo(tLya* me)

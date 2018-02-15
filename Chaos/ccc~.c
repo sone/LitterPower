@@ -42,7 +42,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 
 //#include <float.h>
@@ -51,6 +51,8 @@
 #pragma mark • Constants
 
 const char*			kClassName		= "lp.ccc~";			// Class name
+
+const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 
 	// Indices for STR# resource
@@ -91,8 +93,8 @@ static void	CCCAssist(tPink*, void* , long , long , char*);
 static void	CCCInfo(tPink*);
 
 	// MSP Messages
-static void	BuildDSPChain(tPink*, t_signal**, short*);
-static int*	PerformPink(int*);
+void BuildDSPChain(tPink*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void PerformPink64(tPink*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -112,14 +114,14 @@ static int*	PerformPink(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
-	
+	//LITTER_CHECKTIMEOUT(kClassName);
+	t_class *c;
+        
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,
 			(method) CCCNew,			// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(tPink),				// Class object size
@@ -127,20 +129,24 @@ main(void)
 			A_NOTHING,					// No arguments
 			0);		
 	
-	dsp_initclass();
+	class_dspinit(c);
 	
 	// Messages
-	addmess	((method) CCCTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) CCCTattle,	"tattle",	A_NOTHING);
-	addmess	((method) CCCAssist,	"assist",	A_CANT, 0);
-	addmess	((method) CCCInfo,		"info",		A_CANT, 0);
+	class_addmethod(c, (method) CCCTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) CCCTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c, (method) CCCAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) CCCInfo,	"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) BuildDSPChain, "dsp",		A_CANT, 0);
+	class_addmethod(c, (method) BuildDSPChain, "dsp64",		A_CANT, 0);
 
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
-
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, lpversion);
+        return 0;
 	
 	}
 
@@ -164,7 +170,7 @@ CCCNew(void)
 	tPink*	me	= NIL;
 	
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (tPink*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 1);				// Signal inlet for benefit of begin~
 	outlet_new(me, "signal");
 	
@@ -210,7 +216,7 @@ void CCCAssist(tPink* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
 	}
 
 void CCCInfo(tPink* me)
@@ -226,24 +232,11 @@ void CCCInfo(tPink* me)
  *
  ******************************************************************************************/
 
-void
-BuildDSPChain(
-	tPink*		me,
-	t_signal**	ioDSPVectors,
-	short*		connectCounts)
-	
+void BuildDSPChain(tPink* me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+
 	{
-	#pragma unused(connectCounts)
-	
-	enum {
-		inletEnable	= 0,
-		outletPink
-		};
-	
-	dsp_add(
-		PerformPink, 3,
-		me, (long) ioDSPVectors[outletPink]->s_n, ioDSPVectors[outletPink]->s_vec
-		);
+
+	object_method(dsp64, gensym("dsp_add64"), me, PerformPink64, 0, NULL);
 	
 	}
 	
@@ -261,31 +254,21 @@ BuildDSPChain(
  *
  ******************************************************************************************/
 
-int*
-PerformPink(
-	int* iParams)
+void PerformPink64(tPink* me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
 	
 	{
 	const double kMinPink = 1.0 / 525288.0;
-	enum {
-		paramFuncAddress	= 0,
-		paramMe,
-		paramVectorSize,
-		paramOut,
-		
-		paramNextLink
-		};
 	
 	long			vecCounter;
 	tSampleVector	outNoise;
-	tPink*			me = (tPink*) iParams[paramMe];
+
 	double			curVal;
 	
-	if (me->coreObject.z_disabled) goto exit;
+	if (me->coreObject.z_disabled) return;
 	
 	// Copy parameters into registers
-	vecCounter	= (long) iParams[paramVectorSize];
-	outNoise	= (tSampleVector) iParams[paramOut];
+	vecCounter	= sampleframes;
+	outNoise	= outs[0];
 	curVal		= me->curVal;
 	
 	// Sanity check... due to limitations in accuracy, we can die at very small values.
@@ -307,6 +290,4 @@ PerformPink(
 	
 	me->curVal	= curVal;
 	
-exit:
-	return iParams + paramNextLink;
 	}

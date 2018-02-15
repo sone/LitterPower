@@ -23,12 +23,14 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 
 #pragma mark • Constants
 
 const char*			kClassName		= "lp.ccc";			// Class name
+
+const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 	// Indices for STR# resource
 enum {
@@ -47,7 +49,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	
 	tOutletPtr	theOutlet;
 	
@@ -88,14 +90,14 @@ static void	CCCInfo(objSchuster*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
-	
+	//LITTER_CHECKTIMEOUT(kClassName);
+	t_class *c;
+        
 	// Standard Max initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) CCCNew,			// Instance creation function
 			NIL,						// No custom deallocation function
 			sizeof(objSchuster),				// Class object size
@@ -104,17 +106,22 @@ main(void)
 			0);		
 	
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) CCCBang);
-	LITTER_TIMEBOMB addfloat((method) CCCFloat);
-	addmess	((method) CCCTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) CCCTattle,	"tattle",	A_NOTHING);
-	addmess	((method) CCCAssist,	"assist",	A_CANT, 0);
-	addmess	((method) CCCInfo,		"info",		A_CANT, 0);
-	addmess	((method) LitterVers,	"vers",		A_DEFLONG, A_DEFLONG, 0);
+	class_addmethod(c, (method) CCCBang, "bang", 0);
+	class_addmethod(c, (method) CCCFloat, "float", A_FLOAT, 0);
+	class_addmethod(c, (method) CCCTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) CCCTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c, (method) CCCAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) CCCInfo,		"info",		A_CANT, 0);
+	class_addmethod(c, (method) LitterVers,	"vers",		A_DEFLONG, A_DEFLONG, 0);
 	
 		
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, lpversion);
+        return 0;
 	
 	}
 
@@ -166,7 +173,7 @@ CCCNew(
 	// Finished checking intialization parameters
 
 	// Let Max allocate us. No inlets, just one outlet.
-	me = (objSchuster*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	me->theOutlet = floatout(me);
 	
 	// Set up object components
@@ -268,11 +275,12 @@ void CCCAssist(objSchuster* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
 	}
 
 void CCCInfo(objSchuster* me)
-	{ LitterInfo(kClassName, &me->coreObject, (method) CCCTattle); }
+	{ //LitterInfo(kClassName, &me->coreObject, (method) CCCTattle);
+    }
 
 
 

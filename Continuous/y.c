@@ -30,7 +30,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 #include "MoreMath.h"
@@ -41,6 +41,11 @@
 #pragma mark • Constants
 
 const char	kClassName[]	= "lp.y";				// Class name
+
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Float (s: scaling factor)"
+#define LPAssistIn3			"Float (t: distribution curvature)"
+#define LPAssistOut1		"Float (Random value)"
 
 
 
@@ -64,7 +69,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -124,7 +129,7 @@ static void YCurve(objWeibull* me, double iVal)
 	{ me->oneOverT = (iVal >  0.0) ? 1.0 / iVal : 0.0; }
 	
 static void YSeed( objWeibull* me, long iSeed)
-	{ Taus88Seed(me->tausData, (unsigned long) iSeed); }
+	{ Taus88Seed(me->tausData, (t_uint32) iSeed); }
 
 
 #pragma mark -
@@ -187,7 +192,7 @@ DoExpect(
 	
 	if (shape > 0.0) switch(iSel) {
 	case expMean:
-		result = scale * gamma(shape + 1.0);
+		result = scale * tgamma(shape + 1.0);
 		break;
 	case expMedian:
 		result = scale * pow(kLn2, shape);
@@ -197,9 +202,9 @@ DoExpect(
 		// ?? This is a bit brute force, intermediary results can overflow when the
 		//		end result would not, particularly for standard deviation
 		//		However, overflow conditions are be pretty rare (shape > 85 or so)
-		result  = gamma(shape + 1.0);
+		result  = tgamma(shape + 1.0);
 		result *= -result;
-		result += gamma(shape + shape + 1.0);
+		result += tgamma(shape + shape + 1.0);
 		result *= scale * scale;
 		if (iSel == expStdDev)
 			result = sqrt(result);
@@ -210,7 +215,7 @@ DoExpect(
 		double	mean	= DoExpect(me, expMean),
 				var		= DoExpect(me, expVar);
 		
-		result  = gamma(shape + shape + shape + 1.0);
+		result  = tgamma(shape + shape + shape + 1.0);
 		result *= scale * scale * scale;
 		result -= 3.0 * mean * var;
 		result -= mean * mean * mean;
@@ -220,12 +225,12 @@ DoExpect(
 	case expKurtosis:
 		// ?? Still brute force, but without the recursion used for skew above
 		{
-		double	gamma1 = gamma(shape + 1.0),
-				gamma2 = gamma(shape + shape + 1.0),
-				gamma3 = gamma(shape + shape + shape + 1.0);
+		double	gamma1 = tgamma(shape + 1.0),
+				gamma2 = tgamma(shape + shape + 1.0),
+				gamma3 = tgamma(shape + shape + shape + 1.0);
 		
 			// Start off with what would be gamma4
-		result  = gamma(4.0 * shape + 1.0);
+		result  = tgamma(4.0 * shape + 1.0);
 		result -= 4.0 * gamma1 * gamma3;
 		result -= 3.0 * gamma2 * gamma2;
 		result += 12.0 * gamma1 * gamma1 * gamma2;
@@ -270,28 +275,28 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err YGetMin(objWeibull* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err YGetMin(objWeibull* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV); }
-	static t_max_err YGetMax(objWeibull* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err YGetMax(objWeibull* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV); }
-	static t_max_err YGetMean(objWeibull* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err YGetMean(objWeibull* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV); }
-	static t_max_err YGetMedian(objWeibull* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err YGetMedian(objWeibull* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV); }
-	static t_max_err YGetMode(objWeibull* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err YGetMode(objWeibull* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
-	static t_max_err YGetVar(objWeibull* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err YGetVar(objWeibull* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
-	static t_max_err YGetStdDev(objWeibull* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err YGetStdDev(objWeibull* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV); }
-	static t_max_err YGetSkew(objWeibull* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err YGetSkew(objWeibull* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
-	static t_max_err YGetKurtosis(objWeibull* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err YGetKurtosis(objWeibull* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
-	static t_max_err YGetEntropy(objWeibull* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err YGetEntropy(objWeibull* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV); }
 	
-	static t_max_err YSetAttrScale(objWeibull* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err YSetAttrScale(objWeibull* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL)
@@ -300,7 +305,7 @@ DoExpect(
 		return MAX_ERR_NONE;
 		}
 	
-	static t_max_err YSetAttrCurve(objWeibull* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err YSetAttrCurve(objWeibull* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL)
@@ -309,7 +314,7 @@ DoExpect(
 		return MAX_ERR_NONE;
 		}
 	
-	static t_max_err YGetAttrCurve(objWeibull* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err YGetAttrCurve(objWeibull* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{
 		double curve = (me->oneOverT > 0.0) ? 1.0 / me->oneOverT : 0.0;
 		
@@ -319,8 +324,8 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new(	"scale", symFloat64, 0,
@@ -357,16 +362,16 @@ DoExpect(
 static void
 YTell(
 	objWeibull*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -412,7 +417,7 @@ YNew(
 	
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed != 0) {
-		myTausStuff = Taus88New(iSeed);
+		myTausStuff = Taus88New((t_uint32)iSeed);
 		goto noMoreDefaults;
 		}
 	
@@ -451,8 +456,7 @@ noMoreDefaults:
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -463,7 +467,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -475,7 +479,7 @@ main(void)
 						myArgTypes);		
 	
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang((method) YBang);
+    LitterAddBang((method) YBang);
 	LitterAddMess1	((method) YScale,	"ft1",	A_FLOAT);
 	LitterAddMess1	((method) YCurve,	"ft2",	A_FLOAT);
 	LitterAddMess1	((method) YSeed,	"seed",	A_DEFLONG);

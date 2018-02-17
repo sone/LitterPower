@@ -32,7 +32,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "RNGCauchy.h"
 #include "MiscUtils.h"
 #include "MoreMath.h"							// Needed for digamma(), #includes <math.h>
@@ -41,6 +41,11 @@
 #pragma mark • Constants
 
 const char	kClassName[]	= "lp.stu";			// Class name
+
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Int (f: degrees of freedom)"
+#define LPAssistOut1		"Float (Random value)"
+
 
 	// Indices for STR# resource
 enum {
@@ -57,7 +62,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -363,28 +368,28 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err StuGetMin(objStu* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err StuGetMin(objStu* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV); }
-	static t_max_err StuGetMax(objStu* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err StuGetMax(objStu* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV); }
-	static t_max_err StuGetMean(objStu* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err StuGetMean(objStu* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV); }
-	static t_max_err StuGetMedian(objStu* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err StuGetMedian(objStu* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV); }
-	static t_max_err StuGetMode(objStu* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err StuGetMode(objStu* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
-	static t_max_err StuGetVar(objStu* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err StuGetVar(objStu* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
-	static t_max_err StuGetStdDev(objStu* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err StuGetStdDev(objStu* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV); }
-	static t_max_err StuGetSkew(objStu* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err StuGetSkew(objStu* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
-	static t_max_err StuGetKurtosis(objStu* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err StuGetKurtosis(objStu* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
-	static t_max_err StuGetEntropy(objStu* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err StuGetEntropy(objStu* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV); }
 	
-	static t_max_err StuSetAttrDoF(objStu* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err StuSetAttrDoF(objStu* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL)
@@ -396,8 +401,8 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new(	"dof", gensym("long"), 0,
@@ -431,16 +436,16 @@ DoExpect(
 static void
 StuTell(
 	objStu*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -485,7 +490,7 @@ StuNew(
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed == 0) Taus88Init();
 	else {
-		myTausStuff = Taus88New(iSeed);
+		myTausStuff = Taus88New((t_uint32)iSeed);
 		goto noMoreDefaults;
 		}
 	
@@ -519,8 +524,7 @@ noMoreDefaults:
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -529,7 +533,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -542,7 +546,7 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang((method) StuBang);
+	LitterAddBang((method) StuBang);
 	LitterAddMess1	((method) StuDoF,		"in1",		A_LONG);
 	LitterAddMess1 ((method) StuSeed,		"seed",		A_DEFLONG);
 	LitterAddMess2 ((method) StuTell,		"tell", A_SYM, A_SYM);

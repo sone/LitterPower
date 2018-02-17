@@ -33,7 +33,8 @@
 
 #include "LitterLib.h"
 #include "RNGDistBeta.h"			// this #includes Taus88.h, MiscUtils.h, and math.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
+
 
 
 #pragma mark • Constants
@@ -41,6 +42,13 @@
 const char	kClassName[]		= "lp.abbie";			// Class name
 
 
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Float (a: tendency towards 0)"
+#define LPAssistIn3			"Float (b: tendency towards 1)"
+#define LPAssistOut1		"Float (Random value in [0 .. 1])"
+
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexInBang		= lpStrIndexLastStandard + 1,
@@ -49,7 +57,7 @@ enum {
 	
 	strIndexTheOutlet
 	};
-
+*/
 
 #pragma mark • Type Definitions
 
@@ -63,7 +71,7 @@ typedef union betaParams {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -211,7 +219,7 @@ AbbieBeta(
  ******************************************************************************************/
 
 static void AbbieSeed(objBeta* me, long iSeed)	
-	{ Taus88Seed(me->tausData, (unsigned long) iSeed); }
+	{ Taus88Seed(me->tausData, (t_uint32) iSeed); }
 
 
 #pragma mark -
@@ -228,7 +236,7 @@ static void AbbieAssist(objBeta* me, void* box, long iDir, long iArgNum, char* o
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInBang, strIndexTheOutlet, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInBang, strIndexTheOutlet, oCStr);
 	}
 
 static void
@@ -542,8 +550,7 @@ static void AbbieFree(objBeta* me)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -553,7 +560,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -566,7 +573,7 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) AbbieBang);
+    LitterAddBang	((method) AbbieBang);
 	LitterAddMess1	((method) AbbieAlpha,	"ft1",	A_FLOAT);
 	LitterAddMess1	((method) AbbieBeta,	"ft2",	A_FLOAT);
 	LitterAddMess1	((method) AbbieSeed,	"seed",	A_DEFLONG);

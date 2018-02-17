@@ -39,7 +39,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "RNGChi2.h"
 #include "MoreMath.h"
 
@@ -92,7 +92,7 @@ typedef enum distVariant eDistVar;
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -101,7 +101,7 @@ typedef struct {
 									// but we don't need to be fussy
 					gamma;			// Aux parameter used when using Rejection algorith
 									
-	Symbol*			varSym;			// Fast way to get name of variant
+	t_symbol*			varSym;			// Fast way to get name of variant
 	eDistVar		variant;		// More convenient for switch statements
 	eChi2Alg		alg;
 	} objChiSquare;
@@ -184,7 +184,7 @@ ChichiBang(
 static void
 ChichiDoF(
 	objChiSquare*	me,
-	long		iDoF)
+	t_uint32		iDoF)
 	
 	{
 	if (iDoF > 0) {
@@ -211,7 +211,7 @@ ChichiScale(
 static void
 ChichiVariant(
 	objChiSquare*	me,
-	Symbol*		iVarSym)
+	t_symbol*		iVarSym)
 	
 	{
 	int	i;
@@ -237,7 +237,7 @@ ChichiVariant(
  ******************************************************************************************/
 
 static void ChichiSeed(objChiSquare*	me, long iSeed)
-	{ Taus88Seed(me->tausData, (unsigned long) iSeed); }
+	{ Taus88Seed(me->tausData, (t_uint32) iSeed); }
 	
 	
 #pragma mark -
@@ -254,7 +254,7 @@ static void ChichiFree(objChiSquare* me)
 
 static void*
 ChichiNew(
-	long	iDoF,				// Degrees of freedom
+	t_uint32	iDoF,				// Degrees of freedom
 	long	iSeed)
 	
 	{
@@ -268,7 +268,7 @@ ChichiNew(
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed == 0) Taus88Init();
 	else {
-		myTausStuff = Taus88New(iSeed);
+		myTausStuff = Taus88New((t_uint32)iSeed);
 		goto noMoreDefaults;
 		}
 	
@@ -412,7 +412,8 @@ DoExpect(
 		switch(iSel) {
 		case expMean:
 			result  = 0.5 * ddof;					// Intermediary result
-			result  = gamma(result + 0.5) / gamma(result);
+			//result  = gamma(result + 0.5) / gamma(result);
+            result  = tgamma(result + 0.5) / tgamma(result);
 			result *= kSqrt2;
 			result *= scale;
 			break;
@@ -603,33 +604,33 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err ChichiGetMin(objChiSquare* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ChichiGetMin(objChiSquare* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV); }
-	static t_max_err ChichiGetMax(objChiSquare* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ChichiGetMax(objChiSquare* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV); }
-	static t_max_err ChichiGetMean(objChiSquare* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ChichiGetMean(objChiSquare* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV); }
-	static t_max_err ChichiGetMedian(objChiSquare* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ChichiGetMedian(objChiSquare* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV); }
-	static t_max_err ChichiGetMode(objChiSquare* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ChichiGetMode(objChiSquare* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
-	static t_max_err ChichiGetVar(objChiSquare* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ChichiGetVar(objChiSquare* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
-	static t_max_err ChichiGetStdDev(objChiSquare* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ChichiGetStdDev(objChiSquare* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV); }
-	static t_max_err ChichiGetSkew(objChiSquare* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ChichiGetSkew(objChiSquare* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
-	static t_max_err ChichiGetKurtosis(objChiSquare* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ChichiGetKurtosis(objChiSquare* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
-	static t_max_err ChichiGetEntropy(objChiSquare* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ChichiGetEntropy(objChiSquare* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV); }
 	
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-		Symbol*	symLong			= gensym("long");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+		//t_symbol*	symLong			= gensym("long");
 		
 		// Read-Write Attributes
 		// !! TO DO: make dof, scale, variant settable attributes
@@ -660,12 +661,12 @@ DoExpect(
 static void
 ChichiTell(
 	objChiSquare*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
@@ -698,8 +699,7 @@ static void ChichiTell(objChiSquare* me, Symbol* iTarget, Symbol* iAttrName)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -708,7 +708,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -721,7 +721,7 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang((method) ChichiBang);
+	LitterAddBang((method) ChichiBang);
 	LitterAddMess1	((method) ChichiDoF,	"in1",	A_FLOAT);
 	LitterAddMess1	((method) ChichiScale,	"scale",A_FLOAT);
 	LitterAddMess1	((method) ChichiVariant,"var",	A_SYM);

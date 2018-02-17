@@ -31,7 +31,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 
@@ -43,6 +43,10 @@
 const char		kClassName[]		= "lp.expo";			// Class name
 
 
+#define LPAssistIn1			"Bang, Float (mapping), and symmetry messages"
+#define LPAssistIn2			"Float (scale)"
+#define LPAssistIn3			"Float (location)"
+#define LPAssistOut1		"Random value from %s distribution"
 	
 	// Indices for STR# resource
 enum {
@@ -61,7 +65,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -171,7 +175,7 @@ static void ExpoPos(objExpran* me)		{ me->sym = symPos; }
 static void ExpoNeg(objExpran* me)		{ me->sym = symNeg; }
 
 static void ExpoSeed(objExpran* me, long iSeed)
-	{ Taus88Seed(me->tausData, (unsigned long) iSeed); }
+	{ Taus88Seed(me->tausData, (t_uint32) iSeed); }
 
 
 #pragma mark • Class Message Handlers
@@ -189,7 +193,7 @@ static void ExpoFree(objExpran* me)
 static void*
 ExpoNew(
 	double	iLambda,
-	Symbol*	iSymmetry,
+	t_symbol*	iSymmetry,
 	long	iSeed)
 	
 	{
@@ -200,7 +204,7 @@ ExpoNew(
 	
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed != 0) {
-		myTausStuff = Taus88New(iSeed);
+		myTausStuff = Taus88New((t_uint32)iSeed);
 		goto noMoreDefaults;
 		}
 	
@@ -385,28 +389,28 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err ExpoGetMin(objExpran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ExpoGetMin(objExpran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV); }
-	static t_max_err ExpoGetMax(objExpran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ExpoGetMax(objExpran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV); }
-	static t_max_err ExpoGetMean(objExpran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ExpoGetMean(objExpran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV); }
-	static t_max_err ExpoGetMedian(objExpran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ExpoGetMedian(objExpran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV); }
-	static t_max_err ExpoGetMode(objExpran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ExpoGetMode(objExpran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
-	static t_max_err ExpoGetVar(objExpran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ExpoGetVar(objExpran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
-	static t_max_err ExpoGetStdDev(objExpran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ExpoGetStdDev(objExpran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV); }
-	static t_max_err ExpoGetSkew(objExpran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ExpoGetSkew(objExpran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
-	static t_max_err ExpoGetKurtosis(objExpran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ExpoGetKurtosis(objExpran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
-	static t_max_err ExpoGetEntropy(objExpran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ExpoGetEntropy(objExpran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV); }
 	
-	static t_max_err ExpoSetAttrTau(objExpran* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err ExpoSetAttrTau(objExpran* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL)
@@ -418,9 +422,9 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-		Symbol* symLong			= gensym("long");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+		t_symbol* symLong			= gensym("long");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new("loc", symLong, 0, NIL, NIL, calcoffset(objExpran, loc));
@@ -459,12 +463,12 @@ DoExpect(
 static void
 ExpoTell(
 	objExpran*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
@@ -514,8 +518,7 @@ ExpoAssist(objExpran* me, void* box, long iDir, long iArgNum, char* oCStr)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -525,7 +528,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -538,8 +541,8 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang((method) ExpoBang);
-	LITTER_TIMEBOMB addfloat((method) ExpoFloat);
+    LitterAddBang   ((method) ExpoBang);
+	LitterAddFloat  ((method) ExpoFloat);
 	LitterAddMess1	((method) ExpoLamda,	"ft1",	A_FLOAT);
 	LitterAddMess1	((method) ExpoLocation,	"ft2",	A_FLOAT);
 	LitterAddMess1	((method) ExpoTau,		"tau",	A_FLOAT);		// tau = 1/lambda

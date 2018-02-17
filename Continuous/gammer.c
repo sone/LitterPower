@@ -38,7 +38,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "RNGGauss.h"
 #include "RNGGamma.h"
@@ -49,6 +49,12 @@
 #pragma mark • Constants
 
 const char	kClassName[]		= "lp.gammer";			// Class name
+
+
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Float (Order)"
+#define LPAssistIn3			"Float (Location)"
+#define LPAssistOut1		"Float (%s distributed random value)"
 
 
 	// Indices for STR# resource
@@ -100,7 +106,7 @@ typedef union {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	theData;
 	
@@ -288,7 +294,7 @@ static void GammerLoc(objGammer* me, double iLoc)
  ******************************************************************************************/
 
 static void GammerSeed(objGammer* me,long iSeed)
-	{ Taus88Seed(me->theData, (unsigned long) iSeed); }
+	{ Taus88Seed(me->theData, (t_uint32) iSeed); }
 
 
 #pragma mark -
@@ -443,26 +449,26 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err GammerGetMin(objGammer* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err GammerGetMin(objGammer* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV); }
-	static t_max_err GammerGetMax(objGammer* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err GammerGetMax(objGammer* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV); }
-	static t_max_err GammerGetMean(objGammer* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err GammerGetMean(objGammer* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV); }
-	static t_max_err GammerGetMode(objGammer* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err GammerGetMode(objGammer* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
-	static t_max_err GammerGetVar(objGammer* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err GammerGetVar(objGammer* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
-	static t_max_err GammerGetStdDev(objGammer* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err GammerGetStdDev(objGammer* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV); }
-	static t_max_err GammerGetSkew(objGammer* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err GammerGetSkew(objGammer* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
-	static t_max_err GammerGetKurtosis(objGammer* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err GammerGetKurtosis(objGammer* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
-	static t_max_err GammerGetEntropy(objGammer* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err GammerGetEntropy(objGammer* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV); }
 	
-	static t_max_err GammerSetAttrOrder(objGammer* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err GammerSetAttrOrder(objGammer* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL)
@@ -471,10 +477,10 @@ DoExpect(
 		return MAX_ERR_NONE;
 		}
 	
-	static t_max_err GammerGetAttrOrder(objGammer* me, void* iAttr, long* ioArgC, Atom** iArgV)
+	static t_max_err GammerGetAttrOrder(objGammer* me, void* iAttr, long* ioArgC, t_atom** iArgV)
 		{ return LitterGetAttrFloat(GammerGetAlpha(me), ioArgC, iArgV); }
 	
-	static t_max_err GammerSetAttrLoc(objGammer* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err GammerSetAttrLoc(objGammer* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL)
@@ -483,14 +489,14 @@ DoExpect(
 		return MAX_ERR_NONE;
 		}
 	
-	static t_max_err GammerGetAttrLoc(objGammer* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err GammerGetAttrLoc(objGammer* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(GammerGetBeta(me), ioArgC, ioArgV); }
 	
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new(	"order", symFloat64, 0,
@@ -524,12 +530,12 @@ DoExpect(
 static void
 GammerTell(
 	objGammer*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
@@ -579,7 +585,7 @@ GammerNew(
 	
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed != 0) {
-		myTausStuff = Taus88New(iSeed);
+		myTausStuff = Taus88New((t_uint32)iSeed);
 		// Even if seed is specified, continue checking parameters because a location
 		// of zero would be invalid
 		}
@@ -621,8 +627,7 @@ GammerNew(
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -632,7 +637,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	LitterSetupClass(	kClassName,
 						sizeof(objGammer),
@@ -643,7 +648,7 @@ main(void)
 						myArgTypes);				
 	
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang((method) GammerBang);
+	LitterAddBang   ((method) GammerBang);
 	LitterAddMess1	((method) GammerOrder,	"ft1",	A_FLOAT);
 	LitterAddMess1	((method) GammerBeta,	"ft2",	A_FLOAT);
 	LitterAddMess1	((method) GammerLoc,	"loc",	A_FLOAT);

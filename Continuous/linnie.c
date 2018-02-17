@@ -31,7 +31,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 
@@ -42,6 +42,9 @@
 
 const char	kClassName[]		= "lp.linnie";			// Class name
 
+
+#define LPAssistIn1			"Bang, also float (mapping) and symmetry messages"
+#define LPAssistOut1		"Float (Random value)"
 
 	// Indices for STR# resource
 enum {
@@ -56,7 +59,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -214,9 +217,9 @@ LinnieFloat(
 static void
 LinnieList(
 	objLinran*	me,
-	Symbol*		iListSym,
+	t_symbol*		iListSym,
 	short		iArgCount,
-	Atom		iArgVec[])
+	t_atom		iArgVec[])
 	
 	{
 	#pragma unused (iListSym)
@@ -288,7 +291,7 @@ LinnieNeg(
 	}
 	
 static void LinnieSeed(objLinran* me, long iSeed)
-	{ Taus88Seed(me->tausData, (unsigned long) iSeed); }
+	{ Taus88Seed(me->tausData, (t_uint32) iSeed); }
 #pragma mark -
 #pragma mark • Attribute/Information Functions
 
@@ -414,28 +417,28 @@ static double DoExpect(objLinran* me, eExpectSelector iSel)
 
 #if LITTER_USE_OBEX
 
-	static t_max_err LinnieGetMean(objLinran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LinnieGetMean(objLinran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV); }
-	static t_max_err LinnieGetMedian(objLinran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LinnieGetMedian(objLinran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV); }
-	static t_max_err LinnieGetMode(objLinran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LinnieGetMode(objLinran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
-	static t_max_err LinnieGetVar(objLinran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LinnieGetVar(objLinran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
-	static t_max_err LinnieGetStdDev(objLinran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LinnieGetStdDev(objLinran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV); }
-	static t_max_err LinnieGetSkew(objLinran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LinnieGetSkew(objLinran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
-	static t_max_err LinnieGetKurtosis(objLinran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LinnieGetKurtosis(objLinran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
-	static t_max_err LinnieGetEntropy(objLinran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LinnieGetEntropy(objLinran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV); }
 	
-	static t_max_err LinnieSetAttrMin(objLinran* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err LinnieSetAttrMin(objLinran* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL) {
-			Atom	params[3];
+			t_atom	params[3];
 			double	min = AtomGetFloat(iArgV);
 			
 			if (min > me->c) min = me->c;
@@ -450,11 +453,11 @@ static double DoExpect(objLinran* me, eExpectSelector iSel)
 		return MAX_ERR_NONE;
 		}
 	
-	static t_max_err LinnieSetAttrMax(objLinran* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err LinnieSetAttrMax(objLinran* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL) {
-			Atom	params[3];
+			t_atom	params[3];
 			double	max = AtomGetFloat(iArgV);
 			
 			if (max < me->c) max = me->c;
@@ -469,11 +472,11 @@ static double DoExpect(objLinran* me, eExpectSelector iSel)
 		return MAX_ERR_NONE;
 		}
 	
-	static t_max_err LinnieSetAttrMode(objLinran* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err LinnieSetAttrMode(objLinran* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL) {
-			Atom	params[3];
+			t_atom	params[3];
 			double	mode = AtomGetFloat(iArgV);
 			
 			if		(mode < me->a) mode = me->a;
@@ -492,8 +495,8 @@ static double DoExpect(objLinran* me, eExpectSelector iSel)
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new(	"min", symFloat64, 0,
@@ -529,12 +532,12 @@ static double DoExpect(objLinran* me, eExpectSelector iSel)
 static void
 LinnieTell(
 	objLinran*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
@@ -572,7 +575,7 @@ static void LinnieFree(objLinran* me)
 
 static void*
 LinnieNew(
-	Symbol*	iSymmetry,
+	t_symbol*	iSymmetry,
 	long	iSeed)
 	
 	{
@@ -581,7 +584,7 @@ LinnieNew(
 	
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed != 0) {
-		myTausStuff = Taus88New(iSeed);
+		myTausStuff = Taus88New((t_uint32)iSeed);
 		goto noMoreDefaults;
 		}
 	
@@ -620,8 +623,7 @@ noMoreDefaults:
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -642,9 +644,9 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang((method) LinnieBang);
-	LITTER_TIMEBOMB addfloat((method) LinnieFloat);
-	LITTER_TIMEBOMB LitterAddMess1	((method) LinnieList, "list", A_GIMME);
+	LitterAddBang((method) LinnieBang);
+	LitterAddFloat  ((method) LinnieFloat);
+	LitterAddMess1	((method) LinnieList, "list", A_GIMME);
 	LitterAddMess1 ((method) LinnieSeed,		"seed",		A_DEFLONG);
 	LitterAddMess0	((method) LinniePos,		"pos");
 	LitterAddMess0	((method) LinnieSym,		"sym");

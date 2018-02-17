@@ -36,7 +36,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 
@@ -44,6 +44,11 @@
 #pragma mark • Constants
 
 const char	kClassName[]		= "lp.hyppie";			// Class name
+
+
+#define LPAssistIn1			"Bang (New random value), Float (cheap thrills)"
+#define LPAssistOut1		"Float (Random value)"
+
 
 	// Indices for STR# resource
 enum {
@@ -69,7 +74,7 @@ typedef enum hypVar eHypVar;
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -139,7 +144,7 @@ static void HyppieSec(objHyperan* me)		{ me->variant = hypSec; }
  ******************************************************************************************/
 
 static void HyppieSeed(objHyperan* me, long iSeed)
-	{ Taus88Seed(me->tausData, (unsigned long) iSeed); }
+	{ Taus88Seed(me->tausData, (t_uint32) iSeed); }
 
 
 #pragma mark -
@@ -253,32 +258,32 @@ static double DoExpect(objHyperan* me, eExpectSelector iSel)
 
 #if LITTER_USE_OBEX
 
-	static t_max_err HyppieGetMin(objHyperan* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err HyppieGetMin(objHyperan* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV); }
-	static t_max_err HyppieGetMax(objHyperan* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err HyppieGetMax(objHyperan* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV); }
-	static t_max_err HyppieGetMean(objHyperan* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err HyppieGetMean(objHyperan* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV); }
-	static t_max_err HyppieGetMedian(objHyperan* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err HyppieGetMedian(objHyperan* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV); }
-	static t_max_err HyppieGetMode(objHyperan* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err HyppieGetMode(objHyperan* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
-	static t_max_err HyppieGetVar(objHyperan* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err HyppieGetVar(objHyperan* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
-	static t_max_err HyppieGetStdDev(objHyperan* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err HyppieGetStdDev(objHyperan* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV); }
-	static t_max_err HyppieGetSkew(objHyperan* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err HyppieGetSkew(objHyperan* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
-	static t_max_err HyppieGetKurtosis(objHyperan* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err HyppieGetKurtosis(objHyperan* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
-	static t_max_err HyppieGetEntropy(objHyperan* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err HyppieGetEntropy(objHyperan* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV); }
 	
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
 		
 		// Read-Only Attributes
 		attr = attribute_new("min", symFloat64, kAttrFlagsReadOnly, (method) HyppieGetMin, NULL);
@@ -307,16 +312,16 @@ static double DoExpect(objHyperan* me, eExpectSelector iSel)
 static void
 HyppieTell(
 	objHyperan*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -358,7 +363,7 @@ HyppieNew(
 	
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed != 0) {
-		myTausStuff = Taus88New(iSeed);
+		myTausStuff = Taus88New((t_uint32)iSeed);
 		}
 noMoreDefaults:
 	// Finished checking intialization parameters
@@ -395,8 +400,7 @@ noMoreDefaults:
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -414,8 +418,8 @@ main(void)
 						myArgTypes);				
 	
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) HyppieBang);
-	LITTER_TIMEBOMB LitterAddMess1	((method) HyppieFloat, "float", A_FLOAT);
+	LitterAddBang	((method) HyppieBang);
+	LitterAddMess1	((method) HyppieFloat, "float", A_FLOAT);
 	LitterAddMess0	((method) HyppieCos,	"cos");
 	LitterAddMess0	((method) HyppieSec,	"sec");
 	LitterAddMess1	((method) HyppieSeed,	"seed",	A_DEFLONG);

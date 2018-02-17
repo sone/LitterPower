@@ -30,7 +30,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "RNGGauss.h"
 #include "MiscUtils.h"
@@ -39,6 +39,12 @@
 #pragma mark • Constants
 
 const char	kClassName[]		= "lp.norm";			// Class name
+
+
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Float (Mean)"
+#define LPAssistIn3			"Float (Standard deviation)"
+#define LPAssistOut1		"Float (Random value)"
 
 
 	// Indices for STR# resource
@@ -57,7 +63,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -126,7 +132,7 @@ static void NormStdDev(objGauss* me, double iStdDev)
 	}
 	
 static void NormSeed(objGauss* me, long iSeed)
-	{ Taus88Seed(me->tausData, (unsigned long) iSeed); }
+	{ Taus88Seed(me->tausData, (t_uint32) iSeed); }
 	
 
 #pragma mark -
@@ -219,28 +225,28 @@ DoExpect(objGauss* me, eExpectSelector iSel)
 
 #if LITTER_USE_OBEX
 
-	static t_max_err NormGetMin(objGauss* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err NormGetMin(objGauss* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV); }
-	static t_max_err NormGetMax(objGauss* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err NormGetMax(objGauss* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV); }
-	static t_max_err NormGetMedian(objGauss* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err NormGetMedian(objGauss* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV); }
-	static t_max_err NormGetMode(objGauss* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err NormGetMode(objGauss* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
-	static t_max_err NormGetVar(objGauss* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err NormGetVar(objGauss* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
-	static t_max_err NormGetSkew(objGauss* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err NormGetSkew(objGauss* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
-	static t_max_err NormGetKurtosis(objGauss* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err NormGetKurtosis(objGauss* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
-	static t_max_err NormGetEntropy(objGauss* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err NormGetEntropy(objGauss* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV); }
 	
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new(	"mean", symFloat64, 0,
@@ -272,16 +278,16 @@ DoExpect(objGauss* me, eExpectSelector iSel)
 static void
 NormTell(
 	objGauss*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -314,9 +320,9 @@ static void NormFree(objGauss* me)
 
 static void*
 NormNew(
-	Symbol*	iClassName,
+	t_symbol*	iClassName,
 	short	iArgCount,
-	Atom	iArgVec[])
+	t_atom	iArgVec[])
 	
 	{
 	#pragma unused(iClassName)
@@ -376,8 +382,7 @@ NormNew(
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -385,7 +390,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -397,7 +402,7 @@ main(void)
 						myArgTypes);				
 	
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang((method) NormBang);
+	LitterAddBang((method) NormBang);
 	LitterAddMess1	((method) NormMean,		"ft1",	A_LONG);
 	LitterAddMess1	((method) NormStdDev,	"ft2",	A_LONG);
 	LitterAddMess1	((method) NormSeed,		"seed",	A_DEFLONG);

@@ -31,7 +31,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "RNGCauchy.h"
 #include "MiscUtils.h"
 
@@ -41,6 +41,10 @@
 const char		kClassName[]		= "lp.coshy";			// Class name
 
 
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Float (tau)"
+#define LPAssistIn3			"Float (location)"
+#define LPAssistOut1		"Float (Value from %s Cauchy distribution)"
 
 	// Indices for STR# resource
 enum {
@@ -62,7 +66,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -171,7 +175,7 @@ static void CoshyNeg(objCauchy* me)		{ me->sym = symNeg; }
  ******************************************************************************************/
 
 static void CoshySeed(objCauchy* me, long iSeed)
-	{ Taus88Seed(me->tausData, (unsigned long) iSeed); }
+	{ Taus88Seed(me->tausData, (t_uint32) iSeed); }
 
 
 #pragma mark -
@@ -302,7 +306,7 @@ DoExpect(
 //		{ return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV); }
 //	static t_max_err CoshyGetMedian(objCauchy* me, void* iAttr, long* ioArgC, Atom** ioArgV)
 //		{ return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV); }
-	static t_max_err CoshyGetMode(objCauchy* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err CoshyGetMode(objCauchy* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
 //	static t_max_err CoshyGetVar(objCauchy* me, void* iAttr, long* ioArgC, Atom** ioArgV)
 //		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
@@ -312,15 +316,15 @@ DoExpect(
 //		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
 //	static t_max_err CoshyGetKurtosis(objCauchy* me, void* iAttr, long* ioArgC, Atom** ioArgV)
 //		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
-	static t_max_err CoshyGetEntropy(objCauchy* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err CoshyGetEntropy(objCauchy* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV); }
 	
 	
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new("tau", symFloat64, 0, NIL, NIL, calcoffset(objCauchy, tau));
@@ -354,12 +358,12 @@ DoExpect(
 static void
 CoshyTell(
 	objCauchy*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
@@ -396,7 +400,7 @@ static void CoshyFree(objCauchy* me)
 static void*
 CoshyNew(
 	double	iTau,
-	Symbol*	iSymmetry,
+	t_symbol*	iSymmetry,
 	long	iSeed)
 	
 	{
@@ -408,7 +412,7 @@ CoshyNew(
 	
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed != 0) {
-		myTTStuff = Taus88New(iSeed);
+		myTTStuff = Taus88New((t_uint32)iSeed);
 		goto noMoreDefaults;
 		}
 	
@@ -457,8 +461,7 @@ noMoreDefaults:
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -468,7 +471,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -481,7 +484,7 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang((method) CoshyBang);
+	LitterAddBang((method) CoshyBang);
 	LitterAddMess1	((method) CoshyTau,	"ft1",		A_FLOAT);
 	LitterAddMess1	((method) CoshyLoc,	"ft2",		A_FLOAT);
 	LitterAddMess1	((method) CoshySeed,"seed",		A_DEFLONG);

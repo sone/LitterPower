@@ -30,7 +30,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "RNGChi2.h"
 
@@ -38,6 +38,12 @@
 #pragma mark • Constants
 
 const char	kClassName[]	= "lp.fishie";			// Class name
+
+
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Int (f1: degrees of freedom 1)"
+#define LPAssistIn3			"Int (f2: degrees of freedom 2)"
+#define LPAssistOut1		"Float (Random value)"
 
 
 	// Indices for STR# resource
@@ -57,7 +63,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -128,7 +134,7 @@ FishieBang(
 		
 		alg = Chi2RecommendAlg(iDoF);
 		
-		*oStore	= iDoF;
+		*oStore	= (t_uint32)iDoF;
 		*oAlg	= alg;
 		*oGamma	= (alg == algChi2Rej) ? CalcChi2RejGamma(iDoF) : 0.0;
 		*oInv	= 1.0 / (double) iDoF;
@@ -143,7 +149,7 @@ static void FishieF2(objFisher* me, long iF2)
 	
 
 static void FishieSeed	(objFisher*	me, long iSeed)
-	{ Taus88Seed(me->tausData, (unsigned long) iSeed); }
+	{ Taus88Seed(me->tausData, (t_uint32) iSeed); }
 
 
 #pragma mark -
@@ -257,24 +263,24 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err FishieGetMin(objFisher* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err FishieGetMin(objFisher* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV); }
-	static t_max_err FishieGetMax(objFisher* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err FishieGetMax(objFisher* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV); }
-	static t_max_err FishieGetMean(objFisher* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err FishieGetMean(objFisher* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV); }
-	static t_max_err FishieGetMode(objFisher* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err FishieGetMode(objFisher* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
-	static t_max_err FishieGetVar(objFisher* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err FishieGetVar(objFisher* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
-	static t_max_err FishieGetStdDev(objFisher* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err FishieGetStdDev(objFisher* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV); }
-	static t_max_err FishieGetSkew(objFisher* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err FishieGetSkew(objFisher* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
-	static t_max_err FishieGetKurtosis(objFisher* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err FishieGetKurtosis(objFisher* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
 	
-	static t_max_err FishieSetAttrDoF1(objFisher* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err FishieSetAttrDoF1(objFisher* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL)
@@ -283,7 +289,7 @@ DoExpect(
 		return MAX_ERR_NONE;
 		}
 	
-	static t_max_err FishieSetAttrDoF2(objFisher* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err FishieSetAttrDoF2(objFisher* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL)
@@ -295,8 +301,8 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new(	"dof1", symFloat64, 0,
@@ -330,12 +336,12 @@ DoExpect(
 static void
 FishieTell(
 	objFisher*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
@@ -383,7 +389,7 @@ FishieNew(
 	
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed != 0) {
-		myTausStuff = Taus88New(iSeed);
+		myTausStuff = Taus88New((t_uint32)iSeed);
 		goto noMoreDefaults;
 		}
 	
@@ -423,8 +429,7 @@ noMoreDefaults:
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -433,7 +438,7 @@ main(void)
 						A_DEFLONG,					// 						3: seed
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -446,7 +451,7 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang((method) FishieBang);
+	LitterAddBang((method) FishieBang);
 	LitterAddMess1	((method) FishieF1,		"in1",		A_LONG);
 	LitterAddMess1	((method) FishieF2,		"in2",		A_LONG);
 	LitterAddMess1 ((method) FishieSeed,	"seed",		A_DEFLONG);

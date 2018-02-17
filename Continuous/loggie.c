@@ -30,7 +30,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 
@@ -40,6 +40,11 @@
 #pragma mark • Constants
 
 const char	kClassName[]	= "lp.loggie";			// Class name
+
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Float (alpha)"
+#define LPAssistIn3			"Float (beta)"
+#define LPAssistOut1		"Float (Random value from logistic distribution)"
 
 
 	// Indices for STR# resource
@@ -55,7 +60,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	voidPtr			theOutlet;
 	
 	tTaus88DataPtr	tausData;
@@ -152,7 +157,7 @@ static void LoggieBeta	(objLogiran* me, double iBeta)
  ******************************************************************************************/
 
 static void LoggieSeed(objLogiran* me, long iSeed)
-	{ Taus88Seed(me->tausData, (unsigned long) iSeed); }
+	{ Taus88Seed(me->tausData, (t_uint32) iSeed); }
 
 
 #pragma mark -
@@ -249,28 +254,28 @@ DoExpect(objLogiran* me, eExpectSelector iSel)
 
 #if LITTER_USE_OBEX
 
-	static t_max_err LoggieGetMin(objLogiran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LoggieGetMin(objLogiran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV); }
-	static t_max_err LoggieGetMax(objLogiran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LoggieGetMax(objLogiran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV); }
-	static t_max_err LoggieGetMean(objLogiran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LoggieGetMean(objLogiran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV); }
-	static t_max_err LoggieGetMedian(objLogiran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LoggieGetMedian(objLogiran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV); }
-	static t_max_err LoggieGetMode(objLogiran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LoggieGetMode(objLogiran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
-	static t_max_err LoggieGetVar(objLogiran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LoggieGetVar(objLogiran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
-	static t_max_err LoggieGetStdDev(objLogiran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LoggieGetStdDev(objLogiran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV); }
-	static t_max_err LoggieGetSkew(objLogiran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LoggieGetSkew(objLogiran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
-	static t_max_err LoggieGetKurtosis(objLogiran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LoggieGetKurtosis(objLogiran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
-	static t_max_err LoggieGetEntropy(objLogiran* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LoggieGetEntropy(objLogiran* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV); }
 	
-	static t_max_err LoggieSetAttrScale(objLogiran* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err LoggieSetAttrScale(objLogiran* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL) {
@@ -282,14 +287,14 @@ DoExpect(objLogiran* me, eExpectSelector iSel)
 		return MAX_ERR_NONE;
 		}
 	
-	static t_max_err LoggieGetAttrScale(objLogiran* me, void* ioAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LoggieGetAttrScale(objLogiran* me, void* ioAttr, long* ioArgC, t_atom** ioArgV)
 		{
 		double scale = me->scale;
 		
 		return LitterGetAttrFloat((scale > 0.0) ? 1.0 / scale : 0.0, ioArgC, ioArgV);
 		}
 	
-	static t_max_err LoggieSetAttrLoc(objLogiran* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err LoggieSetAttrLoc(objLogiran* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL)
@@ -301,8 +306,8 @@ DoExpect(objLogiran* me, eExpectSelector iSel)
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new(	"alpha", symFloat64, 0,
@@ -339,16 +344,16 @@ DoExpect(objLogiran* me, eExpectSelector iSel)
 static void
 LoggieTell(
 	objLogiran*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -398,7 +403,7 @@ LoggieNew(
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed == 0) Taus88Init();
 	else {
-		myTausStuff = Taus88New(iSeed);
+		myTausStuff = Taus88New((t_uint32)iSeed);
 		goto noMoreDefaults;
 		}
 	
@@ -437,8 +442,7 @@ noMoreDefaults:
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -448,7 +452,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -461,8 +465,8 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang((method) LoggieBang);
-	LITTER_TIMEBOMB addfloat((method) LoggieFloat);
+	LitterAddBang((method) LoggieBang);
+	LitterAddFloat  ((method) LoggieFloat);
 	LitterAddMess1	((method) LoggieAlpha,		"ft1",		A_FLOAT);
 	LitterAddMess1	((method) LoggieBeta,		"ft2",		A_FLOAT);
 	LitterAddMess1 ((method) LoggieSeed,		"seed",		A_DEFLONG);

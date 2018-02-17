@@ -46,7 +46,13 @@ const char	kClassName[]	= "lp.poppy~";			// Class name
 const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 
+#define LPAssistIn1			"Float/Signal (Growth Rate)"
+#define LPAssistIn2			"Float (Seed population)"
+#define LPAssistIn3			"Float (Base Frequency)"
+#define LPAssistIn4			"Int (Interpolation)"
+#define LPAssistOut1		"Signal (Next population)"
 
+/*
 	// Indices for STR# resource
 enum {
 	strIndexInGrowth		= lpStrIndexLastStandard + 1,
@@ -59,7 +65,7 @@ enum {
 	strIndexInLeft		= strIndexInGrowth,
 	strIndexOutLeft		= strIndexOutPoppy
 	};
-
+*/
 	// Symbolic constants for interpolation
 enum Interpolation {
 	interpGeo			= -1,
@@ -543,7 +549,22 @@ void DoAssist(tPoppy* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+                case 3: sprintf (oCStr, LPAssistIn4); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void DoInfo(tPoppy* me)

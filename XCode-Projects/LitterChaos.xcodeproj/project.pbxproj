@@ -51,22 +51,22 @@
 
 /* Begin PBXFileReference section */
 		042BE9DC0A94F6B80008B638 /* lp.poppy~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.poppy~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
-		042BEA5C0A94F9810008B638 /* Litter Globals.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "Litter Globals.r"; path = "Resources/Litter Globals.r"; sourceTree = "<group>"; };
+		042BEA5C0A94F9810008B638 /* Litter Globals.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; path = "Litter Globals.r"; sourceTree = "<group>"; };
 		042BEAB20A94FAB20008B638 /* lp.poppy.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = lp.poppy.mxo; sourceTree = BUILT_PRODUCTS_DIR; };
 		042BEB120A94FF490008B638 /* lp.ccc~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.ccc~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
 		042BEB8B0A9501FB0008B638 /* lp.ccc.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = lp.ccc.mxo; sourceTree = BUILT_PRODUCTS_DIR; };
 		042BEBBD0A9502A20008B638 /* lp.lya.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = lp.lya.mxo; sourceTree = BUILT_PRODUCTS_DIR; };
-		04E4A0D20A95BDA4004B0E9C /* ccc.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = ccc.r; path = Resources/Chaos/ccc.r; sourceTree = "<group>"; };
-		04E4A0D30A95BDA4004B0E9C /* ccc~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "ccc~.r"; path = "Resources/Chaos/ccc~.r"; sourceTree = "<group>"; };
-		04E4A0D40A95BDA4004B0E9C /* lya.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = lya.r; path = Resources/Chaos/lya.r; sourceTree = "<group>"; };
-		04E4A0D50A95BDA4004B0E9C /* poppy.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = poppy.r; path = Resources/Chaos/poppy.r; sourceTree = "<group>"; };
-		04E4A0D60A95BDA4004B0E9C /* poppy~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "poppy~.r"; path = "Resources/Chaos/poppy~.r"; sourceTree = "<group>"; };
+		04E4A0D20A95BDA4004B0E9C /* ccc.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = ccc.r; path = Chaos/ccc.r; sourceTree = "<group>"; };
+		04E4A0D30A95BDA4004B0E9C /* ccc~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "ccc~.r"; path = "Chaos/ccc~.r"; sourceTree = "<group>"; };
+		04E4A0D40A95BDA4004B0E9C /* lya.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = lya.r; path = Chaos/lya.r; sourceTree = "<group>"; };
+		04E4A0D50A95BDA4004B0E9C /* poppy.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = poppy.r; path = Chaos/poppy.r; sourceTree = "<group>"; };
+		04E4A0D60A95BDA4004B0E9C /* poppy~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "poppy~.r"; path = "Chaos/poppy~.r"; sourceTree = "<group>"; };
 		04E4A0E00A95BF98004B0E9C /* ccc.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ccc.c; path = ../Chaos/ccc.c; sourceTree = "<group>"; };
 		04E4A0E10A95BF98004B0E9C /* ccc~.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "ccc~.c"; path = "../Chaos/ccc~.c"; sourceTree = "<group>"; };
 		04E4A0E20A95BF98004B0E9C /* lya.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = lya.c; path = ../Chaos/lya.c; sourceTree = "<group>"; };
 		04E4A0E30A95BF98004B0E9C /* poppy.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = poppy.c; path = ../Chaos/poppy.c; sourceTree = "<group>"; };
 		04E4A0E40A95BF98004B0E9C /* poppy~.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "poppy~.c"; path = "../Chaos/poppy~.c"; sourceTree = "<group>"; };
-		04E4A6CB0A9633E2004B0E9C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
+		04E4A6CB0A9633E2004B0E9C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		35C4017E2035D2CE0033221D /* LitterLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LitterLib.c; path = ../LitterLib/LitterLib.c; sourceTree = "<group>"; };
 		35C4017F2035D2CE0033221D /* LitterLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LitterLib.h; path = ../LitterLib/LitterLib.h; sourceTree = "<group>"; };
@@ -152,6 +152,7 @@
 				042BEA5C0A94F9810008B638 /* Litter Globals.r */,
 			);
 			name = Resources;
+			path = ../Resources;
 			sourceTree = "<group>";
 		};
 		08FB77ADFE841716C02AAC07 /* Source */ = {

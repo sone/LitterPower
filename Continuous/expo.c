@@ -503,8 +503,23 @@ ExpoAssist(objExpran* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(box)
 	
-	LitterAssistResFrag(iDir, iArgNum, strIndexInBang, strIndexTheOutlet,
-						oCStr, SymmetryResStrIndex(me->sym));
+	//LitterAssistResFrag(iDir, iArgNum, strIndexInBang, strIndexTheOutlet,
+						//oCStr, SymmetryResStrIndex(me->sym));
+        
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 

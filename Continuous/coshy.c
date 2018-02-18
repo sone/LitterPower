@@ -245,8 +245,22 @@ CoshyAssist(
 	{
 	#pragma unused(sym)
 	
-	LitterAssistResFrag(iDir, iArgNum, strIndexLeftInlet, strIndexLeftOutlet,
-						oCStr, SymmetryResStrIndex(me->sym));
+	//LitterAssistResFrag(iDir, iArgNum, strIndexLeftInlet, strIndexLeftOutlet,
+						//oCStr, SymmetryResStrIndex(me->sym));
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 

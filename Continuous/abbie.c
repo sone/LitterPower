@@ -237,6 +237,20 @@ static void AbbieAssist(objBeta* me, void* box, long iDir, long iArgNum, char* o
 	#pragma unused(me, box)
 	
 	//LitterAssist(iDir, iArgNum, strIndexInBang, strIndexTheOutlet, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 static void
@@ -371,28 +385,28 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err AbbieGetMin(objBeta* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err AbbieGetMin(objBeta* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV); }
-	static t_max_err AbbieGetMax(objBeta* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err AbbieGetMax(objBeta* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV); }
-	static t_max_err AbbieGetMean(objBeta* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err AbbieGetMean(objBeta* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV); }
 //	static t_max_err AbbieGetMedian(objBeta* me, void* iAttr, long* ioArgC, Atom** ioArgV)
 //		{ return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV); }
-	static t_max_err AbbieGetMode(objBeta* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err AbbieGetMode(objBeta* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV); }
-	static t_max_err AbbieGetVar(objBeta* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err AbbieGetVar(objBeta* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV); }
-	static t_max_err AbbieGetStdDev(objBeta* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err AbbieGetStdDev(objBeta* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV); }
-	static t_max_err AbbieGetSkew(objBeta* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err AbbieGetSkew(objBeta* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV); }
-	static t_max_err AbbieGetKurtosis(objBeta* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err AbbieGetKurtosis(objBeta* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV); }
 //	static t_max_err AbbieGetEntropy(objBeta* me, void* iAttr, long* ioArgC, Atom** ioArgV)
 //		{ return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV); }
 	
-	static t_max_err AbbieSetAttrAlpha(objBeta* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err AbbieSetAttrAlpha(objBeta* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL)
@@ -401,7 +415,7 @@ DoExpect(
 		return MAX_ERR_NONE;
 		}
 	
-	static t_max_err AbbieSetAttrBeta(objBeta* me, void* iAttr, long iArgC, Atom iArgV[])
+	static t_max_err AbbieSetAttrBeta(objBeta* me, void* iAttr, long iArgC, t_atom iArgV[])
 		{
 		
 		if (iArgC > 0 && iArgV != NIL)
@@ -413,8 +427,8 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new(	"alpha", symFloat64, 0,
@@ -452,16 +466,16 @@ DoExpect(
 static void
 AbbieTell(
 	objBeta*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -505,7 +519,7 @@ AbbieNew(
 	
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed != 0) {
-		myTausStuff = Taus88New(iSeed);
+		myTausStuff = Taus88New((t_uint32)iSeed);
 		goto noMoreDefaults;
 		}
 	

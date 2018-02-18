@@ -50,6 +50,10 @@
 const char	kClassName[]		= "lp.chichi";			// Class name
 
 
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Int (f: degrees of freedom)"
+#define LPAssistOut1		"Float (Random value in [0 .. %ld])"
+
 
 	// Indices for STR# resource
 enum {
@@ -330,7 +334,22 @@ static void ChichiAssist(objChiSquare* me, void* box, long iDir, long iArgNum, c
 	{
 	#pragma unused(box)
 	
-	LitterAssistVA(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr, me->dof);
+	//LitterAssistVA(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr, me->dof);
+        
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                //case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 

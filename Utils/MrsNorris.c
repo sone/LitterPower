@@ -23,7 +23,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"			// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include <string.h>		// We use strncmp()
 
 #if !defined(TARGET_API_MAC_CARBON) || !TARGET_API_MAC_CARBON
@@ -36,7 +36,6 @@
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.mrsnorris";			// Class name
-
 
 
 	// Indices for STR# resource
@@ -69,8 +68,8 @@ tWindAPIVisFunc		WindVisFunc	= NIL;
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
-	Symbol*		filename;
+	t_object		coreObject;
+	t_symbol*		filename;
 	short		searchDir;
 	Boolean		helpSuffix,
 				recurse;
@@ -90,13 +89,13 @@ static short		gOverviewDir	= 0,
 #pragma mark • Function Prototypes
 
 	// Class message functions
-void*	MrsNorrisNew(Symbol*, long);
+void*	MrsNorrisNew(t_symbol*, long);
 
 	// Object message functions
 static void MrsNorrisBang	(objMrsNorris*);
-static void MrsNorrisSet	(objMrsNorris*, Symbol*, long);
-static void MrsNorrisLoad	(objMrsNorris*, Symbol*);
-static void MrsNorrisHelp	(objMrsNorris*, Symbol*);
+static void MrsNorrisSet	(objMrsNorris*, t_symbol*, long);
+static void MrsNorrisLoad	(objMrsNorris*, t_symbol*);
+static void MrsNorrisHelp	(objMrsNorris*, t_symbol*);
 static void MrsNorrisLPO	(objMrsNorris*);
 
 static void	MrsNorrisTattle	(objMrsNorris*);
@@ -215,14 +214,14 @@ static inline void WindAPICallWindVis(t_wind* iWindow)
 		
 		}
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(	kClassName,				// Pointer to our class definition
 			(method) MrsNorrisNew,		// Instance creation function
 			NIL,						// Default deallocation function
 			sizeof(objMrsNorris),		// Class object size
@@ -232,23 +231,28 @@ main(void)
 			0);	
 	
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) MrsNorrisBang);
-	LITTER_TIMEBOMB addmess	((method) MrsNorrisLoad,	"load",		A_SYM, 0);
-	addmess	((method) MrsNorrisHelp,	"help",		A_SYM, 0);
-	addmess ((method) MrsNorrisLPO,		"lpo",		A_NOTHING);
-	addmess	((method) MrsNorrisSet,		"set",		A_SYM, A_DEFLONG, 0);
-	addmess	((method) MrsNorrisTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) MrsNorrisTattle,	"tattle",	A_NOTHING);
-	addmess	((method) MrsNorrisAssist,	"assist",	A_CANT, 0);
-	addmess	((method) MrsNorrisInfo,	"info",		A_CANT, 0);
+	class_addmethod(c, (method) MrsNorrisBang, "bang", 0);
+	class_addmethod(c, (method) MrsNorrisLoad,	"load",		A_SYM, 0);
+	class_addmethod(c, (method) MrsNorrisHelp,	"help",		A_SYM, 0);
+	class_addmethod(c, (method) MrsNorrisLPO,		"lpo",		A_NOTHING);
+	class_addmethod(c, (method) MrsNorrisSet,		"set",		A_SYM, A_DEFLONG, 0);
+	class_addmethod(c, (method) MrsNorrisTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) MrsNorrisTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c, (method) MrsNorrisAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) MrsNorrisInfo,	"info",		A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	
 	// Initialize global symbols
 	gSymLPO = gensym("lpo");
 	InitializeGlobals();				// Initializes gSymOverview, gOverviewPath, and
 										// gHelpPath
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -263,11 +267,11 @@ main(void)
 
 void*
 MrsNorrisNew(
-	Symbol*	iName,
+	t_symbol*	iName,
 	long	iHelp)
 	
 	{
-	objMrsNorris*	me	= newobject(gObjectClass);
+	objMrsNorris*	me	= object_alloc(gObjectClass);
 	
 	if (me != NIL) {
 		MrsNorrisSet(me, iName, iHelp);
@@ -422,7 +426,7 @@ MrsNorrisBang(
 	
 	}
 
-void MrsNorrisSet(objMrsNorris* me, Symbol* iName, long iHelp)
+void MrsNorrisSet(objMrsNorris* me, t_symbol* iName, long iHelp)
 	{
 		
 	if (iName == gSymLPO) {
@@ -450,10 +454,10 @@ void MrsNorrisSet(objMrsNorris* me, Symbol* iName, long iHelp)
 	
 	}
 
-void MrsNorrisLoad(objMrsNorris* me, Symbol* iName)
+void MrsNorrisLoad(objMrsNorris* me, t_symbol* iName)
 	{ MrsNorrisSet(me, iName, 0); MrsNorrisBang(me); }
 
-void MrsNorrisHelp(objMrsNorris* me, Symbol* iName)
+void MrsNorrisHelp(objMrsNorris* me, t_symbol* iName)
 	{ MrsNorrisSet(me, iName, 1); MrsNorrisBang(me); }
 
 void MrsNorrisLPO(objMrsNorris* me)

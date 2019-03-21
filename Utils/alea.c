@@ -20,18 +20,13 @@
 #include "LitterLib.h"
 #include "Taus88.h"
 
-#if 0
-	// Temporarily disable the trial period stuff while we're on a machine that doesn't
-	// have the nifty header file installed
-	#include "TrialPeriodUtils.h"
-#else
-	#define LITTER_CHECKTIMEOUT(X)
-	#define LITTER_TIMEBOMB
-#endif
-
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.ale";			// Class name
+
+// Assistance strings
+#define LPAssistIn		"List, Bang, Set"
+#define LPAssistOut		"An element taken at random from the input list"
 
 	// Have to use enum because GCC and some other compilers do not consider const int
 	// to be a constant expression.
@@ -39,13 +34,13 @@ enum {
 	kMaxListLen			= 255
 	};
 
-
+/*
 	// Indices for STR# resource
 enum {
 	strIndexLeftIn			= lpStrIndexLastStandard + 1,
 	strIndexLeftOut
 	};
-
+*/
 
 #pragma mark • Type Definitions
 
@@ -54,13 +49,13 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object			coreObject;
+	t_object		coreObject;
 	
 	tOutletPtr		outletReset;
 	
 	tTaus88DataPtr	tausData;
 	
-	Atom			items[kMaxListLen];
+	t_atom			items[kMaxListLen];
 	short			itemCount,
 					itemsLeft;
 	
@@ -79,9 +74,9 @@ void		AleFree(objAle*);
 static void AleBang(objAle*);
 static void AleInt(objAle*, long);
 static void AleFloat(objAle*, double);
-static void AleList(objAle*, Symbol*, short, Atom[]);
-static void AleSet(objAle*, Symbol*, short, Atom[]);
-static void AleAnything(objAle*, Symbol*, short, Atom[]);
+static void AleList(objAle*, t_symbol*, short, t_atom[]);
+static void AleSet(objAle*, t_symbol*, short, t_atom[]);
+static void AleAnything(objAle*, t_symbol*, short, t_atom[]);
 static void AleTattle(objAle*);
 static void	AleAssist(objAle*, void*, long, long, char*);
 static void	AleInfo(objAle*);
@@ -97,14 +92,14 @@ static void	AleInfo(objAle*);
  *	
  ******************************************************************************************/
 
-void
-main()
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,					// Pointer to our class definition
+	c = class_new(	kClassName,					// Pointer to our class definition
 			(method) AleNew,				// Instantiation method  
 			(method) AleFree,				// Custom deallocation function
 			(short) sizeof(objAle),			// Class object size
@@ -113,20 +108,25 @@ main()
 			0);								// private seed pool
 	
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) AleBang);
-	LITTER_TIMEBOMB addint	((method) AleInt);
-	LITTER_TIMEBOMB addfloat((method) AleFloat);
-	LITTER_TIMEBOMB addmess	((method) AleList,		"list", A_GIMME, 0);
-	LITTER_TIMEBOMB addmess	((method) AleAnything,	"anything", A_GIMME, 0);
-	addmess	((method) AleSet,		"set",			A_GIMME, 0);
-	addmess	((method) AleAssist,	"assist",		A_CANT, 0);
-	addmess	((method) AleInfo,		"info",			A_CANT, 0);
-	addmess ((method) AleTattle,	"tattle",	 	A_NOTHING);
-	addmess ((method) AleTattle,	"dblclick", 	A_CANT, 0);
+	class_addmethod(c, (method) AleBang,    "bang", 0);
+	class_addmethod(c, (method) AleInt,     "int",      A_LONG, 0);
+	class_addmethod(c, (method) AleFloat,   "float",    A_FLOAT, 0);
+	class_addmethod(c, (method) AleList,	"list",     A_GIMME, 0);
+	class_addmethod(c, (method) AleAnything,"anything", A_GIMME, 0);
+	class_addmethod(c, (method) AleSet,		"set",		A_GIMME, 0);
+	class_addmethod(c, (method) AleAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) AleInfo,	"info",		A_CANT, 0);
+	class_addmethod(c, (method) AleTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c, (method) AleTattle,	"dblclick",	A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -149,7 +149,7 @@ AleNew(
 	int				i;
 	
 	// Create object
-	me = (objAle*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 		if (me == NIL) goto punt;			// Poor man's exception handling
 	
 	// Add inlets and outlets
@@ -241,9 +241,9 @@ AleBang(
 void
 AleSet(
 	objAle*	me,
-	Symbol*			sym,					// Not used, must be gensym("set")
+	t_symbol*			sym,					// Not used, must be gensym("set")
 	short			iArgCount,
-	Atom			iArgVec[])
+	t_atom			iArgVec[])
 	
 	{
 	#pragma unused(sym)	
@@ -267,9 +267,10 @@ AleSet(
 
 void AleInt(objAle* me, long iVal)
 	{
-	Atom a;
+	t_atom a;
 	
-	AtomSetLong(&a, iVal);
+	//AtomSetLong(&a, iVal);
+        atom_setlong(&a, iVal);
 	
 	AleSet(me, NIL, 1, &a);
 	AleBang(me);
@@ -278,9 +279,10 @@ void AleInt(objAle* me, long iVal)
 
 void AleFloat(objAle* me, double iVal)
 	{
-	Atom a;
+	t_atom a;
 	
-	AtomSetFloat(&a, iVal);
+	//AtomSetFloat(&a, iVal);
+        atom_setfloat(&a, iVal);
 	
 	AleSet(me, NIL, 1, &a);
 	AleBang(me);
@@ -291,9 +293,9 @@ void AleFloat(objAle* me, double iVal)
 void
 AleList(
 	objAle*	me,
-	Symbol*			sym,										// unused, must be "list"
+	t_symbol*			sym,										// unused, must be "list"
 	short			iArgCount,
-	Atom			iArgVec[])
+	t_atom			iArgVec[])
 	
 	{
 	#pragma unused(sym)
@@ -308,16 +310,16 @@ AleList(
  *	AleAnything(me)
  *
  *	Sort of special case: we treat arbitrary messages with parameter lists as if they were
- *	a list beginning with a symbol.
+ *	a list beginning with a t_symbol.
  *
  ******************************************************************************************/
 
 void
 AleAnything(
 	objAle*	me,
-	Symbol*			iSym,
+	t_symbol*			iSym,
 	short			iArgCount,
-	Atom			iArgVec[])
+	t_atom			iArgVec[])
 	
 	{
 	int i;
@@ -328,7 +330,8 @@ AleAnything(
 		error("%s: items truncated", kClassName);
 		}
 	
-	AtomSetSym(&me->items[0], iSym);
+	//AtomSetSym(&me->items[0], iSym);
+        atom_setsym(&me->items[0], iSym);
 	
 	for (i = 0; i < iArgCount; i += 1)
 		me->items[i+1] = iArgVec[i];
@@ -384,7 +387,12 @@ AleAssist(
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexLeftIn, strIndexLeftOut, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexLeftIn, strIndexLeftOut, oCStr);
+        if (iDir == ASSIST_INLET)
+            sprintf (oCStr, LPAssistIn);
+        else
+            sprintf (oCStr, LPAssistOut);
+        
 	
 	}
 

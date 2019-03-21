@@ -31,9 +31,19 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "RNGBinomial.h"
+
+// Assistance strings
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Int (Number of Bernoulli Trials)"
+#define LPAssistIn3			"Float (p: probability of 1 resulting)"
+#define LPAssistOut1a		"Int (Always 0 with no trials)"
+#define LPAssistOut1b		"Int (0 or 1; p1 = %lf)"
+#define LPAssistOut1c		"Int (0 <= x <= %u)"
+
+
 
 #pragma mark • Constants
 
@@ -75,7 +85,7 @@ typedef union genParams {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -335,20 +345,29 @@ BernieAssist(
 	
 	switch (nTrials) {
 	case 0:
-	 	LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOut0Trials, oCStr);
+	 	//LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOut0Trials, oCStr);
+            sprintf (oCStr, LPAssistOut1a);
 	 	break;
 	 
 	 case 1:
-		LitterAssistVA(	iDir, iArgNum, strIndexInBang, strIndexOut1Trial, oCStr,
-						me->prob);
+		//LitterAssistVA(	iDir, iArgNum, strIndexInBang, strIndexOut1Trial, oCStr, me->prob);
+            sprintf (oCStr, LPAssistOut1b, me->prob);
 		break;
 		
 	default:
-		LitterAssistVA(	iDir, iArgNum, strIndexInBang, strIndexOutNTrials, oCStr,
-	 					nTrials);
+		//LitterAssistVA(	iDir, iArgNum, strIndexInBang, strIndexOutNTrials, oCStr, nTrials);
+            sprintf (oCStr, LPAssistOut1c, (unsigned int)nTrials);
 	 	break;
 		 }
 	
+        /*
+         #define LPAssistIn1			"Bang (Generate random number)"
+         #define LPAssistIn2			"Int (Number of Bernoulli Trials)"
+         #define LPAssistIn3			"Float (p: probability of 1 resulting)"
+         #define LPAssistOut1a		"Int (Always 0 with no trials)"
+         #define LPAssistOut1b		"Int (0 or 1; p1 = %lf)"
+         #define LPAssistOut1c		"Int (0 <= x <= %lu)"
+         */
 	}
 
 /******************************************************************************************
@@ -471,61 +490,61 @@ static double DoExpect(objBernie* me, eExpectSelector iSel)
 
 #if LITTER_USE_OBEX
 
-	static t_max_err BernieGetMin(objBernie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BernieGetMin(objBernie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV);
 		}
-	static t_max_err BernieGetMax(objBernie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BernieGetMax(objBernie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV);
 		}
-	static t_max_err BernieGetMean(objBernie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BernieGetMean(objBernie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV);
 		}
-	static t_max_err BernieGetMedian(objBernie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BernieGetMedian(objBernie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV);
 		}
-	static t_max_err BernieGetMode(objBernie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BernieGetMode(objBernie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV);
 		}
-	static t_max_err BernieGetVar(objBernie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BernieGetVar(objBernie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV);
 		}
-	static t_max_err BernieGetStdDev(objBernie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BernieGetStdDev(objBernie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV);
 		}
-	static t_max_err BernieGetSkew(objBernie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BernieGetSkew(objBernie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV);
 		}
-	static t_max_err BernieGetKurtosis(objBernie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BernieGetKurtosis(objBernie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV);
 		}
-	static t_max_err BernieGetEntropy(objBernie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BernieGetEntropy(objBernie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
@@ -535,9 +554,9 @@ static double DoExpect(objBernie* me, eExpectSelector iSel)
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-		Symbol*	symLong			= gensym("long");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+		t_symbol*	symLong			= gensym("long");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new("p", symFloat64, 0, NULL, NULL, calcoffset(objBernie, prob));
@@ -571,16 +590,16 @@ static double DoExpect(objBernie* me, eExpectSelector iSel)
 static void
 BernieTell(
 	objBernie*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -592,8 +611,8 @@ static void BernieInfo(objBernie* me)
 static inline void AddInfo(void)
 	{ LitterAddCant((method) BernieInfo, "info"); }
 		
-static void BernieTell(objBernie* me, Symbol* iTarget, Symbol* iMsg)
-	{ LitterExpect((tExpectFunc) DoExpect, (Object*) me, iMsg, iTarget, TRUE); }
+static void BernieTell(objBernie* me, t_symbol* iTarget, t_symbol* iMsg)
+	{ LitterExpect((tExpectFunc) DoExpect, (t_object*) me, iMsg, iTarget, TRUE); }
 
 
 #endif
@@ -668,8 +687,7 @@ BernieGen(
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -679,7 +697,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	LitterSetupClass(	kClassName,
 						sizeof(objBernie),			// Class object size
@@ -690,7 +708,7 @@ main(void)
 						myArgTypes);				// See above
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) BernieBang);
+	LitterAddBang	((method) BernieBang);
 	LitterAddMess1	((method) BernieNTrials,	"in1",		A_LONG);
 	LitterAddMess1	((method) BernieProb,		"ft2",		A_FLOAT);
 	LitterAddMess1	((method) BernieSeed,		"seed",		A_DEFLONG);
@@ -705,8 +723,12 @@ main(void)
 	AddInfo();
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, gObjectClass);
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 

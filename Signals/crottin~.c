@@ -17,19 +17,27 @@
 /******************************************************************************************
  ******************************************************************************************/
 
+/********** GEHT NICHT -- irgendwie ist memory corrupted!!!! -- post function printed keine doubles??? **************/
+
 #pragma mark • Include Files
 
 #include "LitterLib.h"									// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "Taus88.h"
+
+// Assistance strings
+#define LPAssistIn1			"Signal or number (frequency)"
+#define LPAssistIn2			"Signal or number (segment amplitude modification rate)"
+#define LPAssistIn3			"Signal or number (segment width modification rate)"
+#define LPAssistOut1		"Signal (Pulse segment noise)"
 
 
 #pragma mark • Constants
 
 const char*		kClassName	= "lp.crottin~";			// Class name
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 		// Inlets
 	strIndexInFreq			= lpStrIndexLastStandard + 1,
@@ -42,7 +50,7 @@ enum {
 		// Offsets for assiststring()
 	strIndexInLeft			= strIndexInFreq,
 	strIndexOutLeft			= strIndexOutSegmentNoise
-	};
+	};*/
 	
 	// Indices for tracking our proxies
 enum {
@@ -100,6 +108,8 @@ typedef struct {
 					ampRate,
 					widthRate,
 					cumSampErr;
+    
+    short           inlet_connected[3];
 					
 	tSegmentPtr		segments;
 	
@@ -113,7 +123,7 @@ typedef struct {
 #pragma mark • Function Prototypes
 
 	// Class message functions
-void*	CrottinNew(SymbolPtr, short, Atom[]);
+void*	CrottinNew(SymbolPtr, short, t_atom[]);
 void	CrottinFree(objCrottin*);
 
 	// Object message functions
@@ -125,9 +135,12 @@ static void CrottinTattle(objCrottin*);
 static void	CrottinAssist(objCrottin*, void* , long , long , char*);
 static void	CrottinInfo(objCrottin*);
 
+
 	// MSP Messages
-static void	CrottinDSP(objCrottin*, t_signal**, short*);
-static int*	CrottinPerform(int*);
+//static void	CrottinDSP(objCrottin*, t_signal**, short*);
+//static int*	CrottinPerform(int*);
+void    CrottinDSP64(objCrottin*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void    CrottinPerform64(objCrottin*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -147,14 +160,14 @@ static int*	CrottinPerform(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,							// Pointer to our class definition
+	c = class_new(kClassName,							// Pointer to our class definition
 			(method) CrottinNew,					// Instance creation function
 			(method) CrottinFree,					// Default deallocation function
 			sizeof(objCrottin),						// Class object size
@@ -162,27 +175,38 @@ main(void)
 			A_GIMME,								// Arguments too complex for Max arg parser
 			0);
 			
-	dsp_initclass();
+	class_dspinit(c);
 
 	// Messages
-	addbang	((method) CrottinBang);
-	addint	((method) CrottinInt);
-	addfloat((method) CrottinFloat);
-	addmess	((method) CrottinInterp,	"interp",	A_LONG, 0);
-	addmess	((method) CrottinTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) CrottinTattle,	"tattle",	A_NOTHING);
-	addmess	((method) CrottinAssist,	"assist",	A_CANT, 0);
-	addmess	((method) CrottinInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) CrottinBang,     "bang", 0);
+	class_addmethod(c,(method) CrottinInt,      "int",      A_LONG, 0);
+	class_addmethod(c,(method) CrottinFloat,    "float",    A_FLOAT, 0);
+	class_addmethod(c,(method) CrottinInterp,	"interp",	A_LONG, 0);
+	class_addmethod(c,(method) CrottinTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) CrottinTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) CrottinAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) CrottinInfo,		"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) CrottinDSP,		"dsp",		A_CANT, 0);
+	class_addmethod(c,(method) CrottinDSP64,	"dsp64",		A_CANT, 0);
 
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+
+        return 0;
 	
 	}
 
+
+void test(objCrottin*	me, double f) {
+    post("f: %f", f);
+}
 
 
 #pragma mark -
@@ -300,12 +324,16 @@ SetFreq(
 	double		iFreq)
 	
 	{
-	
+        printf("freq: %f\n", iFreq);
+        
 	if (iFreq < 0.0)		// Actually, a negative frequency might make a subtle difference
 		iFreq = - iFreq;	// to the sound, but the perform method is more efficient if
 							// we don't have to check for negative increments.
 							// And most people won't notice the difference.
 
+        post("freq: %f", iFreq);
+        object_post((t_object*)me, "freqq: %f", iFreq);
+        
 	me->freq = iFreq;
 	SetWaveLen(me, me->sr / iFreq);
 	
@@ -480,7 +508,7 @@ void*
 CrottinNew(
 	SymbolPtr	iName,									// Must be 'lp.crottin~'
 	short		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 	
 	{
 	#pragma unused(iName)
@@ -502,6 +530,7 @@ CrottinNew(
 	
 	objCrottin* me	= NIL;
 	
+        
 	// Parse arguments
 	// Note that iArgC is one higher than the index of the last argument specified
 	switch (iArgC) {
@@ -541,7 +570,7 @@ CrottinNew(
 		}
 	
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (objCrottin*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 3);		// Signal inlets for frequency, etc.
 	
 	outlet_new(me, "signal");				// Outlet
@@ -565,11 +594,16 @@ CrottinNew(
 	me->widthRate		= widthRate;
 	me->cumSampErr		= 0.0;
 	
-	me->segments = (tSegmentPtr) NewPtr(segCount * sizeof(tSegment));
+        me->segments = (tSegmentPtr) sysmem_newptrclear(segCount * sizeof(tSegment));
+	//me->segments = (tSegmentPtr) NewPtr(segCount * sizeof(tSegment));
 		if (me->segments == NIL) { me->segCount = 0; goto punt; }		// Oops!
 	
 	GenNewGoals(me);
 	RollOverGoals(me);
+        
+        object_post(NULL, "new: segCount: %d", me->segCount);
+        printf("new freq: %f\n", me->freq );
+        object_post(NULL, "new: freq: %f", me->freq);
 	
 	me->curSeg			= 0;				// Real values
 	me->sampsLeft		= me->segments[0].curWidth;
@@ -582,7 +616,7 @@ CrottinNew(
 	// ----------------------------------------------------
 punt:
 	error("%s: can't create new object", kClassName);
-	if (me != NIL) freeobject((Object*) me);
+	if (me != NIL) freeobject((t_object*) me);
 	return NIL;
 	}
 
@@ -601,7 +635,8 @@ CrottinFree(
 	dsp_free((t_pxobject*) me);					// Call me first.
 	
 	if (me->segments != NIL)
-		DisposePtr((Ptr) me->segments);
+        sysmem_freeptr(me->segments);
+		//DisposePtr((Ptr) me->segments);
 	
 	}
 
@@ -633,8 +668,10 @@ void CrottinFloat(
 	double		iVal)
 	
 	{
+        
+        post("input float: %f", iVal);
 	
-	switch ( ObjectGetInlet((Object*) me, me->coreObject.z_in) ) {
+	switch ( ObjectGetInlet((t_object*) me, me->coreObject.z_in) ) {
 		case proxyAmpRate + 1:		SetAmpRate(me, iVal);	break;
 		case proxyWidthRate + 1:	SetWidthRate(me, iVal);	break;
 		default:					SetFreq(me, iVal);		break;
@@ -659,7 +696,7 @@ void CrottinInterp(
 	{
 	iState = (iState != 0);						// Convert to canonical boolean value
 	
-	switch ( ObjectGetInlet((Object*) me, me->coreObject.z_in) ) {
+	switch ( ObjectGetInlet((t_object*) me, me->coreObject.z_in) ) {
 		default:					me->interpAmp = iState;
 			// Having set one flag, now fall into next case...
 		case proxyWidthRate + 1:	me->interpWidth = iState;	break;
@@ -718,7 +755,21 @@ void CrottinAssist(objCrottin* me, void* iBox, long iDir, long iArgNum, char* oC
 	{
 	#pragma unused(me, iBox)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void CrottinInfo(objCrottin* me)
@@ -732,7 +783,7 @@ void CrottinInfo(objCrottin* me)
  *	CrottinDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 CrottinDSP(
 	objCrottin*	me,
@@ -755,7 +806,126 @@ CrottinDSP(
 		);
 	
 	}
-	
+*/
+
+void    CrottinDSP64(objCrottin *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    double sr = samplerate;
+    
+    int k;
+    for(k=0;k<3;k++)
+        me->inlet_connected[k] = count[k];
+
+    
+    if (me->sr != sr)
+        SetSR(me, sr);								// Recalculate segment lengths, etc.
+    
+    object_method(dsp64, gensym("dsp_add64"), me, CrottinPerform64, 0, NULL);
+
+}
+
+
+void    CrottinPerform64(objCrottin *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    long			i,
+    segCount,
+    seg,
+    sampsLeft;
+    double			x,							// Multi-purpose floating point register
+    cumErr;
+    tSegmentPtr		sp;
+    tSampleVector	out;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    if (me->bang) {
+        // DoTrigger(me);
+        RollOverGoals(me);
+        me->bang = false;
+    }
+    
+    // Copy parameters into registers
+    i			= sampleframes;
+    out			= outs[0];
+    segCount	= me->segCount;
+    seg			= me->curSeg;
+    sp			= me->segments;
+    sampsLeft	= me->sampsLeft;
+    cumErr		= me->cumSampErr;
+    
+    double  *paramFreq = ins[0];
+    double  *paramAmpRate = ins[1];
+    double  *paramWidthRate = ins[2];
+
+    
+    // Need to update parameters?
+    if (me->inlet_connected[inletFreq]) {
+        x = paramFreq[0];  //*(paramFreq);
+        if (x != me->freq) SetFreq(me, x);
+    }
+    if (me->inlet_connected[inletAmpRate]) {
+        x = paramAmpRate[0];    //*(paramAmpRate);
+        if (x != me->ampRate) SetAmpRate(me, x);
+    }
+    if (me->inlet_connected[inletWidthRate]) {
+        x = paramWidthRate[0];  //*(paramWidthRate);
+        if (x != me->widthRate) SetWidthRate(me, x);
+    }
+    
+    // Do our stuff
+    do {
+        double	amp = sp[seg].curAmp;
+        long	j	= sampsLeft;				// Samples we will write in following loop
+        
+        // Check if we need to adjust for cumulative error from truncating floating point
+        // segment lengths to integral numbers of samples
+        if (cumErr >= 0.5) {
+            j += 1;
+            cumErr -= 1.0;
+        }
+        
+        if (j > i) {							// Limit to available buffer size, or...
+            j = i;
+            sampsLeft -= j;
+        }
+        else {									// ...prepare next segment
+            cumErr += fmod(sp[seg].curWidth, 1.0);
+            
+            if (me->interpAmp)
+                sp[seg].curAmp += sp[seg].deltaAmp;
+            if (me->interpWidth)
+                sp[seg].curWidth += sp[seg].deltaWidth;
+            
+            seg += 1;
+            
+            // Time to cycle round?
+            if (seg >= segCount) {
+                if (me->interpAmp && --me->ampCtr <= 0)
+                    RollOverAmpGoals(me);
+                if (me->interpWidth && --me->widthCtr <= 0)
+                    RollOverWidthGoals(me);
+                
+                seg = 0;
+            }
+            
+            sampsLeft = sp[seg].curWidth;
+        }
+        
+        // Decrement main counter
+        i -= j;
+        
+        // Write samples
+        while (j-- > 0)
+            *out++ = amp;
+        
+    } while (i > 0);
+    
+    // Update object components
+    me->curSeg		= seg;
+    me->sampsLeft	= sampsLeft;
+    me->cumSampErr	= cumErr;
+
+}
 
 /******************************************************************************************
  *
@@ -771,7 +941,7 @@ CrottinDSP(
  *		- Output signal
  *
  ******************************************************************************************/
-
+/*
 int*
 CrottinPerform(
 	int iParams[])
@@ -827,7 +997,7 @@ CrottinPerform(
 		}
 	if ((float*) iParams[paramWidthRate] != NIL) {
 		x = *((float*) iParams[paramWidthRate]);
-		if (x != me->freq) SetWidthRate(me, x);
+		if (x != me->freq) SetWidthRate(me, x);         // looks like a (small) bug to me, vb
 		}
 	
 	// Do our stuff
@@ -887,3 +1057,4 @@ CrottinPerform(
 exit:
 	return iParams + paramNextLink;
 	}
+*/

@@ -32,7 +32,7 @@
 #pragma mark • Include Files
 
 #include "IChingCore.h"							// #includes LitterLib.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 
 
@@ -40,6 +40,14 @@
 
 const char*	kClassName		= "lp.kg";			// Class name
 
+// Assistance strings
+#define LPAssistIn1			"Int (Main hexagram to map), Bang (calculate new weights)"
+#define LPAssistIn2			"Int (Future hexagram to map)"
+#define LPAssistOut1		"Int (Mapping of main hexagram value)"
+#define LPAssistOut2		"Int (Mapping of future hexagram value)"
+
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexInPresent		= lpStrIndexLastStandard + 1,
@@ -48,7 +56,7 @@ enum {
 	strIndexOutPresent,
 	strIndexOutFuture
 	};
-
+*/
 	// This is pretty big while allowing use of a reasonably compact representation
 #ifdef __GNUC__
 	// ...but this is a lame way of having to do it
@@ -63,7 +71,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object	coreObject;
+	t_object	coreObject;
 	
 	voidPtr	futureOut;					// Main outlet accessed through coreObject.o_outlet
 	
@@ -81,7 +89,7 @@ typedef struct {
 #pragma mark • Function Prototypes
 
 	// Class message functions
-static void*	KgNew	(long, Symbol*);
+static void*	KgNew	(long, t_symbol*);
 
 	// Object message functions
 static void		KgMainIn	(tChingMap*, long);
@@ -111,14 +119,14 @@ static void		KgInfo		(tChingMap*);
  *	
  ******************************************************************************************/
 
-void
-main()
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(	kClassName,				// Pointer to our class definition
 			(method) KgNew,					// Instance creation function
 			NIL,							// No custom deallocation function
 			sizeof(tChingMap),				// Class object size
@@ -128,20 +136,25 @@ main()
 			0);		
 	
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) KgBang);
-	LITTER_TIMEBOMB addint	((method) KgMainIn);
-	addinx	((method) KgFutureIn, 1);
-	addmess ((method) KgYarrow,		"yarrow",	A_NOTHING);
-	addmess ((method) KgCoin,		"coin",		A_NOTHING);
-	addmess ((method) KgSize,		"size",		A_LONG, 0);
-	addmess	((method) KgTattle,		"dblclick",	A_CANT, 0); 
-	addmess	((method) KgTattle,		"tattle",	A_NOTHING); 
-	addmess	((method) KgAssist,		"assist",	A_CANT, 0);
-	addmess	((method) KgInfo,		"info",		A_CANT, 0);
+	class_addmethod(c, (method) KgBang, "bang", 0);
+	class_addmethod(c, (method) KgMainIn, "int", A_LONG, 0);
+	class_addmethod(c, (method) KgFutureIn, "in1", A_LONG, 0);
+	class_addmethod(c, (method) KgYarrow,		"yarrow",	A_NOTHING);
+	class_addmethod(c, (method) KgCoin,		"coin",		A_NOTHING);
+	class_addmethod(c, (method) KgSize,		"size",		A_LONG, 0);
+	class_addmethod(c, (method) KgTattle,		"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) KgTattle,		"tattle",	A_NOTHING);
+	class_addmethod(c, (method) KgAssist,		"assist",	A_CANT, 0);
+	class_addmethod(c, (method) KgInfo,		"info",		A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	}
 
@@ -227,7 +240,7 @@ SetThreshholds(
 void*
 KgNew(
 	long	iSize,
-	Symbol* iMethod)
+	t_symbol* iMethod)
 	
 	{
 	const int	kDefSize	= 2;
@@ -243,7 +256,7 @@ KgNew(
 		iSize = kMaxItems;
 	
 	// Let Max allocate the object, its outlets, and inlets.
-	me = (tChingMap*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 		if (me == NIL) goto punt;
 	
 	me->futureOut = intout(me);
@@ -270,7 +283,7 @@ KgNew(
 	// Poor man's exception handling
 punt:
 	if (me != NIL)
-		freeobject((Object*) me);
+		freeobject((t_object*) me);
 	
 	return NIL;
 	}
@@ -374,7 +387,7 @@ KgTattle(
 	int		i,
 			items = me->items;
 	BytePtr	curThresh;
-	Atom	ant;
+	t_atom	ant;
 	
 	post("%s state:", (char*) kClassName);
 	post("  Method: %s", me->doYarrow ? "yarrow sticks" : "coins");
@@ -412,7 +425,21 @@ KgAssist(
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInPresent, strIndexOutPresent, oCDestStr);
+	//LitterAssist(iDir, iArgNum, strIndexInPresent, strIndexOutPresent, oCDestStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCDestStr, LPAssistIn1); break;
+                case 1: sprintf (oCDestStr, LPAssistIn2); break;
+                    
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCDestStr, LPAssistOut1); break;
+                case 1: sprintf (oCDestStr, LPAssistOut2); break;
+            }
+            
+        }
 	}
 
 void KgInfo(tChingMap* me)

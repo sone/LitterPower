@@ -20,13 +20,21 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 
 
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.ksks~";		// Class name
+
+// Assistance strings
+#define LPAssistIn1			"Bang or signal (trigger)"
+#define LPAssistIn2			"Signal or float (frequency [Hz])"
+#define LPAssistIn3			"Signal or float (decay time [ms])"
+#define LPAssistIn4			"Signal or float (blend factor, in [-1 .. 1])"
+#define LPAssistOut1		"Signal (Plucked noise)"
+
 
 #ifdef __GNUC__
 	// Lame
@@ -38,7 +46,7 @@ const char*	kClassName		= "lp.ksks~";		// Class name
 												// estimates for this value
 #endif
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInTrig		= lpStrIndexLastStandard + 1,
 	strIndexInFreq,
@@ -50,6 +58,7 @@ enum {
 	strIndexInLeft		= strIndexInTrig,
 	strIndexOutLeft		= strIndexOutPluck
 	};
+ */
 
 	// Proxy/Inlet IDs
 enum {
@@ -121,8 +130,10 @@ static void	PluckAssist(objPluck*, void* , long , long , char*);
 static void	PluckInfo(objPluck*);
 
 	// MSP Messages
-static void	PluckDSP(objPluck*, t_signal**, short*);
-static int*	PluckPerform(int*);
+//static void	PluckDSP(objPluck*, t_signal**, short*);
+//static int*	PluckPerform(int*);
+void    PluckDSP64(objPluck*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void    PluckPerform64(objPluck*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -142,14 +153,14 @@ static int*	PluckPerform(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) PluckNew,		// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(objPluck),			// Class object size
@@ -160,24 +171,30 @@ main(void)
 			A_DEFFLOAT,					//	3) Initial Blend Factor [1.0]
 			0);		
 	
-	dsp_initclass();
+	class_dspinit(c);
 
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) PluckTrigger);
-	LITTER_TIMEBOMB addint	((method) PluckInt); // Because Max won't typecast for us :-(
-	LITTER_TIMEBOMB addfloat((method) PluckFloat);
-	addmess	((method) PluckTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) PluckTattle,	"tattle",	A_NOTHING);
-	addmess	((method) PluckAssist,	"assist",	A_CANT, 0);
-	addmess	((method) PluckInfo,	"info",		A_CANT, 0);
+	class_addmethod(c,(method) PluckTrigger, "bang", 0);
+	class_addmethod(c,(method) PluckInt, "int", A_LONG, 0); // Because Max won't typecast for us :-(
+	class_addmethod(c,(method) PluckFloat, "float", A_FLOAT, 0);
+	class_addmethod(c,(method) PluckTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) PluckTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) PluckAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) PluckInfo,	"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	addmess	((method) PluckDSP,		"dsp",		A_CANT, 0);
+	class_addmethod(c,(method) PluckDSP64,		"dsp64",		A_CANT, 0);
 
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
 	
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
+        
 	}
 
 #pragma mark -
@@ -291,7 +308,7 @@ SetBlend(
 		inputError = true;
 		}
 	if (inputError)
-		error("%s: blend must be between -1 and 1", kClassName);
+		object_error((t_object*)me, "blend must be between -1 and 1");
 	
 	me->blend = iBlend;
 	me->blendTau = ((double) kULongMax) * iBlend;
@@ -321,7 +338,7 @@ PluckNew(
 	objPluck*		me	= NIL;
 	
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (objPluck*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), kInletCount);
 
 	outlet_new(me, "signal");
@@ -372,7 +389,7 @@ PluckFloat(
 	
 	{
 	
-	switch ( ObjectGetInlet((Object*) me, me->coreObject.z_in) ) {
+	switch ( ObjectGetInlet((t_object*) me, me->coreObject.z_in) ) {
 		case inletFreq:		SetFreq(me, iVal);					break;
 		case inletDecay:	SetDecay(me, iVal);					break;
 		case inletBlend:	SetBlend(me, iVal);					break;
@@ -443,7 +460,23 @@ void PluckAssist(objPluck* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+                case 3: sprintf (oCStr, LPAssistIn4); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void PluckInfo(objPluck* me)
@@ -459,7 +492,7 @@ void PluckInfo(objPluck* me)
  *	PluckDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 PluckDSP(
 	objPluck*	me,
@@ -487,7 +520,21 @@ PluckDSP(
 		);
 	
 	}
-	
+*/
+
+void    PluckDSP64(objPluck *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    double sr = samplerate;
+    
+    if (me->sr != sr) {
+        me->sr = sr;
+        me->phiStep	= kBufSize * (me->freq / sr);			// Recalculate phiStep
+    }
+    
+    object_method(dsp64, gensym("dsp_add64"), me, PluckPerform64, 0, NULL);
+
+}
+
 
 /******************************************************************************************
  *
@@ -511,7 +558,7 @@ PluckDSP(
 	static inline void SmoothBuf(tSampleVector ioBuf, long iStart, long iEnd, double iRho)
 		{
 		long	span = iEnd - iStart;		// Actually, always one less than we really mean
-		float	mean = (ioBuf[iStart] + ioBuf[iEnd]) * iRho;
+		double	mean = (ioBuf[iStart] + ioBuf[iEnd]) * iRho;
 			
 		if (span < 0) {
 			// The samples to process wrap around from the end of the wavetable back to
@@ -545,7 +592,127 @@ PluckDSP(
 		*ioCumErr = newErr;
 		return iPhi;
 		}
-	
+
+
+void    PluckPerform64(objPluck *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    const double kMaxRho = 0.499999;					// Just under 0.5 to reduce DC
+    
+    long			n;									// Count samples in sample vector
+    tSampleVector	trig,								// Signal vectors
+    freq,
+    decay,
+    blend,
+    out;
+    double			phiFrac,
+    cumPhiErr,
+    rho;
+    long			phiStep,
+    curPhi,
+    prevPhi;
+    unsigned long	blendTau;
+    tSampleVector	buf;
+    
+    
+    if (me->coreObject.z_disabled) return;			// Nothing to do, we're out of here
+    
+    if (me->trigger)
+        GenBuf(me);
+    
+    // Copy parameters into registers
+    n			= sampleframes;
+    trig		= ins[0];
+    freq		= ins[1];
+    decay		= ins[2];
+    blend		= ins[3];
+    out			= outs[0];
+    // Copy object members into registers
+    phiFrac		= me->phiFrac;
+    cumPhiErr	= me->cumPhiErr;
+    rho			= me->rho;
+    phiStep		= me->phiStep;
+    curPhi		= me->curPhi;
+    buf			= me->buf;
+    blendTau	= me->blendTau;
+    
+    if (rho <= 1.0) {
+        // Modified Karplus-Strong w/Decay Compression
+        rho *= kMaxRho;
+        
+        if (blendTau > 0) do {
+            // Do magic blend sign switch?
+            if (Taus88(NIL) < blendTau)
+                buf[curPhi] *= -1.0;
+            
+            // Calculate output value
+            *out++ = buf[curPhi];
+            
+            // Calculate phi for next sample
+            prevPhi = curPhi;
+            curPhi = IncrPhi(curPhi, phiStep, &cumPhiErr, phiFrac);
+            
+            // Tick low-pass filter
+            if (curPhi != prevPhi)
+                SmoothBuf(buf, prevPhi, curPhi, rho);
+        } while (--n > 0);
+        
+        else do {												// blendTau == 0
+            // Calculate output value
+            *out++ = buf[curPhi];
+            
+            // Calculate phi for next sample
+            prevPhi = curPhi;
+            curPhi = IncrPhi(curPhi, phiStep, &cumPhiErr, phiFrac);
+            
+            // Tick low-pass filter
+            if (curPhi != prevPhi)
+                SmoothBuf(buf, prevPhi, curPhi, rho);
+        } while (--n > 0);
+    }
+    
+    else {														// rho > 1.0
+        // Karplus-Strong w/Decay Stretching
+        unsigned long tau = me->tau;
+        
+        if (blendTau > 0) do {
+            // Do magic blend sign switch?
+            if (Taus88(NIL) < blendTau)
+                buf[curPhi] *= -1.0;
+            
+            // Calculate output value
+            *out++ = buf[curPhi];
+            
+            // Calculate phi for next sample
+            prevPhi = curPhi;
+            curPhi = IncrPhi(curPhi, phiStep, &cumPhiErr, phiFrac);
+            
+            // Tick stochastically-delayed low-pass filter
+            if (curPhi != prevPhi && Taus88(NIL) <= tau)
+                SmoothBuf(buf, prevPhi, curPhi, kMaxRho);
+            
+        } while (--n > 0);
+        
+        else do {												// blendTau == 0
+            // Calculate output value
+            *out++ = buf[curPhi];
+            
+            // Calculate phi for next sample
+            prevPhi = curPhi;
+            curPhi = IncrPhi(curPhi, phiStep, &cumPhiErr, phiFrac);
+            
+            // Tick stochastically-delayed low-pass filter
+            if (curPhi != prevPhi && Taus88(NIL) <= tau)
+                SmoothBuf(buf, prevPhi, curPhi, kMaxRho);
+            
+        } while (--n > 0);
+    }
+    
+    // Update member data
+    me->cumPhiErr	= cumPhiErr;
+    me->curPhi		= curPhi;
+}
+
+/*
 int*
 PluckPerform(
 	int* iParams)
@@ -683,3 +850,4 @@ PluckPerform(
 punt:
 	return iParams + paramNextLink;
 	}
+ */

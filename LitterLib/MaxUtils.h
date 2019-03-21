@@ -180,8 +180,8 @@ enum keyCode {
 
 	// Sometimes useful to have these:
 typedef t_atom*		AtomPtr;
-typedef t_symbol*		SymbolPtr;
-typedef t_object*		tObjectPtr;
+typedef t_symbol*	SymbolPtr;
+typedef t_object*	tObjectPtr;
 typedef union word	tWord;
 typedef t_atombuf	AtomBuf, *AtomBufPtr;
 

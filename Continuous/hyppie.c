@@ -161,7 +161,11 @@ static void HyppieAssist(objHyperan* me, void* box, long iDir, long iArgNum, cha
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexLeftInlet, strIndexLeftOutlet, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexLeftInlet, strIndexLeftOutlet, oCStr);
+        if (iDir == ASSIST_INLET)
+            sprintf (oCStr, LPAssistIn1);
+        else
+            sprintf (oCStr, LPAssistOut1);
 	}
 
 static void

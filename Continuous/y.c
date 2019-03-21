@@ -146,7 +146,16 @@ static void YAssist(objWeibull* me, void* box, long iDir, long iArgNum, char* oC
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexLeftInlet, strIndexLeftOutlet, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexLeftInlet, strIndexLeftOutlet, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+        else
+            sprintf (oCStr, LPAssistOut1);
 	}
 
 static void

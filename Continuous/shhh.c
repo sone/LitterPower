@@ -31,7 +31,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "Taus88.h"
 #include "UniformExpectations.h"
@@ -40,17 +40,22 @@
 
 const char*	kClassName		= "lp.shhh";			// Class name
 
+// Assistance strings
+#define LPAssistIn1         "Bang (Generate random number)"
+#define LPAssistIn2         "Int (NN factor)"
+#define LPAssistOut1        "Float (Random value, 0 <= x <= 1)"
+
 
 const int	kMaxNN			= 31;
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInBang		= lpStrIndexLastStandard + 1,
 	strIndexInNN,
 	
 	strIndexOutWhite
 	};
-
+*/
 
 #pragma mark • Type Definitions
 
@@ -59,7 +64,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object			coreObject;
+	t_object			coreObject;
 	
 	tTaus88DataPtr	tausData;
 	
@@ -83,7 +88,7 @@ void	ShhhFree	(objWhite*);
 static void ShhhBang(objWhite*);
 static void ShhhNN(objWhite*, long);
 static void ShhhSeed(objWhite*, long);
-static void ShhhTell(objWhite*, Symbol*, Symbol*);
+static void ShhhTell(objWhite*, t_symbol*, t_symbol*);
 static void ShhhTattle(objWhite*);
 static void	ShhhAssist(objWhite*, void* , long , long , char*);
 static void	ShhhInfo(objWhite*);
@@ -106,14 +111,14 @@ static void	ShhhInfo(objWhite*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,			// Pointer to our class definition
+	c = class_new(kClassName,			// Pointer to our class definition
 			(method) ShhhNew,		// Instance creation function
 			(method) ShhhFree,		// Custom deallocation function
 			sizeof(objWhite),			// Class object size
@@ -124,18 +129,23 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) ShhhBang);
-	addmess	((method) ShhhNN,		"in1",		A_LONG);
-	addmess ((method) ShhhSeed,		"seed",		A_DEFLONG, 0);
-	addmess ((method) ShhhTell,		"tell",		A_SYM, A_SYM, 0);
-	addmess	((method) ShhhTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) ShhhTattle,	"tattle",	A_NOTHING);
-	addmess	((method) ShhhAssist,	"assist",	A_CANT, 0);
-	addmess	((method) ShhhInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) ShhhBang,    "bang", 0);
+	class_addmethod(c,(method) ShhhNN,		"in1",		A_LONG);
+	class_addmethod(c,(method) ShhhSeed,	"seed",		A_DEFLONG, 0);
+	class_addmethod(c,(method) ShhhTell,	"tell",		A_SYM, A_SYM, 0);
+	class_addmethod(c,(method) ShhhTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) ShhhTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) ShhhAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) ShhhInfo,	"info",		A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -177,7 +187,7 @@ ShhhNew(
 	// Finished checking intialization parameters
 
 	// Let Max allocate us, our inlets, and outlets.
-	me = (objWhite*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	
 	intin(me, 1);												// NN inlet
 	
@@ -204,7 +214,7 @@ ShhhBang(
 	objWhite* me)
 	
 	{
-	unsigned long white;
+	unsigned int white;
 	
 	white = Taus88(me->tausData);
 	if (me->nn != 0) {
@@ -259,7 +269,7 @@ ShhhSeed(
 	
 	{
 	
-	Taus88Seed(me->tausData, (unsigned long) iSeed);
+	Taus88Seed(me->tausData, (unsigned int) iSeed);
 	
 	}
 
@@ -277,8 +287,8 @@ ShhhSeed(
 		return UniformExpectationsContinuous(0.0, 1.0, iSel);
 		}
 
-void ShhhTell(objWhite* me, Symbol* iTarget, Symbol* iMsg)
-	{ LitterExpect((tExpectFunc) DoExpect, (Object*) me, iMsg, iTarget, TRUE); }
+void ShhhTell(objWhite* me, t_symbol* iTarget, t_symbol* iMsg)
+	{ LitterExpect((tExpectFunc) DoExpect, (t_object*) me, iMsg, iTarget, TRUE); }
 
 
 /******************************************************************************************
@@ -322,8 +332,15 @@ ShhhAssist(
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOutWhite, oCStr);
-	
+	//LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOutWhite, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+            }
+        }
+        else sprintf (oCStr, LPAssistOut1);
+
 	}
 
 /******************************************************************************************

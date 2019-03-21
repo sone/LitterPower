@@ -30,11 +30,19 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 #include "UniformExpectations.h"
 
+// Assistance strings
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Int (Number of dice)"
+#define LPAssistIn3			"Int (Number of faces on each die)"
+#define LPAssistOut1a		"Int (Random value, %ld <= x <= %ld)"
+#define LPAssistOut1b		"Int (Always 0 with no dice)"
+#define LPAssistOut1c		"Int (Always %ld with one face per die)"
+#define LPAssistOut1d		"Int (Range undefined: possible overflow)"
 
 #pragma mark • Constants
 
@@ -46,7 +54,7 @@ const long	kDefNDice		= 2,
 			kMinFaces		= 1;			// How can a die have one face?
 											// Don't ask me; ask a topologist.
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInBang		= lpStrIndexLastStandard + 1,
 	strIndexInNDice,
@@ -56,7 +64,7 @@ enum {
 	strIndexOutNoDice,						// Assist string if nDice == 0
 	strIndexOutNoChance,					// Assist string if nFaces == 1
 	strIndexOutOverflow						// Assist string if nDice * nFaces > kLongMax
-	};
+	};*/
 
 
 #pragma mark • Type Definitions
@@ -66,7 +74,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -237,19 +245,55 @@ DiceyAssist(
 	{
 	#pragma unused(box)
 	
-	short	outletString;
+	//short	outletString;
 	long	min	= me->nDice,
 			max	= min * me->nFaces;
 	
-	
-	
 		// Check for various "special" cases
+        /*
 	if (min == 0)				outletString = strIndexOutNoDice;
 	else if (max == min)		outletString = strIndexOutNoChance;
 	else if ( CanOverflow(me) )	outletString = strIndexOutOverflow;
 	else						outletString = strIndexOutRange;
 	
 	LitterAssistVA(iDir, iArgNum, strIndexInBang, outletString, oCStr, min, max);
+        */
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+        else {
+            if (min == 0)
+                sprintf (oCStr, LPAssistOut1b);
+            else if (max == min)
+                sprintf (oCStr, LPAssistOut1c, min);
+            else if ( CanOverflow(me) )
+                sprintf (oCStr, LPAssistOut1d);
+            else
+                sprintf (oCStr, LPAssistOut1a, min, max);
+        }
+        
+        /*
+         #define LPAssistIn1			"Bang (Generate random number)"
+         #define LPAssistIn2			"Int (Number of dice)"
+         #define LPAssistIn3			"Int (Number of faces on each die)"
+         #define LPAssistOut1a		"Int (Random value, %ld <= x <= %ld)"
+         #define LPAssistOut1b		"Int (Always 0 with no dice)"
+         #define LPAssistOut1c		"Int (Always %ld with one face per die)"
+         #define LPAssistOut1d		"Int (Range undefined: possible overflow)"
+//////////////////////////
+         strIndexInBang		= lpStrIndexLastStandard + 1,
+         strIndexInNDice,
+         strIndexInNFaces,
+         
+         strIndexOutRange,			// Normal assist string
+         strIndexOutNoDice,			// Assist string if nDice == 0
+         strIndexOutNoChance,		// Assist string if nFaces == 1
+         strIndexOutOverflow		// Assist string if nDice * nFaces > kLongMax
+         */
 	
 	}
 
@@ -305,61 +349,61 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err DiceyGetMin(objDicey* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err DiceyGetMin(objDicey* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV);
 		}
-	static t_max_err DiceyGetMax(objDicey* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err DiceyGetMax(objDicey* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV);
 		}
-	static t_max_err DiceyGetMean(objDicey* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err DiceyGetMean(objDicey* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV);
 		}
-	static t_max_err DiceyGetMedian(objDicey* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err DiceyGetMedian(objDicey* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV);
 		}
-	static t_max_err DiceyGetMode(objDicey* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err DiceyGetMode(objDicey* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV);
 		}
-	static t_max_err DiceyGetVar(objDicey* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err DiceyGetVar(objDicey* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV);
 		}
-	static t_max_err DiceyGetStdDev(objDicey* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err DiceyGetStdDev(objDicey* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV);
 		}
-	static t_max_err DiceyGetSkew(objDicey* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err DiceyGetSkew(objDicey* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV);
 		}
-	static t_max_err DiceyGetKurtosis(objDicey* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err DiceyGetKurtosis(objDicey* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV);
 		}
-	static t_max_err DiceyGetEntropy(objDicey* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err DiceyGetEntropy(objDicey* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
@@ -369,9 +413,9 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-		Symbol*	symLong			= gensym("long");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+		t_symbol*	symLong			= gensym("long");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new("dice", symLong, 0, NULL, NULL, calcoffset(objDicey, nDice));
@@ -405,16 +449,16 @@ DoExpect(
 static void
 DiceyTell(
 	objDicey*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -441,8 +485,7 @@ static void DiceyTell(objDicey* me, Symbol* iTarget, Symbol* iMsg)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -452,7 +495,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -465,7 +508,7 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) DiceyBang);
+	LitterAddBang	((method) DiceyBang);
 	LitterAddMess1	((method) DiceyNDice,	"in1",		A_LONG);
 	LitterAddMess1	((method) DiceyNFaces,	"in2",		A_LONG);
 	LitterAddMess1	((method) DiceySeed,	"seed",		A_DEFLONG);
@@ -477,8 +520,12 @@ main(void)
 	AddInfo();
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, gObjectClass);
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 

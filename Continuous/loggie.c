@@ -174,7 +174,17 @@ static void LoggieAssist(objLogiran* me, void* iBox, long iDir, long iArgNum, ch
 	{
 	#pragma unused (me, iBox)
 	
-	 LitterAssist(iDir, iArgNum, strIndexInBang, strIndexTheOutlet, oCStr);
+	 //LitterAssist(iDir, iArgNum, strIndexInBang, strIndexTheOutlet, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+        else
+            sprintf (oCStr, LPAssistOut1);
+
 	 }
 
 static void

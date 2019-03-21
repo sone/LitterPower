@@ -67,10 +67,10 @@ static inline double	ULong2Unit_zo	(UInt32);
 static inline double	ULong2Unit_Zo	(UInt32);
 static inline double	ULong2Unit_zO	(UInt32);
 static inline double	ULong2Unit_ZO	(UInt32);
-static inline float		ULong2Signal	(UInt32);				// ! returns a simple float !
-static inline float		Long2Signal		(long);
-static inline double	Long2Signal_D   (long);                 // vb
-static inline double	ULong2Signal_D  (UInt32);
+//static inline float		ULong2Signal	(UInt32);				// ! returns a simple float !
+static inline double    ULong2Signal    (UInt32);
+//static inline float   Long2Signal		(long);
+static inline double    Long2Signal (SInt32);
 
 
 
@@ -120,7 +120,7 @@ inline double	ULong2Unit_ZO(UInt32 iVal)			// Return range: 0 <= x <= 1
 					
 					return kScale * iVal;
 					}
-
+/*
 inline float	ULong2Signal(UInt32 iVal)			// Return range: -1 <= x < 1
 					{
 					// This may not to be as highly optimized as it appears
@@ -130,25 +130,23 @@ inline float	ULong2Signal(UInt32 iVal)			// Return range: -1 <= x < 1
 					
 					return *((float*) &iVal) - 3.0f; 
 					}
-// NOT READY YET!
-inline double	ULong2Signal_D(UInt32 iVal)			// Return range: -1 <= x < 1
+*/
+// vb
+inline double	ULong2Signal(UInt32 iVal)			// Return range: -1 <= x < 1
 {
-    // This may not to be as highly optimized as it appears
-    // ?? !! Investigate !! ??
-    iVal >>= 9;
-    iVal  |= 0x40000000;
+    const double kScale = (2.0 / (double)kULongMax);
     
-    return *((double*) &iVal) - 3.0;
+    return iVal * kScale - 1.0;
 }
-
+/*
 inline float	Long2Signal(long iVal)						// Return range: -1 <= x < 1
 					{
 					const double kScale = 1.0 / ((double) kLongMax + 1.0);
 					
 					return kScale * iVal;
-					}
+					}*/
 // vb
-inline double	Long2Signal_D(long iVal)						// Return range: -1 <= x < 1
+inline double	Long2Signal(SInt32 iVal)						// Return range: -1 <= x < 1
 {
     const double kScale = 1.0 / ((double) kLongMax + 1.0);
     

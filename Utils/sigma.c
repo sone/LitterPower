@@ -33,12 +33,20 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.sigma";			// Class name
 
+// Assistance strings
+#define LPAssistInAny		"%s (Triggers sum of all inlets)"
+#define LPAssistOut1		"%s (Sum)"
+#define LPAssistFrag1		"int"
+#define LPAssistFrag2		"float"
+
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexAnyInlet		= lpStrIndexLastStandard + 1,
@@ -50,7 +58,7 @@ enum {
 	strIndexLeftIn			= strIndexAnyInlet,
 	strIndexLeftOut			= strIndexSumOutlet
 	};
-
+*/
 
 #pragma mark • Type Definitions
 
@@ -61,7 +69,7 @@ typedef tWordPtr*	tWordHdl;
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	
 	Boolean		doFloats;			// Are we doing integer arithmetic or fp?
 	long		inletNum,			// Max tells us which inlet was used here.
@@ -79,14 +87,14 @@ typedef objSigma* objSigmaPtr;
 #pragma mark • Function Prototypes
 
 	// Class message functions
-objSigmaPtr	SigmaNew(SymbolPtr, short, Atom[]);
+objSigmaPtr	SigmaNew(SymbolPtr, short, t_atom[]);
 void		SigmaFree(objSigma*);
 
 	// Object message functions
 static void SigmaBang(objSigma*);
 static void SigmaFloat(objSigma*, double);
 static void SigmaInt(objSigma*, long);
-static void SigmaList(objSigma*, Symbol*, short, Atom*);
+static void SigmaList(objSigma*, t_symbol*, short, t_atom*);
 static void SigmaSet(objSigma*, double);
 static void SigmaTattle(objSigma*);
 static void	SigmaAssist(objSigma*, void*, long, long, char*);
@@ -107,14 +115,14 @@ static void	SigmaInfo(objSigma*);
  *	
  ******************************************************************************************/
 
-void
-main()
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,					// Pointer to our class definition
+	c = class_new(kClassName,					// Pointer to our class definition
 			(method) SigmaNew,				// Instantiation method  
 			(method) SigmaFree,				// Custom deallocation function
 			(short) sizeof(objSigma),		// Class object size
@@ -123,18 +131,23 @@ main()
 			0);
 	
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) SigmaBang);
-	LITTER_TIMEBOMB addint	((method) SigmaInt);
-	LITTER_TIMEBOMB addfloat((method) SigmaFloat);
-	LITTER_TIMEBOMB addmess	((method) SigmaList, "list", A_GIMME, 0);
-	addmess	((method) SigmaSet,		"set",			A_FLOAT, 0);
-	addmess	((method) SigmaAssist,	"assist",		A_CANT, 0);
-	addmess	((method) SigmaInfo,	"info",			A_CANT, 0);
-	addmess ((method) SigmaTattle,	"tattle",	 	A_NOTHING);
-	addmess ((method) SigmaTattle,	"dblclick", 	A_CANT, 0);
+	class_addmethod(c,(method) SigmaBang,   "bang", 0);
+	class_addmethod(c,(method) SigmaInt,    "int", A_LONG, 0);
+	class_addmethod(c,(method) SigmaFloat,  "float", A_FLOAT, 0);
+	class_addmethod(c,(method) SigmaList,   "list", A_GIMME, 0);
+	class_addmethod(c,(method) SigmaSet,	"set",			A_FLOAT, 0);
+	class_addmethod(c,(method) SigmaAssist,	"assist",		A_CANT, 0);
+	class_addmethod(c,(method) SigmaInfo,	"info",			A_CANT, 0);
+	class_addmethod(c,(method) SigmaTattle,	"tattle",	 	A_NOTHING);
+	class_addmethod(c,(method) SigmaTattle,	"dblclick", 	A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	}
 
@@ -152,7 +165,7 @@ objSigma*
 SigmaNew(
 	SymbolPtr	sym,								// unused, must be 'lp.+'
 	short		iArgCount,
-	Atom		iArgVec[])
+	t_atom		iArgVec[])
 	
 	{
 	#pragma unused(sym)
@@ -178,7 +191,7 @@ SigmaNew(
 		}
 	
 	// Let Max allocate us
-	me = (objSigma*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	if (me == NIL) goto punt;
 	
 	// Add inlets, right to left
@@ -195,7 +208,7 @@ SigmaNew(
 	me->inletCount = kInlets;
 	me->data = data = (tWordPtr) getbytes(kInlets * sizeof(tWord));
 	if (data == NIL) {
-		freeobject((Object*) me);		// Requires that me->data be set to NIL
+		freeobject((t_object*) me);		// Requires that me->data be set to NIL
 		goto punt;
 		}
 	
@@ -324,7 +337,7 @@ SigmaSet(
 	double	iVal)
 	
 	{
-	const long kInlet = ObjectGetInlet((Object*) me, me->inletNum);
+	const long kInlet = ObjectGetInlet((t_object*) me, me->inletNum);
 	
 	switch (me->inletCount) {
 	case 2:
@@ -379,15 +392,15 @@ void SigmaFloat(objSigma* me, double iVal)
 void
 SigmaList(
 	objSigma*	me,
-	Symbol*		sym,											// unused, must be "list"
+	t_symbol*		sym,											// unused, must be "list"
 	short		iArgCount,
-	Atom*		iAtoms)
+	t_atom*		iAtoms)
 	
 	{
 	#pragma unused(sym)
 	
 	long	inletCount	= me->inletCount,
-			curInlet	= ObjectGetInlet((Object*) me, me->inletNum);
+			curInlet	= ObjectGetInlet((t_object*) me, me->inletNum);
 	tWord*	curWord		= me->data + curInlet;
 	
 	
@@ -463,12 +476,35 @@ SigmaAssist(
 	{
 	#pragma unused(box)
 	
-	short fragIndex = me->doFloats ? strIndexFloat : strIndexInt;
+	//short fragIndex = me->doFloats ? strIndexFloat : strIndexInt;
 	
 	if (iDir == ASSIST_INLET)							// All inlets use the same string
 		iArgNum = 0;
 	
-	LitterAssistResFrag(iDir, iArgNum, strIndexLeftIn, strIndexLeftOut, oCStr, fragIndex);
+	//LitterAssistResFrag(iDir, iArgNum, strIndexLeftIn, strIndexLeftOut, oCStr, fragIndex);
+        
+        /*
+         // Assistance strings
+         #define LPAssistInAny		"%s (Triggers sum of all inlets)"
+         #define LPAssistOut1		"%s (Sum)"
+         #define LPAssistFrag1		"int"
+         #define LPAssistFrag2		"float"
+         */
+        
+        if(me->doFloats) {
+            if (iDir == ASSIST_INLET)
+                sprintf (oCStr, LPAssistInAny, LPAssistFrag2);
+            else
+                sprintf (oCStr, LPAssistOut1, LPAssistFrag2);
+            
+        }
+        else {
+            if (iDir == ASSIST_INLET)
+                sprintf (oCStr, LPAssistInAny, LPAssistFrag1);
+            else
+                sprintf (oCStr, LPAssistOut1, LPAssistFrag1);
+
+        }
 	
 	}
 

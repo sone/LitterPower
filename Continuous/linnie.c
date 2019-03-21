@@ -313,7 +313,11 @@ static void LinnieAssist(objLinran* me, void* box, long iDir, long iArgNum, char
 	{
 	#pragma unused (me, box)
 	
-	 LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	 //LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET)
+            sprintf (oCStr, LPAssistIn1);
+        else
+            sprintf (oCStr, LPAssistOut1);
 	 }
 
 static void

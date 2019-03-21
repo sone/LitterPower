@@ -32,13 +32,21 @@
 #include <math.h>		// For pow()
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 
 #pragma mark • Global Constants
 
 const char*	kClassName		= "lp.c2p~";				// Class name
 
+// Assistance strings
+#define LPAssistIn1			"Signal (Real component)"
+#define LPAssistIn2			"Signal (Imaginary component)"
+#define LPAssistOut1		"Signal (Amplitude)"
+#define LPAssistOut2		"Signal (Phase)"
+
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexInReal		= lpStrIndexLastStandard + 1,
@@ -47,6 +55,7 @@ enum {
 	strIndexOutAmp,
 	strIndexOutPhase
 	};
+ */
 
 	// Indices for Inlets and Outlets. Users count starting at 1, we count from 0
 	// 
@@ -73,8 +82,10 @@ typedef struct {
 #pragma mark • Function Prototypes
 
 static void*	C2PNew(void);
-static void		C2PDSP(tConverter*, t_signal**, short*);
-static int*		C2PPerform(int*);
+//static void		C2PDSP(tConverter*, t_signal**, short*);
+//static int*		C2PPerform(int*);
+void C2PDSP64(tConverter*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void C2PPerform64(tConverter*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 	// Various Max messages
 static void		C2PAssist(tConverter*, void* , long , long , char*);
@@ -92,32 +103,39 @@ static void		C2PInfo(tConverter*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,					// Pointer to our class definition
+	c = class_new(kClassName,					// Pointer to our class definition
 			(method) C2PNew,				// Instance creation function
 			(method) dsp_free,					// Default deallocation function
 			(short) sizeof(tConverter),			// Class object size
 			NIL,								// No menu function
-			A_NOTHING);							// No arguments
+			0);							// No arguments
 	
 	// Max/MSP class initialization mantra, including registering all aliases
-	dsp_initclass();
+	class_dspinit(c);
+        
 	
 	// Fairly standard Max messages
-	addmess	((method) C2PAssist,	"assist",	A_CANT, 0);
-	addmess	((method) C2PInfo,		"info",		A_CANT, 0);
+	class_addmethod(c, (method) C2PAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) C2PInfo,	"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) C2PDSP, "dsp", A_CANT, 0);
+	class_addmethod(c, (method) C2PDSP64,   "dsp64", A_CANT, 0);
 
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        
+          class_register(CLASS_BOX, c);
+          gObjectClass = c;
+          
+          post("%s: %s", kClassName, LPVERSION);
+          return 0;
 
 	}
 
@@ -137,7 +155,7 @@ C2PNew(void)
 	tConverter*	me	= NIL;
 	
 	// Let Max/MSP allocate us and give us inlets;
-	me = (tConverter*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 2);
 	
 	// And two outlets, set these up right-to-left
@@ -163,7 +181,21 @@ void C2PAssist(tConverter* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInReal, strIndexOutAmp, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInReal, strIndexOutAmp, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 1: sprintf (oCStr, LPAssistOut2); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void C2PInfo(tConverter* me)
@@ -183,7 +215,7 @@ void C2PInfo(tConverter* me)
  *	C2PDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 C2PDSP(
 	tConverter*	me,
@@ -202,8 +234,54 @@ C2PDSP(
 		iConnectCounts[outletPhase] ? ioDSPVectors[outletPhase]->s_vec : NIL
 		);
 
-	}
-	
+	}*/
+
+void C2PDSP64(tConverter *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags) {
+    
+    object_method(dsp64, gensym("dsp_add64"), me, C2PPerform64, 0, NULL);
+}
+
+
+void C2PPerform64(tConverter *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    long			vecCounter;
+    tSampleVector	realSig,
+    imagSig,
+    ampSig,
+    phaseSig;
+
+    if (me->coreObject.z_disabled) return;
+
+    vecCounter	= sampleframes;
+    realSig		= ins[0];
+    imagSig		= ins[1];
+    ampSig		= outs[0];
+    phaseSig	= outs[1];
+    /*
+    do {
+        double	real	= realSig ? *realSig++ : 0.0,
+                    imag	= imagSig ? *imagSig++ : 0.0,
+                    amp		= sqrt(real * real + imag * imag);
+                    
+        if (ampSig)		*ampSig++	= amp;
+            if (phaseSig)	*phaseSig++	= (amp > 0.0)
+                ? atan2(imag, real)
+                : 0.0;				// Very arbitrary value
+    } while (--vecCounter > 0);
+    */
+    do {
+        double      real    = *realSig++;
+        double      imag    = *imagSig++;
+        double      amp     = sqrt(real * real + imag * imag);
+        
+        *ampSig++       = amp;
+        *phaseSig++     = (amp > 0.0)
+            ? atan2(imag, real)
+            : 0.0;                // Very arbitrary value
+    } while (--vecCounter > 0);
+
+}
+
 
 /******************************************************************************************
  *
@@ -219,7 +297,7 @@ C2PDSP(
  *		- Phase signal (out)
  *
  ******************************************************************************************/
-
+/*
 int*
 C2PPerform(
 	int* iParams)
@@ -266,4 +344,4 @@ C2PPerform(
 exit:
 	return iParams + paramNextLink;
 	}
-
+*/

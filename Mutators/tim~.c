@@ -34,8 +34,16 @@
 
 #pragma mark • Include Files
 
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "imLib.h"
+
+// Assistance strings
+#define LPAssistIn1			"Signal (Source). Lots of other messages."
+#define LPAssistIn2			"Signal (Target)"
+#define LPAssistIn3			"Signal or Float in [0.0 ... 1.0] (Mutation Index, mu)"
+#define LPAssistIn4			"Signal or Float in [0.0 ... 1.0) (Clumping Factor, pi )"
+#define LPAssistIn5			"Signal or Float in [-1.0 ... 1.0] (Delta Emphasis, d )"
+#define LPAssistOut1		"Signal (Mutant)"
 
 
 #pragma mark • Constants
@@ -45,10 +53,22 @@ const char*	kClassName		= "lp.tim~";			// Class name
 
 #pragma mark • Function Prototypes
 
-void*	NewMutator(Symbol*, short, Atom*);
+void*	NewMutator(t_symbol*, short, t_atom*);
 
-void	BuildDSPChain(tMutator*, t_signal**, short*);
-int*	PerformMutator(int*);
+
+enum {
+    paramSource = 0,
+    paramTarget,
+    paramOmega,
+    paramPi,
+    paramDelta,
+};
+
+void BuildDSPChain64(tMutator*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void PerformMutator64(tMutator*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
+
+//void	BuildDSPChain(tMutator*, t_signal**, short*);
+//int*	PerformMutator(int*);
 	// The following routines are where the actual work is done.
 	// The first parameters are always: Mutator object, vector size, Source signal, Target
 	// signal, and Mutant signal. The three signals are guaranteed never to be NIL.
@@ -99,14 +119,14 @@ void	DoTattle(tMutator*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) NewMutator,		// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(tMutator),			// Class object size
@@ -115,38 +135,44 @@ main(void)
 			0);		
 	
 	// Max/MSP class initialization mantra
-	dsp_initclass();
+	class_dspinit(c);
 
 	// Very standard messages
-	addfloat((method) DoFloat);
+	class_addmethod(c,(method) DoFloat, "float", A_FLOAT, 0);
 	
 	// Fairly standard Max messages
-	addmess	((method) DoAssist,		"assist",	A_CANT, 0);
-	addmess	((method) DoInfo,		"info",		A_CANT, 0);
-	addmess	((method) DoTattle,		"dblclick",	A_CANT, 0);
-	addmess	((method) DoTattle,		"tattle",	A_NOTHING);
+	class_addmethod(c,(method) DoAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) DoInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) DoTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) DoTattle,	"tattle",	A_NOTHING);
 	
 	// Vaguely standard messages
-	addmess ((method) DoClear,		"clear",	A_NOTHING);
+	class_addmethod(c,(method) DoClear,		"clear",	A_NOTHING);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) BuildDSPChain, "dsp",		A_CANT, 0);
+	class_addmethod(c,(method) BuildDSPChain64, "dsp64",		A_CANT, 0);
 
 	//Our messages
-	addmess ((method) DoUSIM,		"usim",		A_NOTHING);
-	addmess ((method) DoISIM,		"isim",		A_NOTHING);
-	addmess ((method) DoUUIM,		"uuim",		A_NOTHING);
-	addmess ((method) DoIUIM,		"iuim",		A_NOTHING);
-	addmess ((method) DoWCM,		"wcm",		A_NOTHING);
-	addmess ((method) DoLCM,		"lcm",		A_NOTHING);
+	class_addmethod(c,(method) DoUSIM,		"usim",		A_NOTHING);
+	class_addmethod(c,(method) DoISIM,		"isim",		A_NOTHING);
+	class_addmethod(c,(method) DoUUIM,		"uuim",		A_NOTHING);
+	class_addmethod(c,(method) DoIUIM,		"iuim",		A_NOTHING);
+	class_addmethod(c,(method) DoWCM,		"wcm",		A_NOTHING);
+	class_addmethod(c,(method) DoLCM,		"lcm",		A_NOTHING);
 	
-	addmess	((method) DoAbsInt,		"abs",		A_NOTHING);
-	addmess	((method) DoRelInt,		"rel",		A_DEFFLOAT, 0);
+	class_addmethod(c,(method) DoAbsInt,	"abs",		A_NOTHING);
+	class_addmethod(c,(method) DoRelInt,	"rel",		A_DEFFLOAT, 0);
 	
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
 	Taus88Init();
+        
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+         
+        return 0;
 
 	}
 
@@ -161,9 +187,9 @@ main(void)
 
 void*
 NewMutator(
-	Symbol* iSelector,
+	t_symbol* iSelector,
 	short	iArgCount,
-	Atom*	iArgVector)
+	t_atom*	iArgVector)
 	
 	{
 	Boolean		gotInitType		= false,		// The gotInitXXX variables are for 
@@ -179,23 +205,23 @@ NewMutator(
 	
 	// Parse arguments
 	while (iArgCount-- > 0) {
-		switch (iArgVector->a_type) {
+		switch (atom_gettype(iArgVector)) {
 			case A_FLOAT:
 				if (!gotInitOmega) {
 					gotInitOmega = true;
-					initOmega = iArgVector->a_w.w_float;
+					initOmega = atom_getfloat(iArgVector);
 					if		(initOmega < 0.0)	initOmega = 0.0;
 					else if	(1.0 < initOmega)	initOmega = 1.0;
 					}
 				else if (!gotInitDelta) {
 					gotInitDelta = true;
-					initDelta = iArgVector->a_w.w_float;
+					initDelta = atom_getfloat(iArgVector);
 					if		(initDelta < -1.0)	initDelta = 0.0;
 					else if	(1.0 < initDelta)	initDelta = 1.0;
 					}
 				else if (!gotInitPi) {
 					gotInitPi = true;
-					initPi = iArgVector->a_w.w_float;
+					initPi = atom_getfloat(iArgVector);
 					if		(initPi < 0.0)		initPi = 0.0;
 					else if	(kMaxPi < initPi)	initPi = kMaxPi;
 					}
@@ -206,7 +232,7 @@ NewMutator(
 				if (gotInitType) goto punt_argument;		// naughty argument
 				
 				gotInitType = true;
-				initType = MapStrToMutationType(iArgVector->a_w.w_sym->s_name);
+				initType = MapStrToMutationType(atom_getsym(iArgVector)->s_name);
 				if (initType < 0) {
 					initType = imDefault;
 					goto punt_argument;
@@ -225,7 +251,7 @@ NewMutator(
 	
 	// Let Max/MSP allocate us and give us inlets;
 	// number of inlets depends upon which variant we are
-	me = (tMutator*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 5);
 	
 	// And two outlets, set these up right-to-left
@@ -256,7 +282,23 @@ void DoAssist(tMutator* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInSource, strIndexOutMutant, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInSource, strIndexOutMutant, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+                case 3: sprintf (oCStr, LPAssistIn4); break;
+                case 4: sprintf (oCStr, LPAssistIn5); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void DoInfo(tMutator* me)
@@ -333,7 +375,7 @@ DoTattle(
  *	BuildDSPChain(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 BuildDSPChain(
 	tMutator*	me,
@@ -362,7 +404,29 @@ BuildDSPChain(
 		);
 	
 	}
-	
+*/
+
+void BuildDSPChain64(tMutator *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    int k;
+    for(k=0; k<5; k++)
+        me->connected[k] = count[k];
+    
+    // Make sure we have connections at source, target, and mutant.
+    // Otherwise there's no point in doing any DSP!
+    if (count[inletSource] == 0
+        || count[inletTarget] == 0
+        || count[outletMutant] == 0)
+        return;
+    
+    
+    object_method(dsp64, gensym("dsp_add64"), me, PerformMutator64, 0, NULL);
+
+    
+}
+
+
+
 
 /******************************************************************************************
  *
@@ -384,6 +448,121 @@ BuildDSPChain(
  *
  ******************************************************************************************/
 
+
+void PerformMutator64(tMutator *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    //t_sample    *paramSource, *paramTarget
+    if (me->coreObject.z_disabled) return;
+    
+    // Parameters for the vector calculation method depend upon whether the mutation
+    // is irregular or uniform; if absolute or relative intervals are used; and if
+    // there are any signals that need to be sampled at audio rate.
+    
+    if (!me->params.irregular) {
+        if (!me->params.relInterval) {
+            // Absolute Intervals
+            // The only parameter we have to worry about is the Mutation Index
+            if (me->connected[paramOmega] && (me->params.omegaSR)) {
+                CalcAbsUniformSR(
+                                 me, sampleframes,
+                                 (t_sample*) ins[paramSource],
+                                 (t_sample*) ins[paramTarget],
+                                 (t_sample*) outs[0],
+                                 (t_sample*) ins[paramOmega]);
+            }
+            else {
+                CalcAbsUniformCR(
+                                 me, sampleframes,
+                                 (t_sample*) ins[paramSource],
+                                 (t_sample*) ins[paramTarget],
+                                 (t_sample*) outs[0],
+                                 me->connected[paramOmega]
+                                 ? *((t_sample*) ins[paramOmega])
+                                 : me->params.omega);
+            }
+        }
+        
+        else {
+            // Relative intervals
+            // Weed to consider Mutation Index and Delta Emphasis
+            if ((me->connected[paramOmega] && me->params.omegaSR)
+                || (me->connected[paramDelta] && me->params.deltaSR) ) {
+                CalcRelUniformSR(
+                                 me, sampleframes,
+                                 (t_sample*) ins[paramSource],
+                                 (t_sample*) ins[paramTarget],
+                                 (t_sample*) outs[0],
+                                 (t_sample*) ins[paramOmega],
+                                 (t_sample*) ins[paramDelta]);
+            }
+            else {
+                CalcRelUniformCR(
+                                 me, sampleframes,
+                                 (t_sample*) ins[paramSource],
+                                 (t_sample*) ins[paramTarget],
+                                 (t_sample*) outs[0],
+                                 me->connected[paramOmega]
+                                 ? *((t_sample*) ins[paramOmega])
+                                 : me->params.omega,
+                                 me->connected[paramDelta]
+                                 ? *((t_sample*) ins[paramDelta])
+                                 : me->params.delta);
+            }
+        }
+    }
+    
+    // Irregular Mutations
+    else if (!me->params.relInterval) {
+        // Absolute Intervals
+        // Possible signals in Omega and Pi
+        if ((me->connected[paramOmega] && me->params.omegaSR)
+            || (me->connected[paramPi] && me->params.piSR)) {
+            CalcAbsIrregSR(
+                           me, sampleframes,
+                           (t_sample*) ins[paramSource],
+                           (t_sample*) ins[paramTarget],
+                           (t_sample*) outs[0],
+                           (t_sample*) ins[paramOmega],
+                           (t_sample*) ins[paramPi]);
+        }
+        else {
+            CalcAbsIrregCR(
+                           me, sampleframes,
+                           (t_sample*) ins[paramSource],
+                           (t_sample*) ins[paramTarget],
+                           (t_sample*) outs[0],
+                           me->connected[paramOmega] ? *((t_sample*) ins[paramOmega]) : me->params.omega,
+                           me->connected[paramPi] ? *((t_sample*) ins[paramPi]) : me->params.pi);
+        }
+    }
+    
+    // Irregular w/relative intervals; possible signals in Omega, Delta, and Pi
+    else if (me->connected[paramOmega] && (me->params.omegaSR)
+             || me->connected[paramPi] && (me->params.piSR)
+             || me->connected[paramDelta] && (me->params.deltaSR)) {
+        CalcRelIrregSR(
+                       me, (long) sampleframes,
+                       (t_sample*) ins[paramSource],
+                       (t_sample*) ins[paramTarget],
+                       (t_sample*) outs[0],
+                       (t_sample*) ins[paramOmega],
+                       (t_sample*) ins[paramPi],
+                       (t_sample*) ins[paramDelta]);
+    }
+    
+    else CalcRelIrregCR(
+                        me, sampleframes,
+                        (t_sample*) ins[paramSource],
+                        (t_sample*) ins[paramTarget],
+                        (t_sample*) outs[0],
+                        me->connected[paramOmega] ? *((t_sample*) ins[paramOmega]) : me->params.omega,
+                        me->connected[paramPi] ? *((t_sample*) ins[paramPi]) : me->params.pi,
+                        me->connected[paramDelta] ? *((t_sample*) ins[paramDelta]) : me->params.delta);
+    
+
+}
+
+/*
 int*
 PerformMutator(
 	int* iParams)
@@ -515,7 +694,7 @@ PerformMutator(
 exit:
 	return iParams + paramNextLink;
 	}
-
+*/
 /******************************************************************************************
  *
  *	CalcAbsIrregCR(me, iVectorSize, iSource, iTarget, oMutant, iOmega, iPi)

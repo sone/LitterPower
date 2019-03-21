@@ -19,17 +19,24 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "RNGBinomial.h"
 #include "RNGDistBeta.h"
+
+// Assistance strings
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Int (Number of Bernoulli Trials)"
+#define LPAssistIn3			"Float (a: tendency to low values)"
+#define LPAssistIn4			"Float (b: tendency to high values)"
+#define LPAssistOut			"Int (0 <= x <= %u)"
 
 #pragma mark • Constants
 
 const char*		kClassName		= "lp.bibi";		// Class name
 
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInBang		= lpStrIndexLastStandard + 1,
 	strIndexInNTrials,
@@ -40,7 +47,7 @@ enum {
 	
 	strIndexInLeft		= strIndexInBang,
 	strIndexOutLeft		= strIndexOut
-	};
+	};*/
 
 enum binomGen {							// How to generate deviates
 	binalgAlwaysZero,							// n = 0 or p = 0
@@ -68,7 +75,7 @@ typedef union betaParams {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -309,9 +316,9 @@ static void BibiSeed(objBibi* me, long iSeed)
 
 static void*
 BibiNew(
-	Symbol*	iSym,
+	t_symbol*	iSym,
 	short	iArgC,
-	Atom	iArgV[])
+	t_atom	iArgV[])
 	
 	{
 	#pragma unused(iSym)
@@ -442,7 +449,21 @@ BibiAssist(
 	
 	UInt32	nTrials = me->nTrials;
 	
-	LitterAssistVA(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr, nTrials);
+	//LitterAssistVA(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr, nTrials);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+                    
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut, nTrials); break;
+            }
+            
+        }
 	
 	}
 
@@ -503,61 +524,61 @@ static double DoExpect(objBibi* me, eExpectSelector iSel)
 
 #if LITTER_USE_OBEX
 
-	static t_max_err BibiGetMin(objBibi* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BibiGetMin(objBibi* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV);
 		}
-	static t_max_err BibiGetMax(objBibi* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BibiGetMax(objBibi* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV);
 		}
-	static t_max_err BibiGetMean(objBibi* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BibiGetMean(objBibi* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV);
 		}
-	static t_max_err BibiGetMedian(objBibi* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BibiGetMedian(objBibi* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV);
 		}
-	static t_max_err BibiGetMode(objBibi* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BibiGetMode(objBibi* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV);
 		}
-	static t_max_err BibiGetVar(objBibi* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BibiGetVar(objBibi* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV);
 		}
-	static t_max_err BibiGetStdDev(objBibi* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BibiGetStdDev(objBibi* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV);
 		}
-	static t_max_err BibiGetSkew(objBibi* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BibiGetSkew(objBibi* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV);
 		}
-	static t_max_err BibiGetKurtosis(objBibi* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BibiGetKurtosis(objBibi* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV);
 		}
-	static t_max_err BibiGetEntropy(objBibi* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err BibiGetEntropy(objBibi* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
@@ -567,9 +588,9 @@ static double DoExpect(objBibi* me, eExpectSelector iSel)
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-		Symbol*	symLong			= gensym("long");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+		t_symbol*	symLong			= gensym("long");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new("n", symLong, 0, NULL, NULL, calcoffset(objBibi, nTrials));
@@ -605,16 +626,16 @@ static double DoExpect(objBibi* me, eExpectSelector iSel)
 static void
 BibiTell(
 	objBibi*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -641,11 +662,10 @@ static void BibiTell(objBibi* me, Symbol* iTarget, Symbol* iMsg)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClassGimme(	kClassName,
@@ -655,7 +675,7 @@ main(void)
 							(method) BibiFree,			// Custom deallocation function
 							NIL);						// No menu function
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) BibiBang);
+	LitterAddBang	((method) BibiBang);
 	LitterAddMess1	((method) BibiNTrials,	"in1",		A_LONG);
 	LitterAddMess1	((method) BibiAlpha,	"ft2",		A_FLOAT);
 	LitterAddMess1	((method) BibiBeta,		"ft3",		A_FLOAT);
@@ -668,8 +688,12 @@ main(void)
 	AddInfo();
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, gObjectClass);
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 

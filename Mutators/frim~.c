@@ -30,16 +30,55 @@
 #pragma mark â€¢ Include Files
 
 #include "imLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
+
+
+// Assistance strings
+#ifdef RC_INVOKED 			// Special characters for Windows
+#define		ellipsisSymbol		"..."
+#define		muSymbol			0xb5
+#define		piSymbol			"p"
+#define		deltaSymbol			"d"
+#else						// Special characters for Mac OS
+#define		ellipsisSymbol		"É"
+#define		muSymbol			"µ"
+#define		piSymbol			"¹"
+#define		deltaSymbol			"¶"
+#endif
+
+#define LPAssistIn1			"Signal (Source 1). Lots of other messages."
+#define LPAssistIn2			"Signal (Source 2)."
+#define LPAssistIn3			"Signal (Target 1)"
+#define LPAssistIn4			"Signal (Target 2)"
+//#define LPAssistIn5			"Signal or Float in [0.0" ellipsisSymbol "1.0] (Mutation Index, " muSymbol ")"
+#define LPAssistIn5			"Signal or Float in [0.0 ... 1.0] (Mutation Index, mu)"
+//#define LPAssistIn6			"Signal or Float in [0.0" ellipsisSymbol "1.0) (Clumping Factor, " piSymbol ")"
+#define LPAssistIn6			"Signal or Float in [0.0 ... 1.0) (Clumping Factor, pi)"
+//#define LPAssistIn7			"Signal or Float in [-1.0" ellipsisSymbol "1.0] (Delta Emphasis, " deltaSymbol ")"
+#define LPAssistIn7			"Signal or Float in [-1.0 ... 1.0] (Delta Emphasis, d)"
+#define LPAssistOut1		"Signal (Mutant 1)"
+#define LPAssistOut2		"Signal (Mutant 2)"
 
 #pragma mark â€¢ Constants
 
 const char*	kClassName		= "lp.frim~";			// Class name
 
 
+enum {
+    paramSource1 = 0,
+    paramSource2,
+    paramTarget1,
+    paramTarget2,
+    paramOmega,
+    paramPi,
+    paramDelta,
+
+};
+
+
 #pragma mark â€¢ Function Prototypes
 
-void*	NewMutator(Symbol*, short, Atom*);
+void*	NewMutator(t_symbol*, short, t_atom*);
 void	FreeMutator(tMutator*);
 
 	// Various Max messages
@@ -50,8 +89,13 @@ void	DoTattle(tMutator*);
 void	DoOBands(tMutator*, long);
 
 	// MSP messages
-void	BuildDSPChain(tMutator*, t_signal**, short*);
-int*	PerformMutator(int*);
+//void	BuildDSPChain(tMutator*, t_signal**, short*);
+//int*	PerformMutator(int*);
+
+void    BuildDSPChain64(tMutator*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void    PerformMutator64(tMutator*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
+
+
 	// The following routines are where the actual work is done.
 	// The first parameters are always: Mutator object, vector size, Source signal, Target
 	// signal, and Mutant signal. The three signals are guaranteed never to be NIL.
@@ -86,14 +130,14 @@ void	CalcRelUniform(tMutator*, long,
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) NewMutator,		// Instance creation function
 			(method) FreeMutator,		// Custom deallocation function
 			(short) sizeof(tMutator),	// Class object size
@@ -102,41 +146,45 @@ main(void)
 			0);		
 	
 	// Max/MSP class initialization mantra
-	dsp_initclass();
+	class_dspinit(c);
 
 	// Very standard messages
-	addfloat((method) DoFloat);
+	class_addmethod(c, (method) DoFloat, "float", A_FLOAT, 0);
 	
 	// Fairly standard Max messages
-	addmess	((method) DoAssist,		"assist",	A_CANT, 0);
-	addmess	((method) DoInfo,		"info",		A_CANT, 0);
-	addmess	((method) DoTattle,		"dblclick",	A_CANT, 0);
-	addmess	((method) DoTattle,		"tattle",	A_NOTHING);
-	addmess ((method) LitterVers,	"vers",		A_DEFLONG, A_DEFLONG, 0);
+	class_addmethod(c, (method) DoAssist,		"assist",	A_CANT, 0);
+	class_addmethod(c, (method) DoInfo,         "info",		A_CANT, 0);
+	class_addmethod(c, (method) DoTattle,		"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) DoTattle,		"tattle",	A_NOTHING);
+	//class_addmethod(c, (method) LitterVers,	"vers",		A_DEFLONG, A_DEFLONG, 0);
 	
 	// Vaguely standard messages
-	addmess ((method) DoClear,		"clear",	A_NOTHING);
+	class_addmethod(c, (method) DoClear,		"clear",	A_NOTHING);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) BuildDSPChain, "dsp",		A_CANT, 0);
+	class_addmethod(c, (method) BuildDSPChain64, "dsp64",		A_CANT, 0);
 
 	//Our messages
-	addmess ((method) DoUSIM,		"usim",		A_NOTHING);
-	addmess ((method) DoISIM,		"isim",		A_NOTHING);
-	addmess ((method) DoUUIM,		"uuim",		A_NOTHING);
-	addmess ((method) DoIUIM,		"iuim",		A_NOTHING);
-	addmess ((method) DoWCM,		"wcm",		A_NOTHING);
-	addmess ((method) DoLCM,		"lcm",		A_NOTHING);
+	class_addmethod(c, (method) DoUSIM,		"usim",		A_NOTHING);
+	class_addmethod(c, (method) DoISIM,		"isim",		A_NOTHING);
+	class_addmethod(c, (method) DoUUIM,		"uuim",		A_NOTHING);
+	class_addmethod(c, (method) DoIUIM,		"iuim",		A_NOTHING);
+	class_addmethod(c, (method) DoWCM,		"wcm",		A_NOTHING);
+	class_addmethod(c, (method) DoLCM,		"lcm",		A_NOTHING);
 	
-	addmess	((method) DoAbsInt,		"abs",		A_NOTHING);
-	addmess	((method) DoRelInt,		"rel",		A_DEFFLOAT, 0);
+	class_addmethod(c, (method) DoAbsInt,		"abs",		A_NOTHING);
+	class_addmethod(c, (method) DoRelInt,		"rel",		A_DEFFLOAT, 0);
 	
-	addmess ((method) DoOBands,		"obands",	A_DEFLONG, 0);
+	class_addmethod(c, (method) DoOBands,		"obands",	A_DEFLONG, 0);
 
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
-
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	}
 
 #pragma mark -
@@ -252,9 +300,9 @@ main(void)
 
 void*
 NewMutator(
-	Symbol* iSelector,
+	t_symbol* iSelector,
 	short	iArgCount,
-	Atom*	iArgVector)
+	t_atom*	iArgVector)
 	
 	{
 	Boolean			gotInitType		= false,		// The gotInitXXX variables are for 
@@ -275,12 +323,12 @@ NewMutator(
 	
 	// Parse arguments
 	while (iArgCount-- > 0) {
-		switch (iArgVector->a_type) {
+		switch (atom_gettype(iArgVector)) {
 			case A_LONG:
 				if (gotHistSize) goto punt_argument;			// spurious argument
 				
 				gotHistSize = true;
-				histSize = iArgVector->a_w.w_long;
+                histSize = atom_getlong(iArgVector);
 				if (histSize < 0) 					histSize = 0;
 				else if (histSize > kMaxHistory)	histSize = kMaxHistory;
 				
@@ -290,15 +338,15 @@ NewMutator(
 			case A_FLOAT:
 				if (!gotInitOmega) {
 					gotInitOmega = true;
-					initOmega = iArgVector->a_w.w_float;	// Validated in Initialize()
+					initOmega = atom_getfloat(iArgVector);	// Validated in Initialize()
 					}
 				else if (!gotInitPi) {
 					gotInitPi = true;
-					initPi = iArgVector->a_w.w_float;		// Validated in Initialize()
+					initPi = atom_getfloat(iArgVector);		// Validated in Initialize()
 					}
 				else if (!gotInitDelta) {
 					gotInitDelta = true;
-					initDelta = iArgVector->a_w.w_float;	// Validated in Initialize()
+					initDelta = atom_getfloat(iArgVector);	// Validated in Initialize()
 					}
 				else goto punt_argument;					// don't need this argument
 				break;
@@ -307,7 +355,8 @@ NewMutator(
 				if (gotInitType) goto punt_argument;		// naughty argument
 				
 				gotInitType = true;
-				initType = MapStrToMutationType(iArgVector->a_w.w_sym->s_name);
+                //initType = MapStrToMutationType(iArgVector->a_w.w_sym->s_name);
+				initType = MapStrToMutationType(atom_getsym(iArgVector)->s_name);
 				if (initType < 0) {
 					initType = imDefault;
 					goto punt_argument;
@@ -328,15 +377,17 @@ NewMutator(
 		// This is the critical point in initialization; allocating memory
 		// for storing Source, Target, and Mutant signal values for the length
 		// specified by histSize.
-		muBuffer = (tMutationPtr) NewPtrClear(histSize * sizeof(tMutation));
+		//muBuffer = (tMutationPtr) NewPtrClear(histSize * sizeof(tMutation));
+        muBuffer = (tMutationPtr) sysmem_newptrclear(histSize * sizeof(tMutation));
 			if (muBuffer == NIL) goto punt;
-		stateBuffer = (BytePtr) NewPtrClear((nyquist + 1) * sizeof(Byte));
+		//stateBuffer = (BytePtr) NewPtrClear((nyquist + 1) * sizeof(Byte));
+        stateBuffer = (BytePtr) sysmem_newptrclear((nyquist + 1) * sizeof(Byte));
 			if (stateBuffer == NIL) goto punt;
 		}
 	
 	// Let Max/MSP allocate us and give us inlets;
 	// number of inlets depends upon which variant we are
-	me = (tMutator*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), histSize > 0 ? 7 : 6);
 	
 	// And three outlets, set these up right-to-left
@@ -370,8 +421,10 @@ NewMutator(
 //	Exception handling
 //	
 punt:
-	if (muBuffer != NIL)	DisposePtr((Ptr) muBuffer);
-	if (stateBuffer != NIL)	DisposePtr((Ptr) stateBuffer);
+	//if (muBuffer != NIL)	DisposePtr((Ptr) muBuffer);
+	//if (stateBuffer != NIL)	DisposePtr((Ptr) stateBuffer);
+        if (muBuffer != NIL)	sysmem_freeptr(muBuffer);
+        if (stateBuffer != NIL)	sysmem_freeptr(stateBuffer);
 		
 	return NIL;
 	}
@@ -391,8 +444,10 @@ FreeMutator(
 	dsp_free(&(me->coreObject));
 	
 	if ( HasHistory(me) ) {
-		DisposePtr((Ptr) me->history.muBuffer);
-		DisposePtr((Ptr) me->history.stateBuf);
+		//DisposePtr((Ptr) me->history.muBuffer);
+		//DisposePtr((Ptr) me->history.stateBuf);
+        sysmem_freeptr(me->history.muBuffer);
+        sysmem_freeptr(me->history.stateBuf);
 		}
 	
 	}
@@ -414,7 +469,25 @@ void DoAssist(tMutator* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInSource1, strIndexOutMutant1, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInSource1, strIndexOutMutant1, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+                case 3: sprintf (oCStr, LPAssistIn4); break;
+                case 4: sprintf (oCStr, LPAssistIn5); break;
+                case 5: sprintf (oCStr, LPAssistIn6); break;
+                case 6: sprintf (oCStr, LPAssistIn7); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 1: sprintf (oCStr, LPAssistOut2); break;
+            }
+            
+        }
 	}
 
 void DoInfo(tMutator* me)
@@ -654,7 +727,7 @@ DoOBands(
  *	BuildDSPChain(iAtom, iParam, iMaxParamLen)
  *
  ******************************************************************************************/
-
+/*
 void
 BuildDSPChain(
 	tMutator*	me,
@@ -690,6 +763,20 @@ BuildDSPChain(
 		);
 	
 	}
+*/
+
+void    BuildDSPChain64(tMutator *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    int k;
+    for(k=0; k<5; k++)
+        me->connected[k] = count[k];
+    
+    
+    object_method(dsp64, gensym("dsp_add64"), me, PerformMutator64, 0, NULL);
+}
+
+
+
 	
 
 /******************************************************************************************
@@ -712,6 +799,92 @@ BuildDSPChain(
  *
  ******************************************************************************************/
 
+
+
+void    PerformMutator64(tMutator *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    tMutationParams	curParams;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    //me->connected[paramOmega]
+    
+    // Copy mutation parameters; we use them a lot
+    curParams = ( HasHistory(me) )
+    ? me->frameParams
+    : me->params;
+    
+    // Parameters for the vector calculation method depend upon whether the mutation
+    // is irregular or uniform; if absolute or relative intervals are used; and if
+    // there are any signals that need to be sampled at audio rate.
+    
+    if (curParams.irregular) {
+        // Irregular Mutations
+        if (curParams.relInterval) {
+            // Irregular w/relative intervals
+            CalcRelIrreg(
+                         me, sampleframes,
+                         (t_sample*) ins[paramSource1], (t_sample*) ins[paramSource2],
+                         (t_sample*) ins[paramTarget1], (t_sample*) ins[paramTarget2],
+                         (t_sample*) outs[0], (t_sample*) outs[1],
+                         ins[paramOmega]
+                         ? *((t_sample*) ins[paramOmega])
+                         : (t_sample) curParams.omega,
+                         me->connected[paramPi]
+                         ? *((t_sample*) ins[paramPi])
+                         : (t_sample) curParams.pi,
+                         me->connected[paramDelta]
+                         ? *((t_sample*) ins[paramDelta])
+                         : (t_sample) curParams.delta);
+        }
+        else {
+            // Irregular w/Absolute Intervals
+            CalcAbsIrreg(
+                         me, sampleframes,
+                         (t_sample*) ins[paramSource1], (t_sample*) ins[paramSource2],
+                         (t_sample*) ins[paramTarget1], (t_sample*) ins[paramTarget2],
+                         (t_sample*) outs[0], (t_sample*) outs[1],
+                         me->connected[paramOmega]
+                         ? *((t_sample*) ins[paramOmega])
+                         : (t_sample) curParams.omega,
+                         me->connected[paramPi]
+                         ? *((t_sample*) ins[paramPi])
+                         : (t_sample) curParams.pi);
+        }
+    }
+    
+    else {
+        // Uniform Mutations
+        if (curParams.relInterval) {
+            // Uniform w/Relative intervals
+            CalcRelUniform(
+                           me, sampleframes,
+                           (t_sample*) ins[paramSource1], (t_sample*) ins[paramSource2],
+                           (t_sample*) ins[paramTarget1], (t_sample*) ins[paramTarget2],
+                           (t_sample*) outs[0], (t_sample*) outs[1],
+                           me->connected[paramOmega]
+                           ? *((t_sample*) ins[paramOmega])
+                           : (t_sample) curParams.omega,
+                           me->connected[paramDelta]
+                           ? *((t_sample*) ins[paramDelta])
+                           : (t_sample) curParams.delta);
+        }
+        else {
+            // Uniform w/Absolute Intervals
+            CalcAbsUniform(
+                           me, sampleframes,
+                           (t_sample*) ins[paramSource1], (t_sample*) ins[paramSource2],
+                           (t_sample*) ins[paramTarget1], (t_sample*) ins[paramTarget2],
+                           (t_sample*) outs[0], (t_sample*) outs[1],
+                           me->connected[paramOmega]
+                           ? *((t_sample*) ins[paramOmega])
+                           : (t_sample) curParams.omega);
+        }
+    }
+    
+}
+
+/*
 int*
 PerformMutator(
 	int* iParams)
@@ -817,6 +990,7 @@ PerformMutator(
 exit:
 	return iParams + paramNextLink;
 	}
+ */
 
 /******************************************************************************************
  *

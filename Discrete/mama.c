@@ -26,7 +26,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "UniformExpectations.h"
 
@@ -36,6 +36,12 @@
 const char*	kClassName		= "lp.mama";			// Class name
 
 
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Int (Minimum)"
+#define LPAssistIn3			"Int (Maximum)"
+#define LPAssistOut1		"Int (Random value, %ld <= x <= %ld)"
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexBang		= lpStrIndexLastStandard + 1,
@@ -47,7 +53,7 @@ enum {
 	strIndexFirstInlet	= strIndexBang,
 	strIndexFirstOutlet	= strIndexTheOutlet
 	};
-	
+*/
 
 	// Use enum rather than const int for compatibility across compilers
 enum {
@@ -59,7 +65,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	UInt16*			pools;
 	long			min,
@@ -335,7 +341,21 @@ MamaAssist(
 		max = kLongMax;
 		}
 	
-	LitterAssistVA(iDir, iArgNum, strIndexFirstInlet, strIndexFirstOutlet, oCStr, min, max);
+	//LitterAssistVA(iDir, iArgNum, strIndexFirstInlet, strIndexFirstOutlet, oCStr, min, max);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+                    
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1, min, max); break;
+            }
+            
+        }
 	
 	}
 
@@ -376,49 +396,49 @@ static double DoExpect(objMama* me, eExpectSelector iSel)
 
 #if LITTER_USE_OBEX
 
-	static t_max_err MamaGetMean(objMama* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MamaGetMean(objMama* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV);
 		}
-	static t_max_err MamaGetMedian(objMama* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MamaGetMedian(objMama* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV);
 		}
-	static t_max_err MamaGetMode(objMama* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MamaGetMode(objMama* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV);
 		}
-	static t_max_err MamaGetVar(objMama* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MamaGetVar(objMama* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV);
 		}
-	static t_max_err MamaGetStdDev(objMama* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MamaGetStdDev(objMama* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV);
 		}
-	static t_max_err MamaGetSkew(objMama* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MamaGetSkew(objMama* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV);
 		}
-	static t_max_err MamaGetKurtosis(objMama* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MamaGetKurtosis(objMama* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV);
 		}
-	static t_max_err MamaGetEntropy(objMama* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MamaGetEntropy(objMama* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
@@ -428,9 +448,9 @@ static double DoExpect(objMama* me, eExpectSelector iSel)
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-		Symbol*	symLong			= gensym("long");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+		t_symbol*	symLong			= gensym("long");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new("min", symLong, 0, NULL, NULL, calcoffset(objMama, min));
@@ -460,16 +480,16 @@ static double DoExpect(objMama* me, eExpectSelector iSel)
 static void
 MamaTell(
 	objMama*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -481,7 +501,7 @@ static void MamaInfo(objMama* me)
 static inline void AddInfo(void)
 	{ LitterAddCant((method) MamaInfo, "info"); }
 		
-static void MamaTell(objMama* me, Symbol* iTarget, Symbol* iMsg)
+static void MamaTell(objMama* me, t_symbol* iTarget, Symbol* iMsg)
 	{ LitterExpect((tExpectFunc) DoExpect, (Object*) me, iMsg, iTarget, TRUE); }
 
 
@@ -497,8 +517,7 @@ static void MamaTell(objMama* me, Symbol* iTarget, Symbol* iMsg)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -508,7 +527,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	LitterSetupClass(	kClassName,
 						sizeof(objMama),			// Class object size
@@ -519,7 +538,7 @@ main(void)
 						myArgTypes);		
 	
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) MamaBang);
+	LitterAddBang	((method) MamaBang);
 	LitterAddMess1	((method) MamaMin,		"in1",		A_LONG);
 	LitterAddMess1	((method) MamaMax,		"in2",		A_LONG);
 	LitterAddMess1	((method) MamaSeed,		"seed",		A_DEFLONG);
@@ -531,8 +550,12 @@ main(void)
 	AddInfo();
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	MamaInit(0, gPool1, gPool2);
+        class_register(CLASS_BOX, gObjectClass);
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 

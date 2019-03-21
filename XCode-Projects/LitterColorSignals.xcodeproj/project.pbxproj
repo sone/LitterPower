@@ -7,10 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		042BE11D0A94770D0008B638 /* MiscUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3F0A5D702200991CC7 /* MiscUtils.c */; };
-		042BE11E0A94770D0008B638 /* MaxUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1F980A5D781D00991CC7 /* MaxUtils.c */; };
 		042BE1230A94770D0008B638 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
-		042BEA4E0A94F9090008B638 /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3D0A5D702200991CC7 /* LitterLib.c */; };
 		046B79450D1F015C00B77640 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		046B79470D1F015C00B77640 /* MaxAudioAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04E4A2640A95E65A004B0E9C /* MaxAudioAPI.framework */; };
 		04E4A26B0A95E65A004B0E9C /* MaxAudioAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04E4A2640A95E65A004B0E9C /* MaxAudioAPI.framework */; };
@@ -51,27 +48,21 @@
 		04E4A3370A95EB95004B0E9C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		04E4A3390A95EB95004B0E9C /* MaxAudioAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04E4A2640A95E65A004B0E9C /* MaxAudioAPI.framework */; };
 		04E4A46A0A95F436004B0E9C /* schhh~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A45F0A95F36F004B0E9C /* schhh~.c */; };
-		04E4A46B0A95F441004B0E9C /* schhh~.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A45A0A95F33E004B0E9C /* schhh~.r */; };
-		04E4A46C0A95F449004B0E9C /* sss~.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A45B0A95F33E004B0E9C /* sss~.r */; };
 		04E4A46D0A95F44E004B0E9C /* sss~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A4600A95F36F004B0E9C /* sss~.c */; };
 		04E4A46E0A95F456004B0E9C /* zzz~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A4610A95F36F004B0E9C /* zzz~.c */; };
-		04E4A46F0A95F45A004B0E9C /* zzz~.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A45C0A95F33E004B0E9C /* zzz~.r */; };
-		04E4A4700A95F460004B0E9C /* grrr~.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A4560A95F33E004B0E9C /* grrr~.r */; };
 		04E4A4710A95F464004B0E9C /* grrr~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A45D0A95F36F004B0E9C /* grrr~.c */; };
-		04E4A4720A95F46C004B0E9C /* pvvv~.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A4590A95F33E004B0E9C /* pvvv~.r */; };
-		04E4A4730A95F472004B0E9C /* phhh~.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A4580A95F33E004B0E9C /* phhh~.r */; };
-		04E4A4740A95F476004B0E9C /* pfff~.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A4570A95F33E004B0E9C /* pfff~.r */; };
 		04E4A4750A95F48C004B0E9C /* pfff~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A45E0A95F36F004B0E9C /* pfff~.c */; };
 		04E4A4770A95F500004B0E9C /* pfff~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A45E0A95F36F004B0E9C /* pfff~.c */; };
 		04E4A47E0A95F5A3004B0E9C /* pfff~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A45E0A95F36F004B0E9C /* pfff~.c */; };
-		04E4A48B0A95F681004B0E9C /* Taus88.c in Sources */ = {isa = PBXBuildFile; fileRef = 042BEE550A9507350008B638 /* Taus88.c */; };
+		3522FBAF220E06A600AFA127 /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3D0A5D702200991CC7 /* LitterLib.c */; };
+		3522FBB0220E06AA00AFA127 /* MaxUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1F980A5D781D00991CC7 /* MaxUtils.c */; };
+		3522FBB2220E06D700AFA127 /* Taus88.c in Sources */ = {isa = PBXBuildFile; fileRef = 042BEE550A9507350008B638 /* Taus88.c */; };
+		3522FBB3220E077700AFA127 /* MiscUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3F0A5D702200991CC7 /* MiscUtils.c */; };
 		353801D320275E910092DA61 /* qvvv~.c in Sources */ = {isa = PBXBuildFile; fileRef = 046CDDFD0D44E3B5003E1133 /* qvvv~.c */; };
 		353801D420275EB40092DA61 /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3D0A5D702200991CC7 /* LitterLib.c */; };
 		353801D520275EB80092DA61 /* MaxUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1F980A5D781D00991CC7 /* MaxUtils.c */; };
 		353801D620275EBE0092DA61 /* MiscUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 041C1E3F0A5D702200991CC7 /* MiscUtils.c */; };
 		353801D720275ECC0092DA61 /* Taus88.c in Sources */ = {isa = PBXBuildFile; fileRef = 042BEE550A9507350008B638 /* Taus88.c */; };
-		357EC1D620274D9500F0A976 /* MaxAudioAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04E4A2640A95E65A004B0E9C /* MaxAudioAPI.framework */; };
-		357EC1E020274DDB00F0A976 /* adummy~.c in Sources */ = {isa = PBXBuildFile; fileRef = 357EC1C920274D8600F0A976 /* adummy~.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -107,8 +98,6 @@
 		04E4A4600A95F36F004B0E9C /* sss~.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = "sss~.c"; sourceTree = "<group>"; };
 		04E4A4610A95F36F004B0E9C /* zzz~.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = "zzz~.c"; sourceTree = "<group>"; };
 		08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
-		357EC1C920274D8600F0A976 /* adummy~.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "adummy~.c"; sourceTree = "<group>"; };
-		357EC1DE20274D9500F0A976 /* adummy~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "adummy~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -184,14 +173,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		357EC1D420274D9500F0A976 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				357EC1D620274D9500F0A976 /* MaxAudioAPI.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -207,7 +188,7 @@
 				042BEE550A9507350008B638 /* Taus88.c */,
 			);
 			name = LitterLib;
-			path = Sources/LitterLib;
+			path = ../LitterLib;
 			sourceTree = "<group>";
 		};
 		089C166AFE841209C02AAC07 /* maximum */ = {
@@ -249,7 +230,6 @@
 		08FB77ADFE841716C02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				357EC1C920274D8600F0A976 /* adummy~.c */,
 				04E4A45D0A95F36F004B0E9C /* grrr~.c */,
 				04E4A45E0A95F36F004B0E9C /* pfff~.c */,
 				046CDDFD0D44E3B5003E1133 /* qvvv~.c */,
@@ -273,7 +253,6 @@
 				04E4A3270A95EB5E004B0E9C /* lp.pvvv~.mxo */,
 				04E4A3410A95EB95004B0E9C /* lp.grrr~.mxo */,
 				046B794F0D1F015C00B77640 /* lp.qvvv~.mxo */,
-				357EC1DE20274D9500F0A976 /* adummy~.mxo */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -337,13 +316,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		357EC1CC20274D9500F0A976 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -351,13 +323,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 042BE1290A94770D0008B638 /* Build configuration list for PBXNativeTarget "White (UB)" */;
 			buildPhases = (
-				042BE1180A94770D0008B638 /* ShellScript */,
 				042BE1190A94770D0008B638 /* Headers */,
 				042BE11A0A94770D0008B638 /* Resources */,
 				042BE11B0A94770D0008B638 /* Sources */,
 				042BE1220A94770D0008B638 /* Frameworks */,
-				042BE1260A94770D0008B638 /* Rez */,
-				042BE1280A94770D0008B638 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -377,7 +346,6 @@
 				046B793D0D1F015C00B77640 /* Resources */,
 				353801D020275C570092DA61 /* Sources */,
 				046B79440D1F015C00B77640 /* Frameworks */,
-				046B79480D1F015C00B77640 /* Rez */,
 			);
 			buildRules = (
 			);
@@ -393,13 +361,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04E4A2B10A95E992004B0E9C /* Build configuration list for PBXNativeTarget "Pink (Voss) (UB)" */;
 			buildPhases = (
-				04E4A2A20A95E992004B0E9C /* ShellScript */,
 				04E4A2A30A95E992004B0E9C /* Headers */,
 				04E4A2A40A95E992004B0E9C /* Resources */,
 				04E4A2A50A95E992004B0E9C /* Sources */,
 				04E4A2AA0A95E992004B0E9C /* Frameworks */,
-				04E4A2AE0A95E992004B0E9C /* Rez */,
-				04E4A2B00A95E992004B0E9C /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -415,13 +380,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04E4A2CE0A95E9F9004B0E9C /* Build configuration list for PBXNativeTarget "Pink (McCartney) (UB)" */;
 			buildPhases = (
-				04E4A2BE0A95E9F9004B0E9C /* ShellScript */,
 				04E4A2BF0A95E9F9004B0E9C /* Headers */,
 				04E4A2C00A95E9F9004B0E9C /* Resources */,
 				04E4A2C10A95E9F9004B0E9C /* Sources */,
 				04E4A2C70A95E9F9004B0E9C /* Frameworks */,
-				04E4A2CB0A95E9F9004B0E9C /* Rez */,
-				04E4A2CD0A95E9F9004B0E9C /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -437,13 +399,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04E4A2EB0A95EA47004B0E9C /* Build configuration list for PBXNativeTarget "Brown (UB)" */;
 			buildPhases = (
-				04E4A2DB0A95EA47004B0E9C /* ShellScript */,
 				04E4A2DC0A95EA47004B0E9C /* Headers */,
 				04E4A2DD0A95EA47004B0E9C /* Resources */,
 				04E4A2DE0A95EA47004B0E9C /* Sources */,
 				04E4A2E40A95EA47004B0E9C /* Frameworks */,
-				04E4A2E80A95EA47004B0E9C /* Rez */,
-				04E4A2EA0A95EA47004B0E9C /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -459,13 +418,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04E4A3050A95EAB7004B0E9C /* Build configuration list for PBXNativeTarget "Black (UB)" */;
 			buildPhases = (
-				04E4A2F50A95EAB7004B0E9C /* ShellScript */,
 				04E4A2F60A95EAB7004B0E9C /* Headers */,
 				04E4A2F70A95EAB7004B0E9C /* Resources */,
 				04E4A2F80A95EAB7004B0E9C /* Sources */,
 				04E4A2FE0A95EAB7004B0E9C /* Frameworks */,
-				04E4A3020A95EAB7004B0E9C /* Rez */,
-				04E4A3040A95EAB7004B0E9C /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -481,13 +437,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04E4A3230A95EB5E004B0E9C /* Build configuration list for PBXNativeTarget "Multicolor (UB)" */;
 			buildPhases = (
-				04E4A3130A95EB5E004B0E9C /* ShellScript */,
 				04E4A3140A95EB5E004B0E9C /* Headers */,
 				04E4A3150A95EB5E004B0E9C /* Resources */,
 				04E4A3160A95EB5E004B0E9C /* Sources */,
 				04E4A31C0A95EB5E004B0E9C /* Frameworks */,
-				04E4A3200A95EB5E004B0E9C /* Rez */,
-				04E4A3220A95EB5E004B0E9C /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -503,13 +456,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04E4A33D0A95EB95004B0E9C /* Build configuration list for PBXNativeTarget "Gray (UB)" */;
 			buildPhases = (
-				04E4A32D0A95EB95004B0E9C /* ShellScript */,
 				04E4A32E0A95EB95004B0E9C /* Headers */,
 				04E4A32F0A95EB95004B0E9C /* Resources */,
 				04E4A3300A95EB95004B0E9C /* Sources */,
 				04E4A3360A95EB95004B0E9C /* Frameworks */,
-				04E4A33A0A95EB95004B0E9C /* Rez */,
-				04E4A33C0A95EB95004B0E9C /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -519,26 +469,6 @@
 			productInstallPath = "$(HOME)/Library/Bundles";
 			productName = MaxExternal;
 			productReference = 04E4A3410A95EB95004B0E9C /* lp.grrr~.mxo */;
-			productType = "com.apple.product-type.bundle";
-		};
-		357EC1CA20274D9500F0A976 /* adummy~ */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 357EC1DA20274D9500F0A976 /* Build configuration list for PBXNativeTarget "adummy~" */;
-			buildPhases = (
-				357EC1CC20274D9500F0A976 /* Headers */,
-				357EC1CD20274D9500F0A976 /* Resources */,
-				357EC1CE20274D9500F0A976 /* Sources */,
-				357EC1D420274D9500F0A976 /* Frameworks */,
-				357EC1D720274D9500F0A976 /* Rez */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "adummy~";
-			productInstallPath = "$(HOME)/Library/Bundles";
-			productName = MaxExternal;
-			productReference = 357EC1DE20274D9500F0A976 /* adummy~.mxo */;
 			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
@@ -568,7 +498,6 @@
 				04E4A3120A95EB5E004B0E9C /* Multicolor (UB) */,
 				046B793A0D1F015C00B77640 /* Multicolor FP (UB) */,
 				04E4A32C0A95EB95004B0E9C /* Gray (UB) */,
-				357EC1CA20274D9500F0A976 /* adummy~ */,
 			);
 		};
 /* End PBXProject section */
@@ -630,304 +559,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		357EC1CD20274D9500F0A976 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXRezBuildPhase section */
-		042BE1260A94770D0008B638 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A46B0A95F441004B0E9C /* schhh~.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		046B79480D1F015C00B77640 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		04E4A2AE0A95E992004B0E9C /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A46C0A95F449004B0E9C /* sss~.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		04E4A2CB0A95E9F9004B0E9C /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A46F0A95F45A004B0E9C /* zzz~.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		04E4A2E80A95EA47004B0E9C /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A4740A95F476004B0E9C /* pfff~.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		04E4A3020A95EAB7004B0E9C /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A4730A95F472004B0E9C /* phhh~.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		04E4A3200A95EB5E004B0E9C /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A4720A95F46C004B0E9C /* pvvv~.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		04E4A33A0A95EB95004B0E9C /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A4700A95F460004B0E9C /* grrr~.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		357EC1D720274D9500F0A976 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXRezBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		042BE1180A94770D0008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Signals/schhh~.r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Signals/schhh~.versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Signals/schhh~.r >\"$SRCROOT\"/Resources/Signals/schhh~.versioninfo.h";
-		};
-		042BE1280A94770D0008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Starter/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallSPIcon.bash;
-		};
-		04E4A2A20A95E992004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		04E4A2B00A95E992004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Starter/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallSPIcon.bash;
-		};
-		04E4A2BE0A95E9F9004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		04E4A2CD0A95E9F9004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Pro/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallIcon.bash;
-		};
-		04E4A2DB0A95EA47004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		04E4A2EA0A95EA47004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Starter/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallSPIcon.bash;
-		};
-		04E4A2F50A95EAB7004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		04E4A3040A95EAB7004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Pro/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallIcon.bash;
-		};
-		04E4A3130A95EB5E004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		04E4A3220A95EB5E004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Pro/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallIcon.bash;
-		};
-		04E4A32D0A95EB95004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/Resources/Signals/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		04E4A33C0A95EB95004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Pro/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallIcon.bash;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		042BE11B0A94770D0008B638 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				042BE11D0A94770D0008B638 /* MiscUtils.c in Sources */,
-				042BE11E0A94770D0008B638 /* MaxUtils.c in Sources */,
-				042BEA4E0A94F9090008B638 /* LitterLib.c in Sources */,
 				04E4A46A0A95F436004B0E9C /* schhh~.c in Sources */,
-				04E4A48B0A95F681004B0E9C /* Taus88.c in Sources */,
+				3522FBAF220E06A600AFA127 /* LitterLib.c in Sources */,
+				3522FBB3220E077700AFA127 /* MiscUtils.c in Sources */,
+				3522FBB2220E06D700AFA127 /* Taus88.c in Sources */,
+				3522FBB0220E06AA00AFA127 /* MaxUtils.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1015,14 +658,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		357EC1CE20274D9500F0A976 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				357EC1E020274DDB00F0A976 /* adummy~.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
@@ -1030,7 +665,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_PREFIX_HEADER = "Resources/Signals/schhh~.versioninfo.h";
+				HEADER_SEARCH_PATHS = (
+					"\"$(C74SUPPORT)/max-includes\"",
+					"\"$(C74SUPPORT)/msp-includes\"",
+					"\"$(C74SUPPORT)/jit-includes\"",
+					"\"$(SRCROOT)/../LitterLib\"",
+				);
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Signals/schhh~.versioninfo.h";
 				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
 				PRODUCT_SHORT_NAME = "shhh~";
 			};
@@ -1040,7 +681,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_PREFIX_HEADER = "Resources/Signals/schhh~.versioninfo.h";
+				HEADER_SEARCH_PATHS = (
+					"\"$(C74SUPPORT)/max-includes\"",
+					"\"$(C74SUPPORT)/msp-includes\"",
+					"\"$(C74SUPPORT)/jit-includes\"",
+					"\"$(SRCROOT)/../LitterLib\"",
+				);
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Signals/schhh~.versioninfo.h";
 				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
 				PRODUCT_SHORT_NAME = "shhh~";
 			};
@@ -1050,7 +697,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_PREFIX_HEADER = "Resources/Signals/schhh~.versioninfo.h";
+				HEADER_SEARCH_PATHS = (
+					"\"$(C74SUPPORT)/max-includes\"",
+					"\"$(C74SUPPORT)/msp-includes\"",
+					"\"$(C74SUPPORT)/jit-includes\"",
+					"\"$(SRCROOT)/../LitterLib\"",
+				);
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Signals/schhh~.versioninfo.h";
 				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
 				PRODUCT_SHORT_NAME = "shhh~";
 			};
@@ -1332,7 +985,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__MAX_MSP_OBJECT__,
 					"__LITTER_UB__=1",
-					"$(inherited)",
+					"LITTER_USE_OBEX=1",
 					"\"DENORM_WANT_FIX = 1\"",
 					"\"NO_TRANSLATION_SUPPORT = 1\"",
 				);
@@ -1347,13 +1000,12 @@
 					"\"$(C74SUPPORT)/max-includes\"",
 					"\"$(C74SUPPORT)/msp-includes\"",
 					"\"$(C74SUPPORT)/jit-includes\"",
-					"$(SRCROOT)/../LitterLib",
+					"\"$(SRCROOT)/../LitterLib\"",
 				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../C74 Support/Universal Binary\"/**";
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/$(PROJECT)";
 				LIBRARY_STYLE = Bundle;
 				MACH_O_TYPE = mh_bundle;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
@@ -1379,7 +1031,7 @@
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = "non-global";
 				SYMROOT = "$(PROJECT_DIR)/xcodebuild";
-				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../LitterLib/**";
+				USER_HEADER_SEARCH_PATHS = "";
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
@@ -1404,6 +1056,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEPLOYMENT_LOCATION = YES;
 				DSTROOT = "$(PROJECT_DIR)";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1418,7 +1071,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__MAX_MSP_OBJECT__,
 					"__LITTER_UB__=1",
-					"$(inherited)",
+					"LITTER_USE_OBEX=1",
 					"\"DENORM_WANT_FIX = 1\"",
 					"\"NO_TRANSLATION_SUPPORT = 1\"",
 				);
@@ -1433,13 +1086,12 @@
 					"\"$(C74SUPPORT)/max-includes\"",
 					"\"$(C74SUPPORT)/msp-includes\"",
 					"\"$(C74SUPPORT)/jit-includes\"",
-					"$(SRCROOT)/../LitterLib",
+					"\"$(SRCROOT)/../LitterLib\"",
 				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../C74 Support/Universal Binary\"/**";
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/$(PROJECT)";
 				LIBRARY_STYLE = Bundle;
 				MACH_O_TYPE = mh_bundle;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
@@ -1464,7 +1116,7 @@
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = "non-global";
 				SYMROOT = "$(PROJECT_DIR)/xcodebuild";
-				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../LitterLib/**";
+				USER_HEADER_SEARCH_PATHS = "";
 				WRAPPER_EXTENSION = mxo;
 			};
 			name = Deployment;
@@ -1483,6 +1135,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEPLOYMENT_LOCATION = YES;
 				DSTROOT = "$(PROJECT_DIR)";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1496,7 +1149,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__MAX_MSP_OBJECT__,
 					"__LITTER_UB__=1",
-					"$(inherited)",
+					"LITTER_USE_OBEX=1",
 					"\"DENORM_WANT_FIX = 1\"",
 					"\"NO_TRANSLATION_SUPPORT = 1\"",
 				);
@@ -1511,13 +1164,12 @@
 					"\"$(C74SUPPORT)/max-includes\"",
 					"\"$(C74SUPPORT)/msp-includes\"",
 					"\"$(C74SUPPORT)/jit-includes\"",
-					"$(SRCROOT)/../LitterLib",
+					"\"$(SRCROOT)/../LitterLib\"",
 				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../C74 Support/Universal Binary\"/**";
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Signals/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/$(PROJECT)";
 				LIBRARY_STYLE = Bundle;
 				MACH_O_TYPE = mh_bundle;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
@@ -1542,50 +1194,8 @@
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = "non-global";
 				SYMROOT = "$(PROJECT_DIR)/xcodebuild";
-				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../LitterLib/**";
+				USER_HEADER_SEARCH_PATHS = "";
 				WRAPPER_EXTENSION = mxo;
-			};
-			name = Default;
-		};
-		357EC1DB20274D9500F0A976 /* Development */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
-				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
-				INFOPLIST_PREFIX_HEADER = "";
-				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PRODUCT_SHORT_NAME = "qvvv~";
-				SDKROOT = macosx;
-			};
-			name = Development;
-		};
-		357EC1DC20274D9500F0A976 /* Deployment */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
-				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
-				INFOPLIST_PREFIX_HEADER = "";
-				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PRODUCT_SHORT_NAME = "qvvv~";
-				SDKROOT = macosx;
-			};
-			name = Deployment;
-		};
-		357EC1DD20274D9500F0A976 /* Default */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
-				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
-				INFOPLIST_PREFIX_HEADER = "";
-				PRODUCT_BUNDLE_IDENTIFIER = "de.castine.$(PRODUCT_NAME)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PRODUCT_SHORT_NAME = "qvvv~";
-				SDKROOT = macosx;
 			};
 			name = Default;
 		};
@@ -1678,16 +1288,6 @@
 				0FF6670F096B494E00E9E0B4 /* Development */,
 				0FF66710096B494E00E9E0B4 /* Deployment */,
 				0FF66711096B494E00E9E0B4 /* Default */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Default;
-		};
-		357EC1DA20274D9500F0A976 /* Build configuration list for PBXNativeTarget "adummy~" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				357EC1DB20274D9500F0A976 /* Development */,
-				357EC1DC20274D9500F0A976 /* Deployment */,
-				357EC1DD20274D9500F0A976 /* Default */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Default;

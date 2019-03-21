@@ -27,14 +27,23 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.delta";			// Class name
 
+// Assistance strings
+#define LPAssistInAny		"%s (Triggers subtraction)"
+#define LPAssistOut1		"%s (left - right)"
+#define LPAssistOut2		"%s (right - left)"
+#define LPAssistOut3		"%s (absolute difference)"
+#define LPAssistFrag1		"int"
+#define LPAssistFrag2		"float"
+
 	// Indices for STR# resource
+/*
 enum {
 	strIndexAnyIn			= lpStrIndexLastStandard + 1,
 	strIndexLROut,											// Left - Right
@@ -43,7 +52,7 @@ enum {
 	
 	strIndexInt,
 	strIndexFloat
-	};
+	};*/
 
 #pragma mark • Type Definitions
 
@@ -51,7 +60,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	
 	long		inletNum;			// Max tells us which inlet was used here
 	double		left,
@@ -68,13 +77,13 @@ typedef objDelta* objDeltaPtr;
 #pragma mark • Function Prototypes
 
 	// Class message functions
-objDeltaPtr	DeltaNew(SymbolPtr, short, Atom[]);
+objDeltaPtr	DeltaNew(SymbolPtr, short, t_atom[]);
 
 	// Object message functions
 static void DeltaBang(objDelta*);
 static void DeltaFloat(objDelta*, double);
 static void DeltaInt(objDelta*, long);
-static void DeltaList(objDelta*, Symbol*, short, Atom*);
+static void DeltaList(objDelta*, t_symbol*, short, t_atom*);
 static void DeltaSet(objDelta*, double);
 static void DeltaTattle(objDelta*);
 static void	DeltaAssist(objDelta*, tBoxPtr, long, long, char*);
@@ -95,14 +104,14 @@ static void	DeltaInfo(objDelta*);
  *	
  ******************************************************************************************/
 
-void
-main()
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,					// Pointer to our class definition
+	c = class_new(kClassName,					// Pointer to our class definition
 			(method) DeltaNew,				// Instantiation method  
 			NIL,							// No custom deallocation function
 			(short) sizeof(objDelta),		// Class object size
@@ -111,18 +120,23 @@ main()
 			0);								// to determine if we're doing ints or floats
 
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) DeltaBang);
-	LITTER_TIMEBOMB addint	((method) DeltaInt);
-	LITTER_TIMEBOMB addfloat((method) DeltaFloat);
-	LITTER_TIMEBOMB addmess	((method) DeltaList,	"list",			A_GIMME, 0);
-	addmess	((method) DeltaSet,		"set",			A_FLOAT, 0);
-	addmess	((method) DeltaAssist,	"assist",		A_CANT, 0);
-	addmess	((method) DeltaInfo,	"info",			A_CANT, 0);
-	addmess ((method) DeltaTattle,	"tattle",	 	A_NOTHING);
-	addmess ((method) DeltaTattle,	"dblclick", 	A_CANT, 0);
+	class_addmethod(c,(method) DeltaBang,   "bang", 0);
+	class_addmethod(c,(method) DeltaInt,    "int", A_LONG, 0);
+	class_addmethod(c,(method) DeltaFloat,  "float", A_FLOAT, 0);
+	class_addmethod(c,(method) DeltaList,	"list",			A_GIMME, 0);
+	class_addmethod(c,(method) DeltaSet,	"set",			A_FLOAT, 0);
+	class_addmethod(c,(method) DeltaAssist,	"assist",		A_CANT, 0);
+	class_addmethod(c,(method) DeltaInfo,	"info",			A_CANT, 0);
+	class_addmethod(c,(method) DeltaTattle,	"tattle",	 	A_NOTHING);
+	class_addmethod(c,(method) DeltaTattle,	"dblclick", 	A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	}
 
@@ -139,7 +153,7 @@ objDelta*
 DeltaNew(
 	SymbolPtr	sym,								// must be 'lp.-'
 	short		iArgCount,
-	Atom		iArgVec[])
+	t_atom		iArgVec[])
 	
 	{
 	#pragma unused(sym)
@@ -175,7 +189,7 @@ DeltaNew(
 		}
 	
 	// Let Max allocate us
-	me = (objDelta*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	if (me == NIL) goto punt;
 	
 	// Add right inlet
@@ -255,7 +269,7 @@ DeltaSet(
 	double		iVal)
 	
 	{
-	if (ObjectGetInlet((Object*) me, me->inletNum) == 1)
+	if (ObjectGetInlet((t_object*) me, me->inletNum) == 1)
 		me->right = iVal;
 	else me->left = iVal;
 	}
@@ -271,14 +285,14 @@ DeltaFloat(objDelta* me, double iVal)
 void
 DeltaList(
 	objDelta*	me,
-	Symbol*		sym,			// ignore, must be "list"
+	t_symbol*		sym,			// ignore, must be "list"
 	short		iArgCount,
-	Atom*		iAtoms)
+	t_atom*		iAtoms)
 	
 	{
 	#pragma unused(sym)
 	
-	const long kInletNum = ObjectGetInlet((Object*) me, me->inletNum);
+	const long kInletNum = ObjectGetInlet((t_object*) me, me->inletNum);
 	
 	switch (iArgCount + kInletNum) {
 	default:
@@ -354,13 +368,46 @@ DeltaAssist(
 	{
 	#pragma unused(box)
 	
-	short	fragIndex = me->doFloats ? strIndexFloat : strIndexInt;
+	//short	fragIndex = me->doFloats ? strIndexFloat : strIndexInt;
 	
 	
 	if (iDir == ASSIST_INLET)		// Both inlets use the same string
 		iArgNum = 0;
 	
-	LitterAssistResFrag(iDir, iArgNum, strIndexAnyIn, strIndexLROut, oCStr, fragIndex);
+        
+	//LitterAssistResFrag(iDir, iArgNum, strIndexAnyIn, strIndexLROut, oCStr, fragIndex);
+        
+        if(me->doFloats) {
+            if (iDir == ASSIST_INLET)
+                sprintf (oCStr, LPAssistInAny, LPAssistFrag2);
+            else {
+                switch(iArgNum) {
+                    case 0: sprintf (oCStr, LPAssistOut1, LPAssistFrag2); break;
+                    case 1: sprintf (oCStr, LPAssistOut2, LPAssistFrag2); break;
+                    case 2: sprintf (oCStr, LPAssistOut3, LPAssistFrag2); break;
+                }
+            }
+        }
+        else {
+            if (iDir == ASSIST_INLET)
+                sprintf (oCStr, LPAssistInAny, LPAssistFrag1);
+            else {
+                switch(iArgNum) {
+                    case 0: sprintf (oCStr, LPAssistOut1, LPAssistFrag1); break;
+                    case 1: sprintf (oCStr, LPAssistOut2, LPAssistFrag1); break;
+                    case 2: sprintf (oCStr, LPAssistOut3, LPAssistFrag1); break;
+                }
+            }
+        }
+        /*
+         // Assistance strings
+         #define LPAssistInAny		"%s (Triggers subtraction)"
+         #define LPAssistOut1		"%s (left - right)"
+         #define LPAssistOut2		"%s (right - left)"
+         #define LPAssistOut3		"%s (absolute difference)"
+         #define LPAssistFrag1		"int"
+         #define LPAssistFrag2		"float"
+         */
 	
 	}
 

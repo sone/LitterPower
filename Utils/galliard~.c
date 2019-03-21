@@ -21,12 +21,16 @@
 
 #include "LitterLib.h"
 #include "MoreMath.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 #pragma mark • Constants
 
 const char	kClassName[]	= "lp.galliard~";	    		// Class name
 
+#define LPAssistIn1			"Signal to process, list of coefficients"
+#define LPAssistOut1		"Signal (Processed signal)"
+
+/*
 // Indices for STR# resource
 enum {
 	strIndexIn		= lpStrIndexLastStandard + 1,
@@ -35,7 +39,7 @@ enum {
 	strIndexInLeft		= strIndexIn,
 	strIndexOutLeft		= strIndexOut
 	};
-
+*/
 enum {
 	kMaxListLen = 255
 	};
@@ -57,14 +61,16 @@ typedef struct {
 
 #pragma mark • Function Prototypes
 
-objPolynom*	GalliardNew(Symbol*, short, Atom[]);
+objPolynom*	GalliardNew(t_symbol*, short, t_atom[]);
 
-void	GalliardCoeffs(objPolynom*, Symbol*, short, Atom[]);
+void	GalliardCoeffs(objPolynom*, t_symbol*, short, t_atom[]);
 void	GalliardConstFt(objPolynom*, double);
 void	GalliardConstInt(objPolynom*, long);
 	
-void	GalliardDSP(objPolynom*, t_signal*[], short[]);
-int*	GalliardPerform(int[]);				// Relies on int as 32-bit. Stupid ext_proto.h
+//void	GalliardDSP(objPolynom*, t_signal*[], short[]);
+//int*	GalliardPerform(int[]);				// Relies on int as 32-bit. Stupid ext_proto.h
+void    GalliardDSP64(objPolynom*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void    GalliardPerform64(objPolynom*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 void	GalliardTattle(objPolynom*);
 void	GalliardAssist(objPolynom*,	tBoxPtr, long, long, char[]);
@@ -88,14 +94,14 @@ void	GalliardInfo(objPolynom*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP/Litter setup() call
-	setup(	&gObjectClass,						// Pointer to our class definition
+	c = class_new(kClassName,						// Pointer to our class definition
 			(method) GalliardNew,					// Instance creation function
 			(method) dsp_free,              	// Custom deallocation function
 			(short) sizeof(objPolynom),			// Class object size
@@ -103,24 +109,29 @@ main(void)
 			A_GIMME,							// Variable-length argument list
 			0);
 	
-	dsp_initclass();
+	class_dspinit(c);
 	
 	// Messages
-	addmess	((method) GalliardCoeffs,	"list",		A_GIMME, 0);
-	addfloat((method) GalliardConstFt);
-	addint	((method) GalliardConstInt);
+	class_addmethod(c, (method) GalliardCoeffs,	"list",		A_GIMME, 0);
+	class_addmethod(c, (method) GalliardConstFt, "float", A_FLOAT, 0);
+	class_addmethod(c, (method) GalliardConstInt, "int", A_LONG, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) GalliardDSP, 	"dsp",		A_CANT, 0);
+	class_addmethod(c, (method) GalliardDSP64, 	"dsp64",		A_CANT, 0);
 
 	// Informational messages
-	addmess	((method) GalliardTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) GalliardTattle,	"tattle",	A_NOTHING);
-	addmess	((method) GalliardAssist,	"assist",	A_CANT, 0);
-	addmess	((method) GalliardInfo,		"info",		A_CANT, 0);
+	class_addmethod(c, (method) GalliardTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) GalliardTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c, (method) GalliardAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) GalliardInfo,		"info",		A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	
 	}
@@ -139,9 +150,9 @@ main(void)
 
 objPolynom*
 GalliardNew(
-	Symbol*	sym,
+	t_symbol*	sym,
 	short	iArgC,
-	Atom*	iArgV)
+	t_atom*	iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -152,7 +163,7 @@ GalliardNew(
 	// Let Max allocate us, our inlets, and our outlets
 	//
 	
-	me = (objPolynom*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	if (me == NIL) {
 		error("%s: insufficient memory to create object", kClassName);
 		goto punt;
@@ -210,9 +221,9 @@ punt:
 void
 GalliardCoeffs(
 	objPolynom*	me,
-	Symbol*		sym,
+	t_symbol*	sym,
 	short		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 	
 	{
 	#pragma unused (sym)
@@ -236,7 +247,7 @@ GalliardConstFt(
 	objPolynom* me,
 	double		iConst)
 	{
-	Atom a;
+	t_atom a;
 	
 	AtomSetFloat(&a, iConst);
 	GalliardCoeffs(me, NULL, 1, &a);
@@ -253,7 +264,7 @@ void GalliardConstInt(objPolynom* me, long iConst)
  *	GalliardDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 GalliardDSP(
 	objPolynom*	me,
@@ -276,7 +287,15 @@ GalliardDSP(
 		);
 	
 	}
-	
+*/
+
+void    GalliardDSP64(objPolynom *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags) {
+    
+    object_method(dsp64, gensym("dsp_add64"), me, GalliardPerform64, 0, NULL);
+    
+}
+
+
 
 /******************************************************************************************
  *
@@ -289,7 +308,7 @@ GalliardDSP(
  *		- output signal
  *
  ******************************************************************************************/
-
+/*
 int*
 GalliardPerform(
 	int iParams[])
@@ -335,6 +354,39 @@ exit:
 	return iParams + paramNextLink;
 	}
 
+*/
+
+
+
+void    GalliardPerform64(objPolynom *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    
+    long			vecCounter;
+    tSampleVector	inSig, outSig;
+    int				order;
+    double*			coeffs;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    // Copy parameters into registers
+    vecCounter	= sampleframes;
+    inSig		= ins[0];
+    outSig		= outs[0];
+    
+    // Do our stuff
+    order	= me->order;
+    coeffs	= me->coeffs;
+    
+    // Watch out! EvalPoly() is currently unsafe for 0th-order functions
+    if (order == 0) do {
+        *outSig++ = *coeffs;
+    } while (--vecCounter > 0);
+    else do {
+        *outSig++ = EvalPoly((*inSig++), coeffs, order);
+    } while (--vecCounter > 0);
+    
+}
+
 /******************************************************************************************
  *
  *	GalliardTattle(me)
@@ -374,7 +426,12 @@ GalliardAssist(
 	{
 	#pragma unused(box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCDestStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCDestStr);
+        if (iDir == ASSIST_INLET)
+            sprintf (oCDestStr, LPAssistIn1);
+        else
+            sprintf (oCDestStr, LPAssistOut1);
+
 	}
 
 void GalliardInfo(objPolynom* me)

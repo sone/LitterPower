@@ -128,8 +128,8 @@ NormalBM(
 	
 	// Take a pair of uniform random numbers inside the unit circle...
 	do {
-		v1 = Long2Signal((long) iFunc(iData));
-		v2 = Long2Signal((long) iFunc(iData));
+		v1 = Long2Signal(iFunc(iData));
+		v2 = Long2Signal(iFunc(iData));
 		r2 = v1 * v1 + v2 * v2;
 		} while (r2 >= 1.0 || r2 == 0.0);
 	
@@ -163,8 +163,8 @@ NormalBMTaus88(
 	Taus88Load(iData, &s1, &s2, &s3);
 	
 	do {
-		v1 = Long2Signal( (long) Taus88Process(&s1, &s2, &s3) );
-		v2 = Long2Signal( (long) Taus88Process(&s1, &s2, &s3) );
+		v1 = Long2Signal( Taus88Process(&s1, &s2, &s3) );
+		v2 = Long2Signal( Taus88Process(&s1, &s2, &s3) );
 		r2 = v1 * v1 + v2 * v2;
 		} while (r2 >= 1.0 || r2 == 0.0);
 	

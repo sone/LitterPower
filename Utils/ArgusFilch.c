@@ -29,10 +29,13 @@
 /******************************************************************************************
  ******************************************************************************************/
 
+
+//*** macht wohl keinen Sinn hier Arbeit zu investieren, vb ****//
+
 #pragma mark • Include Files
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include <string.h>		// We use strncmp()
 
 #if !defined(TARGET_API_MAC_CARBON) || !TARGET_API_MAC_CARBON
@@ -45,6 +48,7 @@
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.argus";			// Class name
+const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 	// Indices for STR# resource
 enum {
@@ -77,8 +81,9 @@ tWindAPISysMove				WindSysWindMoveFunc	= NIL;
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
-	Patcher*	owner;
+	t_object		coreObject;
+	t_patcher*	owner;
+    
 	} objFilch;
 
 

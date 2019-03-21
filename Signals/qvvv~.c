@@ -32,7 +32,6 @@
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.qvvv~";			// Class name
-const char* version = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 // Assistance strings
 #define LPAssistIn1			"Float (Hurst factor)"
@@ -52,7 +51,7 @@ const double	kMaxNN		= 31.0;
 const int		kIterations	= 12;					// log2(kMaxBuf)
 
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInHurst		= lpStrIndexLastStandard + 1,
 	strIndexInNN,
@@ -60,7 +59,7 @@ enum {
 	
 	strIndexInLeft		= strIndexInHurst,
 	strIndexOutLeft		= strIndexOuobjBrown
-	};
+	};*/
 
 
 #pragma mark • Type Definitions
@@ -172,7 +171,7 @@ int C74_EXPORT main(void)
 	//LitterInit(kClassName, 0);
 	Taus88Init();
         //post("hoollo");
-        post("%s: %s", kClassName, version);
+        post("%s: %s", kClassName, LPVERSION);
 
         return 0;
 	}

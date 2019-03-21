@@ -60,7 +60,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "Taus88.h"
 #include "RNGGauss.h"
@@ -79,10 +79,21 @@
 #endif
 
 
+// Assistance strings
+#define LPAssistIn1            "Bang (Generate random number)"
+#if defined(VARICOLOR)
+    #define LPAssistIn2            "Float (Hurst factor)"
+    #define LPAssistIn3             "Int (NN factor)"
+#else
+    #define LPAssistIn2            "Int (NN factor)"
+#endif
+#define LPAssistOut1        "Float (Random value, 0 <= x <= 1)"
+
+
 const int	kMaxNN			= 31;
 
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInBang		= lpStrIndexLastStandard + 1,
 #ifdef VARICOLOR
@@ -94,7 +105,7 @@ enum {
 	strIndexInLeft		= strIndexInBang,
 	strIndexOutLeft		= strIndexOutBrown
 	};
-
+*/
 
 #pragma mark • Type Definitions
 
@@ -103,11 +114,11 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object			coreObject;
+	t_object		coreObject;
 	
 	tTaus88DataPtr	tausData;
 	
-	float*			theBuffer;			// Allocated at object creation
+    double*			theBuffer;			// Allocated at object creation     
 	int				nn;					// Number of bits to mask out
 	
 #ifdef VARICOLOR
@@ -115,7 +126,7 @@ typedef struct {
 					hurstFac;
 #endif
 	
-	unsigned long	cycle,
+    unsigned int	cycle,              // was: unsigned long
 					curPos,
 					nnMask,				// Values depends on nn
 					nnOffset;
@@ -129,7 +140,7 @@ typedef struct {
 #pragma mark • Function Prototypes
 
 	// Class message functions
-static void*	PvvvNew(Symbol*, short, Atom[]);
+static void*	PvvvNew(t_symbol*, short, t_atom[]);
 static void		PvvvFree(tBrown*);
 
 	// Object message functions
@@ -161,14 +172,14 @@ static void	PvvvInfo(tBrown*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) PvvvNew,			// Instance creation function
 			(method) PvvvFree,			// Custom deallocation function
 			sizeof(tBrown),				// Class object size
@@ -182,22 +193,27 @@ main(void)
 		
 
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) PvvvBang);
+	class_addmethod(c, (method) PvvvBang,   "bang", 0);
 #ifdef VARICOLOR
-	addmess	((method) PvvvHurst,	"ft1",		A_FLOAT, 0);
-	addmess	((method) PvvvNN,		"in2",		A_LONG, 0);
+	class_addmethod(c,(method) PvvvHurst,	"ft1",		A_FLOAT, 0);
+	class_addmethod(c,(method) PvvvNN,		"in2",		A_LONG, 0);
 #else
-	addmess	((method) PvvvNN,		"in1",		A_LONG,	0);
+	class_addmethod(c,(method) PvvvNN,		"in1",		A_LONG,	0);
 #endif
-	addmess ((method) PvvvSeed,		"seed",		A_DEFLONG, 0);
-	addmess	((method) PvvvTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) PvvvTattle,	"tattle",	A_NOTHING);
-	addmess	((method) PvvvAssist,	"assist",	A_CANT, 0);
-	addmess	((method) PvvvInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) PvvvSeed,	"seed",		A_DEFLONG, 0);
+	class_addmethod(c,(method) PvvvTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) PvvvTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) PvvvAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) PvvvInfo,	"info",		A_CANT, 0);
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -229,14 +245,14 @@ main(void)
 		return nudge;
 		}
 
-	static void NonComprendo(Atom* iBarf)
+	static void NonComprendo(t_atom* iBarf)
 		{ error("%s doesn't understand", kClassName); postatom(iBarf); }
 
 void*
 PvvvNew(
-	Symbol*	sym,			// unused, must == gensym(kClassName)
+	t_symbol*	sym,			// unused, must == gensym(kClassName)
 	short	iArgC,
-	Atom	iArgV[])
+	t_atom	iArgV[])
 	
 	{
 	#pragma unused(sym)
@@ -264,7 +280,7 @@ PvvvNew(
 	
 	tBrown*			me			= NIL;
 	tTaus88DataPtr	myTausStuff	= NIL;
-	float*			theBuffer	= NIL;
+	double*			theBuffer	= NIL;
 	long			cycle,
 					nn;
 #ifdef VARICOLOR
@@ -290,18 +306,18 @@ PvvvNew(
 			// Fall into next case
 		case argSeed:
 			if (ParseAtom(iArgV + argSeed, TRUE, FALSE, 0, NIL, kClassName) == A_LONG)
-				myTausStuff = Taus88New(iArgV[argSeed].a_w.w_long);
+                myTausStuff = Taus88New(atom_getlong(&iArgV[argSeed]));
 			else NonComprendo(iArgV + argSeed);
 			// Fall into next case
 		case argNN:
 			if (ParseAtom(iArgV + argNN, TRUE, FALSE, 0, NIL, kClassName) == A_LONG)
-				nn = iArgV[argNN].a_w.w_long;
+                nn = atom_getlong(&iArgV[argNN]);//.a_w.w_long;
 			else NonComprendo(iArgV + argNN);
 			// Fall into next case
 #ifdef VARICOLOR
 		case argHurst:
 			if (ParseAtom(iArgV + argHurst, FALSE, TRUE, 0, NIL, kClassName) == A_FLOAT)
-				hurstExp = iArgV[argHurst].a_w.w_float;
+                hurstExp = atom_getfloat(&iArgV[argHurst]);  //.a_w.w_float;
 			else NonComprendo(iArgV + argHurst);
 			// Fall into next case
 #endif
@@ -322,7 +338,7 @@ PvvvNew(
 	// Let Max try to allocate us
 	//
 	
-	me = (tBrown*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 		if (me == NIL) goto punt;
 	
 	// Inlets, from right to left
@@ -337,7 +353,7 @@ PvvvNew(
 	floatout(me);
 	
 	// Allocate data buffer of size cycle + 1. Note that cycle must be power of two.
-	theBuffer = (float*) NewPtr((cycle + 1) * sizeof(float));
+	theBuffer = (double*)sysmem_newptr((cycle + 1) * sizeof(double));
 		if (theBuffer == NIL) goto punt;
 	
 	//
@@ -363,7 +379,7 @@ PvvvNew(
 punt:
 	// Oops... cheesy exception handling
 	error("Insufficient memory to create %s object.", kClassName);
-	if (me != NIL) freeobject((Object*) me);
+	if (me != NIL) freeobject((t_object*) me);
 	return NIL;
 	}
 
@@ -382,7 +398,8 @@ PvvvFree(
 	
 	Taus88Free(me->tausData);							// Taus88Free is NIL-safe
 	
-	if (me->theBuffer) DisposePtr((Ptr) me->theBuffer);
+	//if (me->theBuffer) DisposePtr((Ptr) me->theBuffer);
+        if (me->theBuffer) sysmem_freeptr(me->theBuffer);
 	
 	}
 
@@ -409,7 +426,7 @@ PvvvFree(
 #endif
 		
 		double			stdDev		= 1.0;
-		float*			buf			= me->theBuffer;
+		double*			buf			= me->theBuffer;
 		long			cycle		= me->cycle,
 						stride		= cycle >> 1,
 						offset		= stride >> 1;
@@ -455,7 +472,7 @@ PvvvBang(
 	
 	{
 	long	pos	= me->curPos;
-	float*	buf	= me->theBuffer;
+	double*	buf	= me->theBuffer;
 	double	sample;
 	
 	if (pos == me->cycle) {
@@ -480,7 +497,7 @@ PvvvBang(
 	if (me->nn != 0) {
 		// Convert to int, mask, convert back to FP
 		// ASSERT: 0.0 <= sample <= 1.0
-		unsigned long lSamp = kULongMax * sample + 0.5;
+        unsigned int lSamp = kULongMax * sample + 0.5;      // was: unsigned long
 		lSamp &= me->nnMask;
 		lSamp += me->nnOffset;
 		sample = lSamp * (1.0 / (double) kULongMax);
@@ -513,7 +530,7 @@ void PvvvNN(
 	else {
 		if (iNN > kMaxNN)
 			iNN = kMaxNN;
-		me->nn			= iNN;
+		me->nn			= (int)iNN;
 		me->nnMask		= kULongMax << iNN;
 		me->nnOffset	= (~me->nnMask) >> 1;
 		}
@@ -596,7 +613,18 @@ PvvvAssist(
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+#if defined(VARICOLOR)
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+#endif
+            }
+        }
+        else
+            sprintf (oCStr, LPAssistOut1);
 	
 	}
 

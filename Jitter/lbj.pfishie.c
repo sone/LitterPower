@@ -17,12 +17,20 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "RNGPoisson.h"
 
 #ifdef WIN_VERSION
 	#include "MoreMath.h"		// Need this for lgamma
 #endif
+
+
+// Assistance strings
+
+#define LPAssistIn1			"Bang (Generate Poisson noise)"
+#define LPAssistIn2			"Int (NN factor)"
+#define LPAssistOut1		"Gaussian noise"
+#define LPAssistOut2		"Dump"
 
 
 #pragma mark • Constants
@@ -60,12 +68,12 @@ typedef union {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	voidPtr		obex;						// The magic extended object thing.
 	} msobPfishie;							// Mac Shell Object
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	
 	long		lambdaCount;
 	ePoisAlg	alg[JIT_MATRIX_MAX_PLANECOUNT];
@@ -199,8 +207,7 @@ GenPoissonRejTaus88Core(
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const long kAttr = MAX_JIT_MOP_FLAGS_OWN_OUTPUTMATRIX | MAX_JIT_MOP_FLAGS_OWN_JIT_MATRIX;
@@ -208,7 +215,7 @@ main(void)
 	voidPtr	p,									// Have to guess about what these two do
 			q;									// Not much is documented in the Jitter SDK
 	
-	LITTER_CHECKTIMEOUT(kMaxClassName);
+	//LITTER_CHECKTIMEOUT(kMaxClassName);
 	
 	PfishieJitInit();
 	
@@ -226,7 +233,7 @@ main(void)
 	q = jit_class_findbyname(gensym((char*) kJitClassName));    
     max_jit_classex_mop_wrap(p, q, kAttr); 		
     max_jit_classex_standard_wrap(p, q, 0); 	
-	LITTER_TIMEBOMB max_addmethod_usurp_low((method) PfishieOutputMatrix, "outputmatrix");	
+	max_addmethod_usurp_low((method) PfishieOutputMatrix, "outputmatrix");
 	
 	// Back to adding messages...
 	addmess	((method) PfishieTattle,	"dblclick",	A_CANT, 0);
@@ -235,7 +242,7 @@ main(void)
 	addmess	((method) PfishieInfo,		"info",		A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kMaxClassName, 0);
+	//LitterInit(kMaxClassName, 0);
 	}
 
 
@@ -256,14 +263,14 @@ static void*
 PfishieNewMaxShell(
 	SymbolPtr	sym,
 	long		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 	
 	{
 	#pragma unused(sym)
 	
 	msobPfishie*	me			= NIL;
 	void*			jitObj		= NIL;
-	Symbol*			classSym	= gensym((char*) kJitClassName);
+	t_symbol*			classSym	= gensym((char*) kJitClassName);
 	
 	me = (msobPfishie*) max_jit_obex_new(gPfishieMaxClass, classSym);
 		if (me == NIL) goto punt;
@@ -368,7 +375,20 @@ void PfishieAssist(msobPfishie* me, void* box, long iDir, long iArgNum, char* oC
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 1: sprintf (oCStr, LPAssistOut2); break;
+            }
+            
+        }
 	}
 
 
@@ -714,7 +734,7 @@ PfishieGetLambda(
 	jcobPfishie*	me,
 	void*			attr, 
 	long*			ioArgC, 
-	Atom**			ioArgVec)
+	t_atom**			ioArgVec)
 	
 	{
 	#pragma unused(attr)

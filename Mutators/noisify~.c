@@ -43,7 +43,7 @@
 #pragma mark â€¢ Include Files
 
 #include "LitterLib.h"			// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 
 #include <float.h>				// For FLT_EPSILON
@@ -67,6 +67,23 @@
 
 
 
+// Assistance strings
+#ifdef RC_INVOKED 			// Special characters for Windows
+#define		ellipsisSymbol		"..."
+#define		muSymbol			0xb5
+#define		lessEqSymbol		"<="
+#else						// Special characters for Mac OS
+#define		ellipsisSymbol		"É"
+#define		muSymbol			"µ"
+#define		lessEqSymbol		"²"
+#endif
+
+#define LPAssistIn1			"Signal (Source)"
+#define LPAssistIn2			"Signal (Target)"
+#define LPAssistIn3			"Signal or Float (Mutation Index, 0 <= " muSymbol " <= 1)"
+#define LPAssistOut1		"Signal (Mutant)"
+
+
 #pragma mark â€¢ Constants
 
 const char	kClassName[]	= "lp.emeric~";					// Class name
@@ -78,7 +95,7 @@ const char	kClassName[]	= "lp.emeric~";					// Class name
 	#define kFBankSize				24
 #endif
 
-const float kFBankCenters[]	= {	50.,	150.,	250.,
+const double kFBankCenters[]	= {	50.,	150.,	250.,
 								350.,	450.,	570.,
 								700.,	840.,	1000.,
 								1170.,	1370.,	1600.,
@@ -169,9 +186,12 @@ static void	EmericInfo(objEmeric*);
 
 
 	// MSP Messages
-static void	EmericDSP(objEmeric*, t_signal**, short*);
-static int*	EmericPerform6(int*);
-static int*	EmericPerform5(int*);
+//static void	EmericDSP(objEmeric*, t_signal**, short*);
+//static int*	EmericPerform6(int*);
+//static int*	EmericPerform5(int*);
+void EmericDSP64(objEmeric*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void EmericPerform6_64(objEmeric*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
+void EmericPerform5_64(objEmeric*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -189,11 +209,11 @@ static int*	EmericPerform5(int*);
 					sProfilerOn = false;
 #endif
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 #if __PROFILER_ONFLAG__
 	if (ProfilerInit(collectDetailed, bestTimeBase, 1000, 20) == noErr) {
@@ -205,7 +225,7 @@ main(void)
 #endif
 
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) EmericNew,			// Instance creation function
 			(method) EmericFree,			// Default deallocation function
 			sizeof(objEmeric),			// Class object size
@@ -213,20 +233,20 @@ main(void)
 			A_DEFFLOAT,					// Optional arguments:	1. Initial omega
 			0);	
 	
-	dsp_initclass();
+	class_dspinit(c);
 	
 	// Messages
-	addfloat((method) EmericFloat);
-	addmess	((method) EmericTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) EmericTattle,	"tattle",	A_NOTHING);
-	addmess	((method) EmericAssist,	"assist",	A_CANT, 0);
-	addmess	((method) EmericInfo,	"info",		A_CANT, 0);
+    class_addmethod(c,(method) EmericFloat, "float", A_FLOAT, 0);
+	class_addmethod(c,(method) EmericTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) EmericTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) EmericAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) EmericInfo,	"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) EmericDSP, "dsp", A_CANT, 0);
+	class_addmethod(c,(method) EmericDSP64, "dsp64", A_CANT, 0);
 
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	
 /*	// Instead of calling Taus88Init(), as we usually do, we're calling Taus88Seed() directly.
 	// This allows us to hardwire the Taus88 algorithm into code used in the Perform method, for
@@ -234,6 +254,11 @@ main(void)
 	Taus88Seed(&sTausData, 0);
 */
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -415,12 +440,12 @@ SetVocBufSize(
 	
 	// Copy base address of vectors from the object into registers
 	double* const	kAmpSumBase = me->ampSums;
-	floatPtr const	kRingBufBase = me->ringBuf,
+	tSampleVector const	kRingBufBase = me->ringBuf,
 					kRingBufStop = kRingBufBase + me->ringBufCurSize;
-	const long		kRBCurSize	= me->ringBufCurSize;
+	//const long		kRBCurSize	= me->ringBufCurSize;
 	
 	unsigned long	i, j, k;						// General-purpose counters
-	floatPtr		p;								// General-purpose pointers
+	double*		p;								// General-purpose pointers
 	double*			s;
 	
 #if __HAS_CRITICAL_REGIONS__
@@ -465,12 +490,14 @@ SetVocBufSize(
 		// Finally, move history around to reflect new buffer size
 		if (p < me->ringBufCurPos) {
 			i = me->ringBufCurPos - p;
-			BlockMoveData((Ptr) p, (Ptr) kRingBufBase, i * sizeof(float));
+			//BlockMoveData((Ptr) p, (Ptr) kRingBufBase, i * sizeof(float));
+            memmove(kRingBufBase, p, i * sizeof(double));
 			me->ringBufCurPos = kRingBufBase;
 			}
 		else {
 			i = kRingBufStop - p;
-			BlockMoveData((Ptr) p, (Ptr) me->ringBufCurPos, i * sizeof(float));
+			//BlockMoveData((Ptr) p, (Ptr) me->ringBufCurPos, i * sizeof(float));
+            memmove(me->ringBufCurPos,p, i * sizeof(double));
 			}
 		
 		}
@@ -482,7 +509,7 @@ SetVocBufSize(
 		const double kMeanFactor = ((double) kFBankSize) / ((double) me->ringBufCurSize);
 		const long	 kNewSamples = (iNewSize - me->ringBufCurSize) / kFBankSize;
 		
-		float	curMeans[kFBankSize];
+		double	curMeans[kFBankSize];
 		
 		s = kAmpSumBase;
 		p = &curMeans[0];
@@ -497,10 +524,12 @@ SetVocBufSize(
 		i = iNewSize - me->ringBufCurSize;
 		p = me->ringBufCurPos;
 		j = kRingBufStop - p;
-		BlockMoveData((Ptr) p, (Ptr) (p + i), j * sizeof(float));
+		//BlockMoveData((Ptr) p, (Ptr) (p + i), j * sizeof(float));
+        memmove((p + i), p, j * sizeof(double));
 		
 		do	{
-			BlockMoveData((Ptr) curMeans, (Ptr) p, kFBankSize);
+			//BlockMoveData((Ptr) curMeans, (Ptr) p, kFBankSize);
+            memmove(p, curMeans, kFBankSize);       // ?????? size correct ????? vb
 			
 			p += kFBankSize;
 			i -= kFBankSize;
@@ -553,14 +582,14 @@ SetSR(
 		if (ringBufCurSize != me->ringBufCurSize)
 			SetVocBufSize(me, ringBufCurSize);
 		
-		SetPtrSize((Ptr) me->ringBuf, ringBufMaxSize * sizeof(float));
+		SetPtrSize((Ptr) me->ringBuf, ringBufMaxSize * sizeof(double));
 		me->ringBufMaxSize = ringBufMaxSize;
 		}
 	
 	else if (me->ringBufMaxSize > 0) {
 		// This means a ring buffer exists, but we need a larger one
 		// First try to resize the existing buffer
-		SetPtrSize((Ptr) me->ringBuf, ringBufMaxSize * sizeof(float));
+		SetPtrSize((Ptr) me->ringBuf, ringBufMaxSize * sizeof(double));
 		if (MemError() == noErr) {
 			// Excellent! The rest is easy
 			me->ringBufMaxSize = ringBufMaxSize;
@@ -570,11 +599,12 @@ SetSR(
 		
 		else {
 			// OK, try to allocate a new block and copy data
-			floatPtr newBuf = (floatPtr) NewPtrClear(ringBufMaxSize * sizeof(float));
+			tSampleVector newBuf = (tSampleVector) NewPtrClear(ringBufMaxSize * sizeof(double));
 			if (newBuf != NIL) {
 				unsigned long curPosOffset = me->ringBufCurPos - me->ringBuf;
 				
-				BlockMoveData(me->ringBuf, newBuf, me->ringBufCurSize * sizeof(float));
+				//BlockMoveData(me->ringBuf, newBuf, me->ringBufCurSize * sizeof(float));
+                memmove(newBuf, me->ringBuf, me->ringBufCurSize * sizeof(double));
 				DisposePtr((Ptr) me->ringBuf);
 				
 				me->ringBuf			= newBuf;
@@ -594,7 +624,7 @@ SetSR(
 		}
 	
 	if (me->ringBuf == NIL) {						// NOTA BENE: *Not* else if...
-		floatPtr newBuf = (floatPtr) NewPtrClear(ringBufMaxSize * sizeof(float));
+		tSampleVector newBuf = (tSampleVector) NewPtrClear(ringBufMaxSize * sizeof(double));
 		if (newBuf != NIL) {
 			me->ringBuf			= newBuf;
 			me->ringBufCurPos	= newBuf;
@@ -632,7 +662,7 @@ EmericNew(
 	// Take intialization parameters as they come
 
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (objEmeric*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 		if (me == NIL) goto punt;
 		
 	dsp_setup(&(me->coreObject), 3);		// Signal inlets: Source, Target, Omega
@@ -889,7 +919,7 @@ void EmericInfo(objEmeric* me)
 		
 		return myErr;
 		}
-
+/*
 void
 EmericDSP(
 	objEmeric*	me,
@@ -950,7 +980,54 @@ punt:
 	error("%s: can't allocate memory for buffers; object disabled.");
 
 	}
-	
+*/
+
+void EmericDSP64(objEmeric *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    enum {
+        inletSrcIn			= 0,		// For input signal, begin~
+        inletTgtIn,
+        inletOmega,
+        
+        outletMut
+    };
+    
+    OSErr	myErr	= noErr;
+    double	curSR	= samplerate;
+    long	vecSize	= maxvectorsize;
+    
+    // Update buffers to match current sample rate and vector size
+    if (me->curSR != curSR) {
+        myErr = SetSR(me, curSR);
+        if (myErr != noErr) goto punt;
+    }
+    if (me->exciteBufSize != vecSize) {
+        myErr = SetExciteBufSize(me, vecSize);
+        if (myErr != noErr) goto punt;
+    }
+    
+    // Always recalculate omega-related parameters!
+    // This is necessary in case this object had a signal in the omega inlet the last time the DSP chain
+    // was built, and the user has since deleted the signal.
+    EmericOmega(me, me->omega);
+    
+    if (count[inletOmega] > 0)
+        object_method(dsp64, gensym("dsp_add64"), me, EmericPerform6_64, 0, NULL);
+
+    else
+        object_method(dsp64, gensym("dsp_add64"), me, EmericPerform5_64, 0, NULL);
+
+    return;
+    // End of normal processing
+    // ------------------------
+    
+    // Poor man's exception handling
+punt:
+    error("%s: can't allocate memory for buffers; object disabled.");
+}
+
+
+
 
 /******************************************************************************************
  *
@@ -1051,7 +1128,7 @@ PerformNull(
 		}
 
 	static inline double
-	UpdateRunningSum(double iNewVal, double iGate, double* ioSum, float* ioCache)
+	UpdateRunningSum(double iNewVal, double iGate, double* ioSum, double* ioCache)
 		{
 		double	result = *ioSum;
 		
@@ -1098,7 +1175,7 @@ Perform(
 	tResonBuf*		curSrcBuf	= me->srcRBuf;
 	tResonBuf*		curExcBuf	= me->excRBuf;
 	double*			curAmpSum;
-	floatPtr		rbCurPos	= me->ringBufCurPos;
+	tSampleVector		rbCurPos	= me->ringBufCurPos;        // was float, vb
 	long			i;
 	
 	// 1) Clear output buffer
@@ -1123,7 +1200,7 @@ Perform(
 				excY2	= curExcBuf->y2;
 		
 		// Everything else we need...
-		floatPtr	rBufPos = rbCurPos++; 
+		tSampleVector	rBufPos = rbCurPos++;           // was float, vb
 		t_sample*	s		= iSrc;
 		t_sample*	t		= iTgt;
 		t_sample*	o		= oOut;
@@ -1223,7 +1300,83 @@ PerformXFade(
  *	function is the "real thing".
  *
  ******************************************************************************************/
-	
+
+
+
+void EmericPerform6_64(objEmeric *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    enum {
+        paramSrc = 0,
+        paramTgt,
+        paramOmega,
+        paramOut = 0,
+    };
+    
+    double		omega;
+    
+    if (me->coreObject.z_disabled || me->ringBuf == NIL) return;
+    
+    omega = ((tSampleVector) ins[paramOmega])[0];
+    
+    if (omega == 0.0)
+        PerformNull(me, sampleframes,
+                    (tSampleVector) ins[paramSrc],
+                    (tSampleVector) outs[paramOut]);
+    
+    else {
+        float saveOmega	= me->omega;
+        
+        EmericOmega(me, omega);
+        
+        Perform(me, sampleframes,
+                (tSampleVector) ins[paramSrc],
+                (tSampleVector) ins[paramTgt],
+                (tSampleVector) outs[paramOut]);
+        
+        if (me->srcXFade > 0.0) {
+            PerformXFade(me->srcXFade, me->vocXFade, sampleframes,
+                         (tSampleVector) ins[paramSrc],
+                         (tSampleVector) outs[paramOut]);
+        }
+        
+        me->omega = saveOmega;
+    }
+
+}
+    
+    
+void EmericPerform5_64(objEmeric *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    enum {
+        paramSrc = 0,
+        paramTgt,
+        paramOut = 0,
+    };
+    
+    if (me->coreObject.z_disabled || me->ringBuf == NIL) return;
+    
+    
+    if (me->omega == 0.0)
+        PerformNull(me, sampleframes,
+                    (tSampleVector) ins[paramSrc],
+                    (tSampleVector) outs[paramOut]);
+    
+    else {
+        Perform(me, sampleframes,
+                (tSampleVector) ins[paramSrc],
+                (tSampleVector) ins[paramTgt],
+                (tSampleVector) outs[paramOut]);
+        
+        if (me->srcXFade > 0.0) {
+            PerformXFade(me->srcXFade, me->vocXFade, sampleframes,
+                         (tSampleVector) ins[paramSrc],
+                         (tSampleVector) outs[paramOut]);
+        }
+    }
+}
+
+
+/*
 int*
 EmericPerform6(
 	int iParams[])
@@ -1319,3 +1472,4 @@ EmericPerform5(
 exit:
 	return iParams + paramNextLink;
 	}
+*/

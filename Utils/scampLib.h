@@ -127,11 +127,11 @@ typedef struct ScampFlags {
 
 typedef struct {
 #if (SCAMP_TARGET == SCAMPSIG)
-	t_pxobject	coreObject;
-	long		limCounter;
+	t_pxobject	    coreObject;
+	long		    limCounter;
 #else
-	Object		coreObject;
-	Symbol*		split;				// If NULL, then no splitting
+	t_object		coreObject;
+	t_symbol*		split;				// If NULL, then no splitting
 									// If (Symbol*) -1, then send out-of-range
 									// values out right outlet
 									// Any other value is presumed to be a valid
@@ -139,7 +139,7 @@ typedef struct {
 									// the right outlet.
 #endif
 	
-	tOutletPtr	out2;				// For scamp~ this provides a count of how many times
+	tOutletPtr	    out2;				// For scamp~ this provides a count of how many times
 									// the mapping went out of range. For other objects
 									// this is an outlet for out-of-range values.
 	
@@ -171,7 +171,9 @@ typedef struct {
 	eActionType	action;				// Clip/Wrap/Reflect/Stet
 	eMapType	mappingType;		// Linear, Power, or Exponential
 	eMapSym	symmetry;			// Point Symmetry, Axis Symmetry, or None
-	tScampFlags	flags;		
+	tScampFlags	flags;
+    
+    short       connected[6];       // inlet connection status, vb
 
 	} objScamp;
 
@@ -203,16 +205,16 @@ extern SymbolPtr	gTruncSym,
 
 	// Defined in scampCommon.c
 void	ScampGenSymbols(void);
-void	ScampAddMessages(void);
+void	ScampAddMessages(t_class*);
 void	ScampCalcRange(objScamp* me);
-void	ScampParseArgs(objScamp*, short, Atom[]);
+void	ScampParseArgs(objScamp*, short, t_atom[]);
 
 	//
 	// Methods provided by all scamp objects
 	//
 
 	// Class message functions
-objScamp*	NewScamp(Symbol*, short, Atom*);
+objScamp*	NewScamp(Symbol*, short, t_atom*);
 
 	// Object message functions
 void	ScampBang(objScamp*);
@@ -227,17 +229,17 @@ void	ScampCurve(objScamp*, double);
 #if (SCAMP_TARGET == SCAMPSIG)
 	void ScampSync(objScamp*, long, double);
 #else
-	void ScampSet(objScamp*, Symbol*, short, Atom[]);
-	void ScampSplit(objScamp*, Symbol*, short, Atom[]);
+	void ScampSet(objScamp*, t_symbol*, short, t_atom[]);
+	void ScampSplit(objScamp*, t_symbol*, short, t_atom[]);
 #endif
 
 
-void	ScampMap(objScamp*, Symbol*, short, Atom[]);
+void	ScampMap(objScamp*, t_symbol*, short, t_atom[]);
 void	ScampSym(objScamp*, long);
 
 void	ScampLin(objScamp*, double);
-void	ScampPow(objScamp*, Symbol*, short, Atom[]);
-void	ScampExp(objScamp*, Symbol*, short, Atom[]);
+void	ScampPow(objScamp*, t_symbol*, short, t_atom[]);
+void	ScampExp(objScamp*, t_symbol*, short, t_atom[]);
 
 void	ScampClip(objScamp*);
 void	ScampWrap(objScamp*);

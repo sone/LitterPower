@@ -30,7 +30,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "Taus88.h"
 
@@ -38,6 +38,12 @@
 #pragma mark • Constants
 
 const char*			kClassName		= "lp.zzz";			// Class name
+
+
+// Assistance strings
+#define LPAssistIn1         "Bang (Generate random number)"
+#define LPAssistIn2         "Int (NN factor)"
+#define LPAssistOut1        "Float (Random value, 0 <= x <= 1)"
 
 #ifdef __GNUC__
 	// Lame
@@ -50,13 +56,14 @@ const char*			kClassName		= "lp.zzz";			// Class name
 				kMaxNN			= 31;
 #endif
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInBang		= lpStrIndexLastStandard + 1,
 	strIndexInNN,
 	
 	strIndexOutPink
 	};
+ */
 
 	// Indices for Inlets and Outlets. Users count starting at 1, we count from 0
 	// 
@@ -74,15 +81,15 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object			coreObject;
+	t_object			coreObject;
 	
 	tTaus88DataPtr	tausData;
 	
 	int				nn;					// Number of bits to mask out
-	unsigned long	counter,
+	unsigned int	counter,
 					nnMask,				// Values depend on nn
 					nnOffset;
-	unsigned long	sum,
+	unsigned int	sum,
 					dice[kArraySize];
 	} tPink;
 
@@ -122,14 +129,14 @@ static void	ZzzInfo(tPink*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,			// Pointer to our class definition
+	c = class_new(kClassName,			// Pointer to our class definition
 			(method) ZzzNew,		// Instance creation function
 			(method) ZzzFree,		// Custom deallocation function
 			sizeof(tPink),			// Class object size
@@ -140,17 +147,22 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) ZzzBang);
-	addmess	((method) ZzzNN,		"in1",		A_LONG);
-	addmess ((method) ZzzSeed,		"seed",		A_DEFLONG, 0);
-	addmess	((method) ZzzTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) ZzzTattle,	"tattle",	A_NOTHING);
-	addmess	((method) ZzzAssist,	"assist",	A_CANT, 0);
-	addmess	((method) ZzzInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) ZzzBang,     "bang", 0);
+	class_addmethod(c,(method) ZzzNN,		"in1",		A_LONG);
+	class_addmethod(c,(method) ZzzSeed,		"seed",		A_DEFLONG, 0);
+	class_addmethod(c,(method) ZzzTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) ZzzTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) ZzzAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) ZzzInfo,		"info",		A_CANT, 0);
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -178,8 +190,8 @@ void ZzzFree(tPink* me)
 	static void InitPinkDice(tPink* me) 
 		{ 
 		tTaus88DataPtr	tausData = me->tausData;
-		unsigned long*	curDie	= me->dice;
-		long			sum 	= 0;
+		unsigned int*	curDie	= me->dice;
+		unsigned int	sum 	= 0;
 		int				i		= kArraySize;
 		
 		do { sum += *curDie++ = Taus88(tausData) >> 4; }
@@ -206,7 +218,7 @@ ZzzNew(
 	// Finished checking intialization parameters
 
 	// Let Max allocate us, our inlets, and outlets.
-	me = (tPink*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	
 	intin(me, 1);								// NN inlet
 	
@@ -235,14 +247,14 @@ ZzzBang(
 	
 	{
 	tTaus88DataPtr	tausData = me->tausData;
-	unsigned long	c		= me->counter;
-	long			sum 	= me->sum;
+	unsigned int	c		= me->counter;
+	unsigned int	sum 	= me->sum;
 	
 	if (c != 0) {
 		// Need to count the number of clear LSBs to work out which die to update
 		unsigned int	rightZeroes	= 0;
-		unsigned long	testBit		= 0x01;
-		unsigned long*	curDie;
+		unsigned int	testBit		= 0x01;
+		unsigned int*	curDie;
 		
 		// ASSERT: c != 0
 		// (Otherwise the following will never terminate!)
@@ -268,7 +280,7 @@ ZzzBang(
 		sum &= me->nnMask;
 		sum += me->nnOffset;
 		}
-	
+        
 	outlet_float(me->coreObject.o_outlet, ULong2Unit_ZO(sum));
 	
 	}
@@ -295,7 +307,7 @@ void ZzzNN(
 	else {
 		if (iNN > kMaxNN)
 			iNN = kMaxNN;
-		me->nn			= iNN;
+		me->nn			= (int)iNN;
 		me->nnMask		= kULongMax << iNN;
 		me->nnOffset	= (~me->nnMask) >> 1;
 		}
@@ -316,7 +328,7 @@ ZzzSeed(
 	
 	{
 	
-	Taus88Seed(me->tausData, (unsigned long) iSeed);
+	Taus88Seed(me->tausData, (unsigned int) iSeed);
 	
 	}
 
@@ -364,7 +376,15 @@ ZzzAssist(
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOutPink, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOutPink, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+            }
+        }
+        else sprintf (oCStr, LPAssistOut1);
+        
 
 	}
 

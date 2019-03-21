@@ -47,10 +47,16 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 #include "bix.h"
 
+
+// Assistance strings
+
+#define LPAssistIn1			"Jitter Matrix"
+#define LPAssistOut1		"FullPacket message for otudp"
+#define LPAssistOut2		"Dump"
 
 
 #pragma mark • Constants
@@ -80,12 +86,12 @@ enum strIndices {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	voidPtr		jitObject;
 	} msobBixCP;						// msob == Max Shell Object
 
 typedef struct {
-	Object			coreObject;
+	t_object			coreObject;
 	
 	Boolean			monochrome,			// False by default; ie, Grayscale
 					swapbytes;
@@ -98,16 +104,16 @@ typedef struct {
 void*			gBixCPJitClass	= NIL;
 Messlist*		gBixCPMaxClass	= NIL;
 
-Symbol*			gSymFullPacket	= NIL;
+t_symbol*			gSymFullPacket	= NIL;
 
 
 #pragma mark • Function Prototypes
 
 	// Max methods/functions
-static msobBixCP*	BixCPNewMaxShell	(Symbol*, long, Atom*);
+static msobBixCP*	BixCPNewMaxShell	(t_symbol*, long, t_atom*);
 static void			BixCPFreeMaxShell	(msobBixCP*);
 
-static void BixCPjit_matrix		(msobBixCP*, Symbol*, long, Atom[]);
+static void BixCPjit_matrix		(msobBixCP*, t_symbol*, long, t_atom[]);
 static void BixCPFilter			(msobBixCP*, long, long, long);
 static void	BixCPSleep			(msobBixCP*, long);
 static void	BixCPDevice			(msobBixCP*, long);
@@ -144,14 +150,13 @@ static inline void* MainOutlet(msobBixCP* me)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	voidPtr	mjClassEx,
 			jClass;
 	
-	LITTER_CHECKTIMEOUT(kMaxClassName);
+	//LITTER_CHECKTIMEOUT(kMaxClassName);
 	
 	BixCPJitInit();
 	
@@ -172,7 +177,7 @@ main(void)
 	// Add messages
 	//
 		// Processing messages
-	LITTER_TIMEBOMB addmess ((method) BixCPjit_matrix, "jit_matrix", A_GIMME, 0);
+	addmess ((method) BixCPjit_matrix, "jit_matrix", A_GIMME, 0);
 	addmess ((method) BixCPFilter,	"filter",	A_LONG, A_LONG, A_LONG, 0);
 	addmess	((method) BixCPSleep,	"sleep",	A_LONG, 0);
 	addmess ((method) BixCPDevice,	"device",	A_LONG,	0);
@@ -186,7 +191,7 @@ main(void)
 	gSymFullPacket	= gensym("FullPacket");
 		
 	// Initialize Litter Library
-	LitterInit(kMaxClassName, 0);
+	//LitterInit(kMaxClassName, 0);
 	
 	}
 
@@ -211,7 +216,7 @@ FullPacketOut(
 	{
 	const short kArgCount	= 2;
 	
-	Atom	args[kArgCount];
+	t_atom	args[kArgCount];
 
 	AtomSetLong(&args[0], iSize);
 	AtomSetLong(&args[1], (long) iBuf);
@@ -233,14 +238,14 @@ static msobBixCP*
 BixCPNewMaxShell(
 	SymbolPtr	sym,
 	long		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 	
 	{
 	#pragma unused(sym)
 	
 	msobBixCP*	me			= NIL;
 	void*		jitObj		= NIL;
-	Symbol*		classSym	= gensym((char*) kJitClassName);
+	t_symbol*		classSym	= gensym((char*) kJitClassName);
 	
 	// In the 1.0 SDK max_jit_obex_new() is prototyped to expect a Maxclass* instead of
 	// a Messlist*. JKC said the next release of header files would be corrected to
@@ -297,9 +302,9 @@ BixCPFreeMaxShell(
 static void
 BixCPjit_matrix(
 	msobBixCP*	me,
-	Symbol*		sym,
+	t_symbol*		sym,
 	long		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 	
 	{
 	#pragma unused(sym)
@@ -362,8 +367,8 @@ BixCPFilter(
 	tBixCPSelFilter	buf;
 	
 	// Sanity checks
-	CLIP(iWhich, kMinByte, kMaxByte);
-	CLIP(iValue, kMinByte, kMaxByte);
+	CLIP_ASSIGN(iWhich, kMinByte, kMaxByte);
+	CLIP_ASSIGN(iValue, kMinByte, kMaxByte);
 	iOnOff = (iOnOff != 0);
 	
 	buf.magic	= NETORDER_INT32( bixMagicSelFilter );
@@ -396,7 +401,7 @@ BixCPSleep(
 	tBixCPSleep	buf;
 	
 	// Sanity check
-	CLIP(iDur, kMinDur, kMaxDur);
+	CLIP_ASSIGN(iDur, kMinDur, kMaxDur);
 	
 	buf.magic	= NETORDER_INT32( bixMagicSleep );
 	buf.msgID	= NETORDER_INT32( GetNextMessageID() );
@@ -456,7 +461,19 @@ void BixCPAssist(msobBixCP* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 1: sprintf (oCStr, LPAssistOut2); break;
+            }
+            
+        }
 	}
 
 void BixCPInfo(msobBixCP* me)
@@ -629,7 +646,8 @@ BixCPTranslate(
 	// Luckily, we are dealing with byte-sized data, so we don't have to worry about
 	// network byte order here.
 	if (mInfo.dimstride[1] == width)
-		BlockMoveData(mData, me->bixBuf->data, width * height);
+        memmove(me->bixBuf->data, mData, width * height);
+		//BlockMoveData(mData, me->bixBuf->data, width * height);
 	else {
 		// Jitter is padding rows, so we must copy one row at a time
 		long	i		= height,
@@ -638,7 +656,8 @@ BixCPTranslate(
 				dest	= me->bixBuf->data;
 		
 		while (i-- > 0) {
-			BlockMoveData(source, dest, width);
+			memmove(dest, source, width);
+            //BlockMoveData(source, dest, width);
 			source	+= stride;
 			dest	+= width;
 			}

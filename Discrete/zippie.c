@@ -23,13 +23,19 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 #include "MoreMath.h"
 
 //#include <math.h>
 
+
+// Assistance strings
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Float (zeta exponent)"
+#define LPAssistIn3			"Float (cardinality)"
+#define LPAssistOut1		"Int (Random value)"
 
 #pragma mark • Constants
 
@@ -52,7 +58,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	
@@ -132,7 +138,7 @@ ZippieRho(
 	
 	{
 //	const double kMinRho = 0.00000011920929;		// Arbitrary, smaller than anything
-													// we are likely to be sent in an Atom
+													// we are likely to be sent in an t_atom
 	// Sanity check
 	if (iRho > 0.0) {
 		me->rho		= iRho;
@@ -232,7 +238,19 @@ static void ZippieAssist(objZipf* me, void* iBox, long iDir, long iArgNum, char*
 	{
 	#pragma unused (me, iBox)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+        else
+            sprintf (oCStr, LPAssistOut1);
+            
+        
 	}
 
 
@@ -298,56 +316,56 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err ZippieGetMean(objZipf* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ZippieGetMean(objZipf* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV);
 		}
-	static t_max_err ZippieGetMedian(objZipf* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ZippieGetMedian(objZipf* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV);
 		}
-	static t_max_err ZippieGetMode(objZipf* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ZippieGetMode(objZipf* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV);
 		}
-	static t_max_err ZippieGetVar(objZipf* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ZippieGetVar(objZipf* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV);
 		}
-	static t_max_err ZippieGetStdDev(objZipf* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ZippieGetStdDev(objZipf* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV);
 		}
-	static t_max_err ZippieGetSkew(objZipf* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ZippieGetSkew(objZipf* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV);
 		}
-	static t_max_err ZippieGetKurtosis(objZipf* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ZippieGetKurtosis(objZipf* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV);
 		}
-	static t_max_err ZippieGetEntropy(objZipf* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ZippieGetEntropy(objZipf* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expEntropy), ioArgC, ioArgV);
 		}
 	
-	static t_max_err ZippieSetAttrRho(objZipf* me, void* iAttr, long* iArgC, Atom iArgV[])
+	static t_max_err ZippieSetAttrRho(objZipf* me, void* iAttr, long* iArgC, t_atom iArgV[])
 		{
 		#pragma unused(iAttr)
 		
@@ -360,9 +378,9 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-//		Symbol*	symLong			= gensym("long");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+//		t_symbol*	symLong			= gensym("long");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new(	"rho", symFloat64, 0,
@@ -394,16 +412,16 @@ DoExpect(
 static void
 ZippieTell(
 	objZipf*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -415,7 +433,7 @@ static void ZippieInfo(objZipf* me)
 static inline void AddInfo(void)
 	{ LitterAddCant((method) ZippieInfo, "info"); }
 		
-void ZippieTell(objZipf* me, Symbol* iTarget, Symbol* iAttrName)
+void ZippieTell(objZipf* me, t_symbol* iTarget, t_symbol* iAttrName)
 	{ LitterExpect((tExpectFunc) DoExpect, (Object*) me, iAttrName, iTarget, TRUE); }
 
 #endif
@@ -430,8 +448,7 @@ void ZippieTell(objZipf* me, Symbol* iTarget, Symbol* iAttrName)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -441,7 +458,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	LitterSetupClass(	kClassName,
 						sizeof(objZipf),			// Class object size
@@ -452,7 +469,7 @@ main(void)
 						myArgTypes);	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) ZippieBang);
+	LitterAddBang	((method) ZippieBang);
 	LitterAddMess1	((method) ZippieRho,	"ft1",		A_FLOAT);
 	LitterAddMess1	((method) ZippieSeed,	"seed",		A_DEFLONG);
 	LitterAddMess2	((method) ZippieTell,	"tell"	,	A_SYM, A_SYM);
@@ -463,7 +480,11 @@ main(void)
 	AddInfo();
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, gObjectClass);
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}

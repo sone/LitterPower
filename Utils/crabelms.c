@@ -20,18 +20,14 @@
 #include "LitterLib.h"
 #include "Taus88.h"
 
-#if 0
-	// Temporarily disable the trial period stuff while we're on a machine that doesn't
-	// have the nifty header file installed
-	#include "TrialPeriodUtils.h"
-#else
-	#define LITTER_CHECKTIMEOUT(X)
-	#define LITTER_TIMEBOMB
-#endif
 
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.crabelms";			// Class name
+
+// Assistance strings
+#define LPAssistIn		"List"
+#define LPAssistOut		"itLs"
 
 #ifdef __GNUC__
 	// Braindead GCC
@@ -40,13 +36,14 @@ const char*	kClassName		= "lp.crabelms";			// Class name
 	const int kMaxListLen	= 255;
 #endif
 
+/*
 	// Indices for STR# resource
 enum {
 	strIndexLeftIn			= lpStrIndexLastStandard + 1,
 	strIndexLeftOut
 	};
 
-
+*/
 #pragma mark • Type Definitions
 
 
@@ -54,7 +51,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object			coreObject;
+	t_object		coreObject;
 	
 	tTaus88DataPtr	tausData;
 	
@@ -64,7 +61,7 @@ typedef struct {
 											// padding will fill up whatever space an int
 											// takes, and ints are more convenient in
 											// for processing.
-	Atom			silt[kMaxListLen];		// list, possibly scrambled
+	t_atom			silt[kMaxListLen];		// list, possibly scrambled
 	} objCrabElms;
 
 
@@ -80,9 +77,9 @@ void			CrabElmsFree(objCrabElms*);
 static void CrabElmsBang(objCrabElms*);
 static void CrabElmsFloat(objCrabElms*, double);
 static void CrabElmsInt(objCrabElms*, long);
-static void CrabElmsList(objCrabElms*, Symbol*, short, Atom[]);
-static void CrabElmsSet(objCrabElms*, Symbol*, short, Atom[]);
-static void CrabElmsAnything(objCrabElms*, Symbol*, short, Atom[]);
+static void CrabElmsList(objCrabElms*, t_symbol*, short, t_atom[]);
+static void CrabElmsSet(objCrabElms*, t_symbol*, short, t_atom[]);
+static void CrabElmsAnything(objCrabElms*, t_symbol*, short, t_atom[]);
 static void CrabElmsTattle(objCrabElms*);
 static void	CrabElmsAssist(objCrabElms*, void*, long, long, char*);
 static void	CrabElmsInfo(objCrabElms*);
@@ -98,14 +95,14 @@ static void	CrabElmsInfo(objCrabElms*);
  *	
  ******************************************************************************************/
 
-void
-main()
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,						// Pointer to our class definition
+	c = class_new(	kClassName,						// Pointer to our class definition
 			(method) CrabElmsNew,				// Instantiation method  
 			(method) CrabElmsFree,				// Custom deallocation function
 			(short) sizeof(objCrabElms),		// Class object size
@@ -114,20 +111,25 @@ main()
 			0);									// private seed pool
 	
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) CrabElmsBang);
-	LITTER_TIMEBOMB addint	((method) CrabElmsInt);
-	LITTER_TIMEBOMB addfloat((method) CrabElmsFloat);
-	LITTER_TIMEBOMB addmess	((method) CrabElmsList,		"list", A_GIMME, 0);
-	LITTER_TIMEBOMB addmess	((method) CrabElmsAnything, "anything", A_GIMME, 0);
-	addmess	((method) CrabElmsSet,		"set",			A_FLOAT, 0);
-	addmess	((method) CrabElmsAssist,	"assist",		A_CANT, 0);
-	addmess	((method) CrabElmsInfo,		"info",			A_CANT, 0);
-	addmess ((method) CrabElmsTattle,	"tattle",	 	A_NOTHING);
-	addmess ((method) CrabElmsTattle,	"dblclick", 	A_CANT, 0);
+	class_addmethod(c, (method) CrabElmsBang, "bang", 0);
+    class_addmethod(c, (method) CrabElmsInt, "int", A_LONG, 0);
+	class_addmethod(c, (method) CrabElmsFloat, "float", A_FLOAT, 0);
+	class_addmethod(c, (method) CrabElmsList,		"list", A_GIMME, 0);
+	class_addmethod(c, (method) CrabElmsAnything, "anything", A_GIMME, 0);
+	class_addmethod(c, (method) CrabElmsSet,		"set",			A_FLOAT, 0);
+	class_addmethod(c, (method) CrabElmsAssist,	"assist",		A_CANT, 0);
+	class_addmethod(c, (method) CrabElmsInfo,		"info",			A_CANT, 0);
+	class_addmethod(c, (method) CrabElmsTattle,	"tattle",	 	A_NOTHING);
+	class_addmethod(c, (method) CrabElmsTattle,	"dblclick", 	A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -150,7 +152,7 @@ CrabElmsNew(
 	int				i;
 	
 	// Create object
-	me = (objCrabElms*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 		if (me == NIL) goto punt;			// Poor man's exception handling
 	
 	// Add inlets and outlets
@@ -203,7 +205,7 @@ CrabElmsBang(
 	// Quick check if we really need to 'scramble' items
 	// Zero-item and single-item lists don't need processing
 	if (c > 1) {
-		Atom*			l = me->silt;
+		t_atom*			l = me->silt;
 		tTaus88DataPtr	t = me->tausData;
 		UInt32			s1, s2, s3;
 		
@@ -243,9 +245,9 @@ CrabElmsBang(
 void
 CrabElmsSet(
 	objCrabElms*	me,
-	Symbol*			sym,					// Not used, must be gensym("set")
+	t_symbol*			sym,					// Not used, must be gensym("set")
 	short			iArgCount,
-	Atom			iArgVec[])
+	t_atom			iArgVec[])
 	
 	{
 	#pragma unused(sym)	
@@ -268,9 +270,10 @@ CrabElmsSet(
 
 void CrabElmsInt(objCrabElms* me, long iVal)
 	{
-	Atom a;
+	t_atom a;
 	
-	AtomSetLong(&a, iVal);
+	//AtomSetLong(&a, iVal);
+        atom_setlong(&a, iVal);
 	
 	CrabElmsSet(me, NIL, 1, &a);
 	CrabElmsBang(me);
@@ -279,9 +282,10 @@ void CrabElmsInt(objCrabElms* me, long iVal)
 
 void CrabElmsFloat(objCrabElms* me, double iVal)
 	{
-	Atom a;
+	t_atom a;
 	
-	AtomSetFloat(&a, iVal);
+	//AtomSetFloat(&a, iVal);
+        atom_setfloat(&a, iVal);
 	
 	CrabElmsSet(me, NIL, 1, &a);
 	CrabElmsBang(me);
@@ -292,9 +296,9 @@ void CrabElmsFloat(objCrabElms* me, double iVal)
 void
 CrabElmsList(
 	objCrabElms*	me,
-	Symbol*			sym,										// unused, must be "list"
+	t_symbol*			sym,										// unused, must be "list"
 	short			iArgCount,
-	Atom			iArgVec[])
+	t_atom			iArgVec[])
 	
 	{
 	#pragma unused(sym)
@@ -309,16 +313,16 @@ CrabElmsList(
  *	CrabElmsAnything(me)
  *
  *	Sort of special case: we treat arbitrary messages with parameter lists as if they were
- *	a list beginning with a symbol.
+ *	a list beginning with a t_symbol.
  *
  ******************************************************************************************/
 
 void
 CrabElmsAnything(
 	objCrabElms*	me,
-	Symbol*			iSym,
+	t_symbol*			iSym,
 	short			iArgCount,
-	Atom			iArgVec[])
+	t_atom			iArgVec[])
 	
 	{
 	int i;
@@ -329,7 +333,8 @@ CrabElmsAnything(
 		error("%s: items truncated", kClassName);
 		}
 	
-	AtomSetSym(&me->silt[0], iSym);
+	//AtomSetSym(&me->silt[0], iSym);
+        atom_setsym(&me->silt[0], iSym);
 	
 	for (i = 0; i < iArgCount; i += 1)
 		me->silt[i+1] = iArgVec[i];
@@ -383,7 +388,11 @@ CrabElmsAssist(
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexLeftIn, strIndexLeftOut, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexLeftIn, strIndexLeftOut, oCStr);
+        if (iDir == ASSIST_INLET)
+            sprintf (oCStr, LPAssistIn);
+        else
+            sprintf (oCStr, LPAssistOut);
 	
 	}
 

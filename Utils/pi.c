@@ -28,14 +28,21 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.pi";			// Class name
 
-	// Indices for STR# resource
+// Assistance strings
+#define LPAssistInAny		"%s (Triggers product of all inlets)"
+#define LPAssistOut1		"%s (Product)"
+#define LPAssistFrag1		"int"
+#define LPAssistFrag2		"float"
+
+
+/*	// Indices for STR# resource
 enum {
 	strIndexAnyInlet		= lpStrIndexLastStandard + 1,
 	strIndexPiOutlet,
@@ -46,7 +53,7 @@ enum {
 	strIndexLeftIn			= strIndexAnyInlet,
 	strIndexLeftOut			= strIndexPiOutlet
 	};
-
+*/
 
 #pragma mark • Type Definitions
 
@@ -57,7 +64,7 @@ typedef tWordPtr*	tWordHdl;
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	
 	Boolean		doFloats;			// Are we doing integer arithmetic or fp?
 	long		inletNum,			// Max tells us which inlet was used here.
@@ -75,14 +82,14 @@ typedef objPi* objPiPtr;
 #pragma mark • Function Prototypes
 
 	// Class message functions
-objPiPtr	PiNew(SymbolPtr, short, Atom[]);
+objPiPtr	PiNew(SymbolPtr, short, t_atom[]);
 void		PiFree(objPi*);
 
 	// Object message functions
 static void PiBang(objPi*);
 static void PiFloat(objPi*, double);
 static void PiInt(objPi*, long);
-static void PiList(objPi*, Symbol*, short, Atom*);
+static void PiList(objPi*, t_symbol*, short, t_atom*);
 static void PiSet(objPi*, double);
 static void PiTattle(objPi*);
 static void	PiAssist(objPi*, void*, long, long, char*);
@@ -103,14 +110,14 @@ static void	PiInfo(objPi*);
  *	
  ******************************************************************************************/
 
-void
-main()
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,					// Pointer to our class definition
+	c = class_new(kClassName,					// Pointer to our class definition
 			(method) PiNew,					// Instantiation method  
 			(method) PiFree,				// Custom deallocation function
 			(short) sizeof(objPi),			// Class object size
@@ -119,18 +126,23 @@ main()
 			0);
 	
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) PiBang);
-	LITTER_TIMEBOMB addint	((method) PiInt);
-	LITTER_TIMEBOMB addfloat((method) PiFloat);
-	LITTER_TIMEBOMB addmess	((method) PiList,	"list",			A_GIMME, 0);
-	addmess	((method) PiSet,	"set",			A_FLOAT, 0);
-	addmess	((method) PiAssist,	"assist",		A_CANT, 0);
-	addmess	((method) PiInfo,	"info",			A_CANT, 0);
-	addmess ((method) PiTattle,	"tattle",	 	A_NOTHING);
-	addmess ((method) PiTattle,	"dblclick", 	A_CANT, 0);
+	class_addmethod(c, (method) PiBang, "bang", 0);
+	class_addmethod(c, (method) PiInt, "int", A_LONG, 0);
+	class_addmethod(c, (method) PiFloat, "float", A_FLOAT, 0);
+	class_addmethod(c, (method) PiList,	"list",			A_GIMME, 0);
+	class_addmethod(c, (method) PiSet,	"set",			A_FLOAT, 0);
+	class_addmethod(c, (method) PiAssist,	"assist",		A_CANT, 0);
+	class_addmethod(c, (method) PiInfo,	"info",			A_CANT, 0);
+	class_addmethod(c, (method) PiTattle,	"tattle",	 	A_NOTHING);
+	class_addmethod(c, (method) PiTattle,	"dblclick", 	A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	}
 
@@ -148,7 +160,7 @@ objPi*
 PiNew(
 	SymbolPtr	sym,								// must be 'lp.*'
 	short		iArgCount,
-	Atom		iArgVec[])
+	t_atom		iArgVec[])
 	
 	{
 	#pragma unused(sym)
@@ -174,7 +186,7 @@ PiNew(
 		}
 	
 	// Let Max allocate us
-	me = (objPi*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	if (me == NIL) goto punt;
 	
 	// Add inlets, right to left
@@ -191,7 +203,7 @@ PiNew(
 	me->inletCount = kInlets;
 	me->data = data = (tWordPtr) getbytes(kInlets * sizeof(tWord));
 	if (data == NIL) {
-		freeobject((Object*) me);		// Requires that me->data be set to NIL
+		freeobject((t_object*) me);		// Requires that me->data be set to NIL
 		goto punt;
 		}
 	
@@ -340,7 +352,7 @@ PiBang(
 
 void PiSet(objPi* me, double iVal)
 	{
-	const long kInlet = ObjectGetInlet((Object*) me, me->inletNum);
+	const long kInlet = ObjectGetInlet((t_object*) me, me->inletNum);
 	
 	switch (me->inletCount) {
 	case 2:
@@ -392,15 +404,15 @@ void PiFloat(objPi* me, double iVal)
 void
 PiList(
 	objPi*	me,
-	Symbol* sym,													// ignore, must be "list"
+	t_symbol* sym,													// ignore, must be "list"
 	short	iArgCount,
-	Atom*	iAtoms)
+	t_atom*	iAtoms)
 	
 	{
 	#pragma unused(sym)
 	
 	long	inletCount	= me->inletCount,
-			curInlet	= ObjectGetInlet((Object*) me, me->inletNum);
+			curInlet	= ObjectGetInlet((t_object*) me, me->inletNum);
 	tWord*	curWord		= me->data + curInlet;
 	
 	// Make sure list is not too long for us
@@ -472,13 +484,35 @@ PiAssist(
 	{
 	#pragma unused(box)
 	
-	short	fragIndex = me->doFloats ? strIndexFloat : strIndexInt;
+	//short	fragIndex = me->doFloats ? strIndexFloat : strIndexInt;
 	
 	
 	if (iDir == ASSIST_INLET)							// All inlets use the same string
 		iArgNum = 0;
 	
-	LitterAssistResFrag(iDir, iArgNum, strIndexLeftIn, strIndexLeftOut, oCStr, fragIndex);
+	//LitterAssistResFrag(iDir, iArgNum, strIndexLeftIn, strIndexLeftOut, oCStr, fragIndex);
+        
+        if(me->doFloats) {
+            if (iDir == ASSIST_INLET)
+                sprintf (oCStr, LPAssistInAny, LPAssistFrag2);
+            else
+                sprintf (oCStr, LPAssistOut1, LPAssistFrag2);
+            
+        }
+        else {
+            if (iDir == ASSIST_INLET)
+                sprintf (oCStr, LPAssistInAny, LPAssistFrag1);
+            else
+                sprintf (oCStr, LPAssistOut1, LPAssistFrag1);
+            
+        }
+        /*
+         // Assistance strings
+         #define LPAssistInAny		"%s (Triggers product of all inlets)"
+         #define LPAssistOut1		"%s (Product)"
+         #define LPAssistFrag1		"int"
+         #define LPAssistFrag2		"float"
+         */
 	
 	}
 

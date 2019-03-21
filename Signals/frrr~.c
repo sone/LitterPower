@@ -32,7 +32,7 @@
 
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "Taus88.h"
 
@@ -42,8 +42,13 @@
 
 const char*	kClassName		= "lp.frrr~";			// Class name
 
+// Assistance strings
+#define LPAssistIn1			"Float (Approx. base frequency)"
+#define LPAssistIn2			"Int (Interpolation: 0 none, 1 linear, 2 quadratic)"
+#define LPAssistOut1		"Signal (Low frequency noise)"
 
-	// Indices for STR# resource
+
+/*	// Indices for STR# resource
 enum {
 	strIndexInFreq		= lpStrIndexLastStandard + 1,
 	strIndexInInterp,
@@ -57,7 +62,7 @@ enum {
 	
 	outletLoFreq
 	};
-
+*/
 	// Symbolic constants for interpolation
 enum Interpolation {
 	interpNone			= 0,
@@ -111,8 +116,10 @@ static void	FrrrAssist(objLoFreq*, void* , long , long , char*);
 static void	FrrrInfo(objLoFreq*);
 
 	// MSP Messages
-static void	FrrrDSP(objLoFreq*, t_signal**, short*);
-static int*	FrrrPerform(int*);
+//static void	FrrrDSP(objLoFreq*, t_signal**, short*);
+//static int*	FrrrPerform(int*);
+void    FrrrDSP64(objLoFreq*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void    FrrrPerform64(objLoFreq*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -152,14 +159,14 @@ static inline long CalcFreqSamps(double iSR, double iFreq)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) FrrrNew,			// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(objLoFreq),			// Class object size
@@ -168,24 +175,28 @@ main(void)
 			A_DEFLONG,					//						2. Interpolation (0, 1, or 2)
 			0);		
 	
-	dsp_initclass();
+	class_dspinit(c);
 
 	// Messages
-	addfloat((method) FrrrBaseFreq);
-	addint	((method) FrrrBaseFreqInt);
-	addmess	((method) FrrrInterp,	"in1",		A_LONG, 0);
-	addmess	((method) FrrrTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) FrrrTattle,	"tattle",	A_NOTHING);
-	addmess	((method) FrrrAssist,	"assist",	A_CANT, 0);
-	addmess	((method) FrrrInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) FrrrBaseFreq, "float", A_FLOAT, 0);
+	class_addmethod(c,(method) FrrrBaseFreqInt, "int", A_LONG, 0);
+	class_addmethod(c,(method) FrrrInterp,	"in1",		A_LONG, 0);
+	class_addmethod(c,(method) FrrrTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) FrrrTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) FrrrAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) FrrrInfo,		"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) FrrrDSP,		"dsp",		A_CANT, 0);
+	class_addmethod(c,(method) FrrrDSP64,		"dsp64",		A_CANT, 0);
 
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
-	
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	}
 
 
@@ -221,7 +232,8 @@ noMoreDefaults:
 	// Finished checking intialization parameters
 
 	// Let Max/MSP allocate us, our inlets (from right to left), and outlets.
-	me = (objLoFreq*) newobject(gObjectClass);
+        me =
+        object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 1);			// Signal inlet for benefit of begin~
 												// Otherwise left inlet does Base 
 												// Frequency only
@@ -409,7 +421,25 @@ void FrrrAssist(objLoFreq* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInFreq, strIndexOutLoFreq, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInFreq, strIndexOutLoFreq, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+        }
+        /*
+         // Assistance strings
+         #define LPAssistIn1			"Float (Approx. base frequency)"
+         #define LPAssistIn2			"Int (Interpolation: 0 none, 1 linear, 2 quadratic)"
+         #define LPAssistOut1		"Signal (Low frequency noise)"
+         */
 	}
 
 void FrrrInfo(objLoFreq* me)
@@ -425,7 +455,7 @@ void FrrrInfo(objLoFreq* me)
  *	FrrrDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 FrrrDSP(
 	objLoFreq*	me,
@@ -445,7 +475,18 @@ FrrrDSP(
 		);
 	
 	}
-	
+*/
+
+void    FrrrDSP64(objLoFreq *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    // Make sure base frequency is correct!
+    me->curSR = samplerate;
+    UpdateBaseFreq(me);
+    
+    object_method(dsp64, gensym("dsp_add64"), me, FrrrPerform64, 0, NULL);
+
+}
+
 
 /******************************************************************************************
  *
@@ -600,6 +641,35 @@ FrrrDSP(
 		
 		}
 
+
+
+void    FrrrPerform64(objLoFreq *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    double *output = outs[0];
+    
+    if (me->coreObject.z_disabled) return;
+    
+    // Which version to perform?
+    switch (me->interp) {
+        case interpQuad:
+            PerformQuad(me, sampleframes, output);
+            break;
+            
+        case interpLin:
+            PerformLinear(me, sampleframes, output);
+            break;
+            
+        default:
+            // Must be interpNone.
+            PerformNoInterp(me, sampleframes, output);
+            break;
+    }
+    
+}
+
+
+
+/*
 int*
 FrrrPerform(
 	int* iParams)
@@ -637,3 +707,4 @@ FrrrPerform(
 exit:
 	return iParams + paramNextLink;
 	}
+ */

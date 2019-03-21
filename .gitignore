@@ -38,3 +38,5 @@ xcuserdata/
 # End of https://www.gitignore.io/api/xcode
 
 sysbuild/externals/lp.qvvv~.maxhelp
+
+vb-stuff

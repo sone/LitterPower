@@ -31,9 +31,15 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
+
+
+// Assistance strings
+#define LPAssistIn1			"Bang (Select item from urn)"
+#define LPAssistOut1		"Int (Random value from urn)"
+#define LPAssistOut2		"Bang when balls are refilled"
 
 #pragma mark • Constants
 
@@ -64,7 +70,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	voidPtr			resetOutlet;		// Main outlet accessed through coreObject.o_outlet
 	
@@ -165,7 +171,7 @@ punt:
  *
  ******************************************************************************************/
 
-	static void DeferDisposePtr(Ptr iPtr, Symbol* sym, short argc, Atom argv[])
+	static void DeferDisposePtr(Ptr iPtr, t_symbol* sym, short argc, t_atom argv[])
 		{
 		#pragma unused(sym, argc, argv)
 		
@@ -291,7 +297,7 @@ ErnieBang(
 static void
 ErnieTable(
 	objErnie*	me,
-	Symbol*	iTable)
+	t_symbol*	iTable)
 	
 	{
 	long**	tableData;			// Isn't there a typedef that could be used???
@@ -310,7 +316,8 @@ ErnieTable(
 			me->state		-= size;
 			}
 		
-		BlockMoveData(*tableData, me->master, size * sizeof(long));
+		//BlockMoveData(*tableData, me->master, size * sizeof(long));
+        memmove(me->master, *tableData, size * sizeof(long));
 		
 		RecalcMasterTotal(me);
 		ErnieReset(me);
@@ -323,9 +330,9 @@ ErnieTable(
 static void
 ErnieSet(
 	objErnie*	me,
-	Symbol*	sym,				// Is always gensym("set")
+	t_symbol*	sym,				// Is always gensym("set")
 	short	iArgC,
-	Atom*	iArgV)
+	t_atom*	iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -336,7 +343,7 @@ ErnieSet(
 	
 	if (iArgC > me->dataSize)	iArgC = me->dataSize;
 	else if (iArgC < me->dataSize) {
-		// Cheesy way to zero out values not specified in the Atom vector
+		// Cheesy way to zero out values not specified in the t_atom vector
 		me->dataSize	-= iArgC;
 		me->master		+= iArgC;
 		me->state		+= iArgC;
@@ -434,8 +441,8 @@ ErnieSize(
 		// That, too, would entail more special case handling.
 		// Using handles on the Mac Memory side might be worth the overhead of extra
 		// special-case handling, and we might try that in a future version...
-		newMaster	= (long*) NewPtr(sizeBytes);
-		newState	= (long*) NewPtr(sizeBytes);
+        newMaster	= (long*) NewPtr(sizeBytes);
+        newState	= (long*) NewPtr(sizeBytes);
 		}
 	
 	if (newMaster == NIL || newState == NIL) {
@@ -451,8 +458,10 @@ ErnieSize(
 	if (me->dataSize > 0) {
 		if (me->dataSize < iSize)
 			sizeBytes = sizeof(long) * me->dataSize;	// Now number of bytes to move
-		BlockMoveData(	me->master, newMaster, sizeBytes);
-		BlockMoveData(	me->master, newState, sizeBytes);
+		//BlockMoveData(	me->master, newMaster, sizeBytes);
+		//BlockMoveData(	me->master, newState, sizeBytes);
+        memmove(newMaster, me->master, sizeBytes);
+        memmove(newState, me->master, sizeBytes);
 		DisposeMemory(me->master, me->state, me->maxMemory ? sizeof(long) * me->dataSize : 0);
 		}
 	me->maxMemory	= maxMemory;
@@ -494,7 +503,8 @@ ErnieReset(
 	
 	{
 	
-	BlockMoveData(me->master, me->state, me->dataSize * sizeof(long));
+	//BlockMoveData(me->master, me->state, me->dataSize * sizeof(long));
+        memmove(me->state, me->master, me->dataSize * sizeof(long));
 	me->ballsInUrn = me->totalBalls;
 	
 	outlet_bang(me->resetOutlet);
@@ -580,7 +590,19 @@ ErnieAssist(
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOutErnie, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOutErnie, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 1: sprintf (oCStr, LPAssistOut2); break;
+            }
+            
+        }
 	}
 
 
@@ -599,7 +621,7 @@ DoExpect(
 	
 	{
 	double	result	= 0.0 / 0.0;
-	int		i, r;
+	long		i, r;
 	
 	if (me->totalBalls > 0) switch(iSel) {
 	case expMean:
@@ -677,25 +699,25 @@ DoExpect(
 #if LITTER_USE_OBEX
 
 	// These have not yet been implemented
-	static t_max_err ErnieGetMin(objErnie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ErnieGetMin(objErnie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV);
 		}
-	static t_max_err ErnieGetMax(objErnie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ErnieGetMax(objErnie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV);
 		}
-	static t_max_err ErnieGetMean(objErnie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ErnieGetMean(objErnie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV);
 		}
-	static t_max_err ErnieGetMedian(objErnie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ErnieGetMedian(objErnie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
@@ -705,38 +727,38 @@ DoExpect(
 		// Ernie may well have a multi-modal distribution, so we can't use the standard
 		// DoExpect() function, which assumes unimodality.
 		// But we've not built the multi-modal solution  yet...
-	static t_max_err ErnieGetMode(objErnie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err ErnieGetMode(objErnie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV);
 		}
 
-//	static t_max_err ErnieGetVar(objErnie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+//	static t_max_err ErnieGetVar(objErnie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 //		{ 
 //		#pragma unused(iAttr)
 //		
 //		return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV);
 //		}
-//	static t_max_err ErnieGetStdDev(objErnie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+//	static t_max_err ErnieGetStdDev(objErnie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 //		{ 
 //		#pragma unused(iAttr)
 //		
 //		return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV);
 //		}
-//	static t_max_err ErnieGetSkew(objErnie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+//	static t_max_err ErnieGetSkew(objErnie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 //		{ 
 //		#pragma unused(iAttr)
 //		
 //		return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV);
 //		}
-//	static t_max_err ErnieGetKurtosis(objErnie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+//	static t_max_err ErnieGetKurtosis(objErnie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 //		{ 
 //		#pragma unused(iAttr)
 //		
 //		return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV);
 //		}
-//	static t_max_err ErnieGetEntropy(objErnie* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+//	static t_max_err ErnieGetEntropy(objErnie* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 //		{ 
 //		#pragma unused(iAttr)
 //		
@@ -746,9 +768,9 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-		Symbol*	symLong			= gensym("long");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+		t_symbol*	symLong			= gensym("long");
 		
 		// Read-Write Attributes
 //		attr = attr_offset_new("p", symFloat64, 0, NULL, NULL, calcoffset(objErnie, prob));
@@ -795,16 +817,16 @@ DoExpect(
 static void
 ErnieTell(
 	objErnie*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -816,7 +838,7 @@ static void ErnieInfo(objErnie* me)
 static inline void AddInfo(void)
 	{ LitterAddCant((method) ErnieInfo, "info"); }
 		
-static void ErnieTell(objErnie* me, Symbol* iTarget, Symbol* iMsg)
+static void ErnieTell(objErnie* me, t_symbol* iTarget, t_symbol* iMsg)
 	{ LitterExpect((tExpectFunc) DoExpect, (Object*) me, iMsg, iTarget, TRUE); }
 
 
@@ -832,8 +854,7 @@ static void ErnieTell(objErnie* me, Symbol* iTarget, Symbol* iMsg)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -842,7 +863,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(kClassName,
@@ -854,7 +875,7 @@ main(void)
 					 myArgTypes);				// See above		
 	
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) ErnieBang);
+	LitterAddBang	((method) ErnieBang);
 	LitterAddMess1	((method) ErnieTable,		"refer",	A_SYM);
 	LitterAddGimme	((method) ErnieSet,			"set");
 	LitterAddMess1	((method) ErnieSeed,		"seed",		A_DEFLONG);
@@ -872,8 +893,12 @@ main(void)
 	AddInfo();
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, gObjectClass);
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 

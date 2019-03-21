@@ -38,8 +38,6 @@ const char*	kClassName		= "lp.shhh~";			// Class name
 #define LPAssistIn1			"Int (NN factor)"
 #define LPAssistOut1		"Signal (White noise)"
 
-const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
-
 const int	kMaxNN			= 31;
 
 /*
@@ -140,7 +138,7 @@ int C74_EXPORT main(void)
 	class_addmethod(c, (method) ShhhInfo,	"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	class_addmethod(c, (method) ShhhDSP64,		"dsp64",		A_CANT, 0);
+	class_addmethod(c, (method) ShhhDSP64,	"dsp64",	A_CANT, 0);
 
 	//Initialize Litter Library
 	//LitterInit(kClassName, 0);
@@ -148,7 +146,7 @@ int C74_EXPORT main(void)
         gObjectClass = c;
 	Taus88Init();
 	
-        post("%s: %s", kClassName, lpversion);
+        post("%s: %s", kClassName, LPVERSION);
         return 0;
 	}
 

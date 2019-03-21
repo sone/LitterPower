@@ -29,7 +29,7 @@
 
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
 #include "UniformExpectations.h"
@@ -40,6 +40,13 @@
 const char	kClassName[]		= "lp.tata";			// Class name
 
 
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Int (Minimum)"
+#define LPAssistIn3			"Int (Maximum)"
+#define LPAssistOut1		"Int (Random value, %ld <= x <= %ld)"
+//#define LPAssistOut1		"Int (Random value, %ld " LPlessEq " x " LPlessEq " %ld)"
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexBang		= lpStrIndexLastStandard + 1,
@@ -48,11 +55,13 @@ enum {
 	
 	strIndexTheOutlet
 	};
+*/
 
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
+    //t_object        coreObject;
 
 	tTaus88DataPtr	tausStuff;
 	long			min,
@@ -87,7 +96,7 @@ TataNew(
 	
 	// Run through initialization parameters from right to left, handling defaults
 	if (iSeed != 0) {
-		myTausStuff = Taus88New(iSeed);
+		myTausStuff = Taus88New((t_uint32)iSeed);
 		goto noMoreDefaults;
 		}
 	
@@ -105,7 +114,8 @@ noMoreDefaults:
 	// Finished checking intialization parameters
 	
 	// Let Max allocate us, our inlets, and outlets
-	me = (objTaus88*) LitterAllocateObject();
+	//me = (objTaus88*) LitterAllocateObject();
+        me = object_alloc(gObjectClass);
 	
 	intin(me, 2);										// Max inlet
 	intin(me, 1);										// Min inlet
@@ -198,14 +208,28 @@ TataAssist(
 		max = kLongMax;
 		}
 	
-	LitterAssistVA(iDir, iArgNum, strIndexBang, strIndexTheOutlet, oCStr, min, max);
+	//LitterAssistVA(iDir, iArgNum, strIndexBang, strIndexTheOutlet, oCStr, min, max);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1, min, max); break;
+            }
+            
+        }
 	
 	}
 
 static void
 TataTattle(
 	objTaus88* me)
-	
+
 	{
 	tTaus88DataPtr	myTausStuff = me->tausStuff;
 	
@@ -254,49 +278,49 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err TataGetMean(objTaus88* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err TataGetMean(objTaus88* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV);
 		}
-	static t_max_err TataGetMedian(objTaus88* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err TataGetMedian(objTaus88* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV);
 		}
-	static t_max_err TataGetMode(objTaus88* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err TataGetMode(objTaus88* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV);
 		}
-	static t_max_err TataGetVar(objTaus88* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err TataGetVar(objTaus88* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV);
 		}
-	static t_max_err TataGetStdDev(objTaus88* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err TataGetStdDev(objTaus88* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV);
 		}
-	static t_max_err TataGetSkew(objTaus88* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err TataGetSkew(objTaus88* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV);
 		}
-	static t_max_err TataGetKurtosis(objTaus88* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err TataGetKurtosis(objTaus88* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV);
 		}
-	static t_max_err TataGetEntropy(objTaus88* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err TataGetEntropy(objTaus88* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
@@ -306,10 +330,10 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-		Symbol*	symLong			= gensym("long");
-		
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+		t_symbol*	symLong			= gensym("long");
+
 		// Read-Write Attributes
 		attr = attr_offset_new("min", symLong, 0, NULL, NULL, calcoffset(objTaus88, min));
 		class_addattr(gObjectClass, attr);
@@ -338,16 +362,16 @@ DoExpect(
 static void
 TataTell(
 	objTaus88*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -375,8 +399,7 @@ static void TataTell(objTaus88* me, Symbol* iTarget, Symbol* iAttrName)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -386,7 +409,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	LitterSetupClass(	kClassName,
 						sizeof(objTaus88),
@@ -394,23 +417,34 @@ main(void)
 						(method) TataNew,
 						(method) TataFree,
 						NIL,
-						myArgTypes);				
-	
-	// Messages
-	LITTER_TIMEBOMB LitterAddBang((method) TataBang);
-	LitterAddMess1	((method) TataMin,		"in1",		A_LONG);
-	LitterAddMess1	((method) TataMax,		"in2",		A_LONG);
-	LitterAddMess1	((method) TataSeed,		"seed",		A_DEFLONG);
-	LitterAddMess2	((method) TataTell,		"tell",		A_SYM, A_SYM);
-	LitterAddMess0	((method) TataTattle,	"tattle");
-	LitterAddCant	((method) TataTattle,	"dblclick");
-	LitterAddCant	((method) TataAssist,	"assist");
-
+						myArgTypes);
+/*
+        gObjectClass = class_new(kClassName,
+                      (method) TataNew,
+                      (method) TataFree,
+                      (short)sizeof(objTaus88),
+                      NIL,
+                      A_DEFLONG, A_DEFLONG, A_DEFLONG,
+                      0);
+        */
+        // Messages
+        LitterAddBang((method) TataBang);
+        LitterAddMess1	((method) TataMin,		"in1",		A_LONG);
+        LitterAddMess1	((method) TataMax,		"in2",		A_LONG);
+        LitterAddMess1	((method) TataSeed,		"seed",		A_DEFLONG);
+        LitterAddMess2	((method) TataTell,		"tell",		A_SYM, A_SYM);
+        LitterAddMess0	((method) TataTattle,	"tattle");
+        LitterAddCant	((method) TataTattle,	"dblclick");
+        LitterAddCant	((method) TataAssist,	"assist");
 	AddInfo();
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, gObjectClass);
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 

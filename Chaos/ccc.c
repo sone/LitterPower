@@ -30,7 +30,6 @@
 
 const char*			kClassName		= "lp.ccc";			// Class name
 
-const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 #define LPAssistIn1			"Bang (or float to set new seed)"
 #define LPAssistOut1		"Float (1/f chaos)"
@@ -109,13 +108,13 @@ int C74_EXPORT main(void)
 			0);		
 	
 	// Messages
-	class_addmethod(c, (method) CCCBang, "bang", 0);
-	class_addmethod(c, (method) CCCFloat, "float", A_FLOAT, 0);
+	class_addmethod(c, (method) CCCBang,    "bang", 0);
+	class_addmethod(c, (method) CCCFloat,   "float", A_FLOAT, 0);
 	class_addmethod(c, (method) CCCTattle,	"dblclick",	A_CANT, 0);
 	class_addmethod(c, (method) CCCTattle,	"tattle",	A_NOTHING);
 	class_addmethod(c, (method) CCCAssist,	"assist",	A_CANT, 0);
-	class_addmethod(c, (method) CCCInfo,		"info",		A_CANT, 0);
-	class_addmethod(c, (method) LitterVers,	"vers",		A_DEFLONG, A_DEFLONG, 0);
+	class_addmethod(c, (method) CCCInfo,	"info",		A_CANT, 0);
+	//class_addmethod(c, (method) LitterVers,	"vers",		A_DEFLONG, A_DEFLONG, 0);
 	
 		
 	// Initialize Litter Library
@@ -123,7 +122,7 @@ int C74_EXPORT main(void)
         class_register(CLASS_BOX, c);
         gObjectClass = c;
         
-        post("%s: %s", kClassName, lpversion);
+        post("%s: %s", kClassName, LPVERSION);
         return 0;
 	
 	}

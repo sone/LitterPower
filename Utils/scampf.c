@@ -32,15 +32,52 @@
 #pragma mark • Include Files
 
 #include "scampLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 
 #pragma mark • Constants
 
 #if (SCAMP_TARGET == SCAMPI)
 	const char		kClassName[]	= "lp.scampi";			// Class name
+
+    #define LPAssistIn1            "Float to %s. Many other messages..."
+    #define LPAssistIn2            "Float (%s)"
+    #define LPAssistIn3            "Float (%s)"
+    #define LPAssistIn4            "Int (Output range lower bounds)"
+    #define LPAssistIn5            "Int (Output range upper bounds)"
+    #define LPAssistIn6            "Float (Curvature)"
+    #define LPAssistOut1        "Int (Scaled value)"
+    #define LPAssistOut2a        "Nothing (send a split message to use this outlet)"
+    #define LPAssistOut2b        "Int (Out-of-range result)"
+    #define LPAssistOut2c        "%s (signals Out-of-range result)"
+    // ...and fragments
+    #define LPAssistFrag1        "scale and offset"
+    #define LPAssistFrag2        "map"
+    #define LPAssistFrag3        "Scale factor"
+    #define LPAssistFrag4        "Offset"
+    #define LPAssistFrag5        "Input range lower bounds"
+    #define LPAssistFrag6        "Input range upper bounds"
+
 #else
 	const char		kClassName[]	= "lp.scampf";
+
+    #define LPAssistIn1            "Int/Float to %s. Many other messages..."
+    #define LPAssistIn2            "Int/Float (%s)"
+    #define LPAssistIn3            "Int/Float (%s)"
+    #define LPAssistIn4            "Float/Int (Output range lower bounds)"
+    #define LPAssistIn5            "Float/Int (Output range upper bounds)"
+    #define LPAssistIn6            "Float (Curvature)"
+    #define LPAssistOut1        "Float (Scaled value)"
+    #define LPAssistOut2a        "Nothing (send a split message to use this outlet)"
+    #define LPAssistOut2b        "Float (Out-of-range result)"
+    #define LPAssistOut2c        "%s (signals Out-of-range result)"
+    // ...and fragments
+    #define LPAssistFrag1        "scale and offset"
+    #define LPAssistFrag2        "map"
+    #define LPAssistFrag3        "Scale factor"
+    #define LPAssistFrag4        "Offset"
+    #define LPAssistFrag5        "Input range lower bounds"
+    #define LPAssistFrag6        "Input range upper bounds"
 #endif
 
 // Indices for STR# resource
@@ -87,14 +124,14 @@ enum {
  *	
  ******************************************************************************************/
 
-void
-main()
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/Litter setup() call
-	setup(	&gObjectClass,						// Pointer to our class definition
+	c = class_new(kClassName,						// Pointer to our class definition
 			(method) NewScamp,					// Instance creation function
 			NIL,                				// No custom deallocation function
 			(short) sizeof(objScamp),			// Class object size
@@ -116,30 +153,35 @@ main()
 	
 	// Messages
 	//
-	LITTER_TIMEBOMB ScampAddMessages();
+	ScampAddMessages(c);
 
-	addftx	((method) ScampFloat1,		1);
-	addftx	((method) ScampFloat2,		2);
-	addftx	((method) ScampMinOut,		3);
-	addftx	((method) ScampMaxOut,		4);
-	addftx	((method) ScampCurve,		5);
+	class_addmethod(c,(method) ScampFloat1, "ft1", A_FLOAT, 0);
+	class_addmethod(c,(method) ScampFloat2,	"ft2", A_FLOAT, 0);
+	class_addmethod(c,(method) ScampMinOut,	"ft3", A_FLOAT, 0);
+	class_addmethod(c,(method) ScampMaxOut,	"ft4", A_FLOAT, 0);
+	class_addmethod(c,(method) ScampCurve,	"ft5", A_FLOAT, 0);
 	
-	addmess	((method) ScampSet,			"set",		A_GIMME, 0);
-	addmess	((method) ScampSplit,		"split",	A_GIMME, 0);
+	class_addmethod(c,(method) ScampSet,		"set",		A_GIMME, 0);
+	class_addmethod(c,(method) ScampSplit,		"split",	A_GIMME, 0);
 
 #if (SCAMP_TARGET == SCAMPI)
 		// Rounding messages
-	addmess ((method) ScampToZero,		"trunc",	A_NOTHING);
-	addmess	((method) ScampToZero,		"tozero",	A_NOTHING);
-	addmess	((method) ScampRound,		"round",	A_NOTHING);
-	addmess	((method) ScampFloor,		"floor",	A_NOTHING);
-	addmess	((method) ScampCeil,		"ceil",		A_NOTHING);
-	addmess	((method) ScampToInf,		"toinf",	A_NOTHING);
+	class_addmethod(c,(method) ScampToZero,		"trunc",	A_NOTHING);
+	class_addmethod(c,(method) ScampToZero,		"tozero",	A_NOTHING);
+	class_addmethod(c,(method) ScampRound,		"round",	A_NOTHING);
+	class_addmethod(c,(method) ScampFloor,		"floor",	A_NOTHING);
+	class_addmethod(c,(method) ScampCeil,		"ceil",		A_NOTHING);
+	class_addmethod(c,(method) ScampToInf,		"toinf",	A_NOTHING);
 #endif
 
 
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	
 	}
@@ -158,9 +200,9 @@ main()
 
 objScamp*
 NewScamp(
-	Symbol*	iSym,
+	t_symbol*	iSym,
 	short	iArgC,
-	Atom*	iArgV)
+	t_atom*	iArgV)
 	
 	{
 	#pragma unused (iSym)
@@ -192,7 +234,7 @@ NewScamp(
 	// Let Max allocate us, our inlets, and our outlets
 	//
 	
-	me = (objScamp*) newobject(gObjectClass);
+    me = object_alloc(gObjectClass);
 	if (me == NIL) {
 		error("%s: insufficient memory to create object", (char*) kClassName);
 		goto punt;
@@ -350,7 +392,7 @@ ScampBang(
 		
 		// 0: Grab some values while we're declaring storage
 		double	range = max - min;
-		Symbol*	split = me->split;
+		t_symbol*	split = me->split;
 		
 		// 1: Correct value (if possible: requires a real number and a valid range)
 		if (range > 0.0 && outVal == outVal) {
@@ -406,9 +448,9 @@ ScampBang(
 void
 ScampSet(
 	objScamp*	me,
-	Symbol*		sym,
+	t_symbol*		sym,
 	short		iArgC,
-	Atom*		iArgV)
+	t_atom*		iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -430,9 +472,9 @@ ScampSet(
 void
 ScampSplit(
 	objScamp*	me,
-	Symbol*		sym,
+	t_symbol*		sym,
 	short		iArgC,
-	Atom*		iArgV)
+	t_atom*		iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -599,50 +641,79 @@ ScampAssist(
 		outletSplit
 		};
 	
-	if (iDir == ASSIST_INLET) {
-		short	strIndex;
-		
-		switch (iArgNum) {
-		case inletInVal:
-			strIndex = me->flags.map ? strIndexFragMap : strIndexFragScaleOffset;
-			break;
-		case inletScale:
-			strIndex = me->flags.map ? strIndexFragInLow : strIndexFragFactor;
-			break;
-		case inletOffset:
-			strIndex = me->flags.map ? strIndexFragInHigh : strIndexFragOffset;
-			break;
-		default:
-			strIndex = 0;
-			break;
-			}
-		
-		if (strIndex > 0)
-			 LitterAssistResFrag(iDir, iArgNum, strIndexInLeft, 0, oCStr, strIndex);
-		else LitterAssist(iDir, iArgNum, strIndexInLeft, 0, oCStr);
-		
-		}
+        short    outIndex;
+        char*    splitSymName = NIL;
+        
+        
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0:
+                    if(me->flags.map)
+                        sprintf (oCStr, LPAssistIn1, LPAssistFrag2);
+                    else
+                        sprintf (oCStr, LPAssistIn1, LPAssistFrag1);
+                    break;
+                case 1:
+                    if(me->flags.map)
+                        sprintf (oCStr, LPAssistIn2, LPAssistFrag4);
+                    else
+                        sprintf (oCStr, LPAssistIn2, LPAssistFrag3);
+                    break;
+                case 2:
+                    if(me->flags.map)
+                        sprintf (oCStr, LPAssistIn3, LPAssistFrag6);
+                    else
+                        sprintf (oCStr, LPAssistIn3, LPAssistFrag5);
+                    break;
+                case 3: sprintf (oCStr, LPAssistIn4); break;
+                case 4: sprintf (oCStr, LPAssistIn5); break;
+                case 5: sprintf (oCStr, LPAssistIn6); break;
+            }
+        }
+        
 	
 	else {
-		// Do we need to customize the Assist string for the right ('split') outlet?
-		short	outIndex;
-		char*	splitSymName = NIL;
-		
-		switch ((long) me->split) {
-		case (long) NIL:
-			outIndex = strIndexOutNoSplit;
-			break;
-		case (long) kSplitValues:
-			outIndex = strIndexOutIntSplit;
-			break;
-		default:
-			// ASSERT: me->split points to a valid Symbol
-			outIndex = strIndexOutSymSplit;
-			splitSymName = me->split->s_name;
-			}
-		
-		LitterAssistVA(iDir, iArgNum, strIndexInLeft, outIndex - 1, oCStr, splitSymName);
-		}
-	
+        switch(iArgNum) {
+            case 0: sprintf (oCStr, LPAssistOut1); break;
+            case 1:
+                // Do we need to customize the Assist string for the right ('split') outlet?
+                switch ((long) me->split) {
+                    case (long) NIL:
+                        //outIndex = strIndexOutNoSplit;
+                        sprintf (oCStr, LPAssistOut2a);
+                        break;
+                    case (long) kSplitValues:
+                        //outIndex = strIndexOutIntSplit;
+                        sprintf (oCStr, LPAssistOut2b);
+                        break;
+                    default:
+                        // ASSERT: me->split points to a valid Symbol
+                        //outIndex = strIndexOutSymSplit;
+                        splitSymName = me->split->s_name;
+                        sprintf (oCStr, LPAssistOut2c, splitSymName);
+                        }
+                break;
+            
+            //LitterAssistVA(iDir, iArgNum, strIndexInLeft, outIndex - 1, oCStr, splitSymName);
+        }
+    }
 	}
-
+/*
+ #define LPAssistIn1            "Float to %s. Many other messages..."
+ #define LPAssistIn2            "Float (%s)"
+ #define LPAssistIn3            "Float (%s)"
+ #define LPAssistIn4            "Int (Output range lower bounds)"
+ #define LPAssistIn5            "Int (Output range upper bounds)"
+ #define LPAssistIn6            "Float (Curvature)"
+ #define LPAssistOut1        "Int (Scaled value)"
+ #define LPAssistOut2a        "Nothing (send a split message to use this outlet)"
+ #define LPAssistOut2b        "Int (Out-of-range result)"
+ #define LPAssistOut2c        "%s (signals Out-of-range result)"
+ // ...and fragments
+ #define LPAssistFrag1        "scale and offset"
+ #define LPAssistFrag2        "map"
+ #define LPAssistFrag3        "Scale factor"
+ #define LPAssistFrag4        "Offset"
+ #define LPAssistFrag5        "Input range lower bounds"
+ #define LPAssistFrag6        "Input range upper bounds"
+ */

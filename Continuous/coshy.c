@@ -40,11 +40,14 @@
 
 const char		kClassName[]		= "lp.coshy";			// Class name
 
-
+// Assistance strings
 #define LPAssistIn1			"Bang (Generate random number)"
 #define LPAssistIn2			"Float (tau)"
 #define LPAssistIn3			"Float (location)"
 #define LPAssistOut1		"Float (Value from %s Cauchy distribution)"
+#define LPOutFragNeg        "negative"
+#define LPOutFragSym        "symmetrical"
+#define LPOutFragPos        "positive"
 
 	// Indices for STR# resource
 enum {
@@ -255,11 +258,11 @@ CoshyAssist(
             }
         }
         else {
-            switch(iArgNum) {
-                case 0: sprintf (oCStr, LPAssistOut1); break;
-                    //case 1: sprintf(s, "..."); break;
+            switch(me->sym) {
+                case -1: sprintf (oCStr, LPAssistOut1, LPOutFragNeg); break;
+                case 0: sprintf (oCStr, LPAssistOut1, LPOutFragSym); break;
+                case 1: sprintf (oCStr, LPAssistOut1, LPOutFragPos); break;
             }
-            
         }
 	}
 

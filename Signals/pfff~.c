@@ -86,9 +86,6 @@
 #endif
 
 
-const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
-
-
 const int	kMaxNN			= 31;
 	// gcc barfs later on if kMaxBuf or kBufferSize are defined const int, which
 	// is how they always used to be defined. But it accepts enum, and other compilers
@@ -256,7 +253,7 @@ int C74_EXPORT main(void)
         class_addmethod(c, (method) PvvvInfo,	"info",		A_CANT, 0);
         
         // MSP-Level messages
-        class_addmethod(c, (method) PvvvDSP64,	"dsp64",		A_CANT, 0);
+        class_addmethod(c, (method) PvvvDSP64,	"dsp64",	A_CANT, 0);
 
 	//Initialize Litter Library
 	//LitterInit(kClassName, 0);
@@ -265,7 +262,7 @@ int C74_EXPORT main(void)
         gObjectClass = c;
 	Taus88Init();
      
-    post("%s: %s", kClassName, lpversion);
+    post("%s: %s", kClassName, LPVERSION);
         return 0;
 	
 	}
@@ -706,10 +703,10 @@ void PvvvDSP64(tBrown* me, t_object *dsp64, short *count, double samplerate,
 		buf[0]			= buf[kMaxBuf];
 // vb: ouch! in 32bit mode natural overflow of long is used to map to signed range! have to use 'int' in 64bit mode!?
 		//buf[stride]		= (long) Taus88(NIL) / 4;
-        buf[stride]		= (int) Taus88(NIL) / 4;
+            buf[stride]		= (int) Taus88(NIL) / 4;
             // ASSERT: stride = kMaxBuffer/2
 		//buf[kMaxBuf]	= (long) Taus88(NIL) / 4;
-        buf[kMaxBuf]	= (int) Taus88(NIL) / 4;
+            buf[kMaxBuf]	= (int) Taus88(NIL) / 4;
 							// Taking random values in the signed int equivalent of
 							// [-.25 .. .25) was a completely arbitrary decision made
 							// in the first implementation. It works well enough for
@@ -766,13 +763,13 @@ void PvvvPerform64(tBrown* me, t_object *dsp64, double **ins, long numins, doubl
 	
 	// Do we have to deal with NN factor?
 	if (me->nn == 0)
-		do { *outNoise++ = Long2Signal_D(*curSamp++); } while (--vecSize > 0);
+		do { *outNoise++ = Long2Signal(*curSamp++); } while (--vecSize > 0);
 	else {
 		t_int32	mask	= me->mask,
 				offset	= me->offset;
 
 		do {
-			*outNoise++ = Long2Signal_D((*curSamp++ & mask) + offset);
+			*outNoise++ = Long2Signal((*curSamp++ & mask) + offset);
 			} while (--vecSize > 0);
 		}
 	

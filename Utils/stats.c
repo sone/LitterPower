@@ -32,7 +32,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 #include <math.h>
 
@@ -40,6 +40,17 @@
 
 const char*	kClassName		= "lp.stacey";			// Class name
 
+// Assistance strings
+#define LPAssistIn1			"Float or Int (Number is added to statistics)"
+#define LPAssistOut1		"Int (Count)"
+#define LPAssistOut2		"Float (Minimum)"
+#define LPAssistOut3		"Float (Maximum)"
+#define LPAssistOut4		"Float (Mean)"
+#define LPAssistOut5		"Float (Standard Deviation)"
+#define LPAssistOut6		"Float (Skew)"
+#define LPAssistOut7		"Float (Kurtosis)"
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexTheInlet		= lpStrIndexLastStandard + 1,
@@ -52,7 +63,7 @@ enum {
 	strIndexOutSkew,
 	strIndexOutKurtosis
 	};
-
+*/
 	// Indices for collected statistics
 enum {
 	statSum			= 0,
@@ -68,7 +79,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	voidPtr		minOutlet,
 				maxOutlet,
 				meanOutlet,
@@ -103,8 +114,8 @@ void	StaceyFree(tLStats*);
 static void StaceyBang(tLStats*);
 static void StaceyFloat(tLStats*, double);
 static void StaceyInt(tLStats*, long);
-static void StaceyList(tLStats*, Symbol*, short, Atom*);
-static void StaceyRemove(tLStats*, Symbol*, short, Atom*);
+static void StaceyList(tLStats*, t_symbol*, short, t_atom*);
+static void StaceyRemove(tLStats*, t_symbol*, short, t_atom*);
 static void StaceyClear(tLStats*);
 static void StaceyClearBang(tLStats*);
 static void StaceyTattle(tLStats*);
@@ -127,37 +138,42 @@ static void	StaceyInfo(tLStats*);
  *	
  ******************************************************************************************/
 
-void
-main()
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,					// Pointer to our class definition
+	c = class_new(	kClassName,					// Pointer to our class definition
 			(method) StaceyNew,			    // Instantiation method
 			(method) StaceyFree,			// Deallocation method
 			(short) sizeof(tLStats)	,		// Class object size
 			NIL,							// No menu function
 			A_DEFLONG,						// 1 Argument: size of statistics window
 											//		for running stats
-			A_NOTHING);
+			0);
 	
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) StaceyBang);
-	LITTER_TIMEBOMB addint	((method) StaceyInt);
-	LITTER_TIMEBOMB addfloat((method) StaceyFloat);
-	LITTER_TIMEBOMB addmess	((method) StaceyList, "list", A_GIMME, 0);
-	LITTER_TIMEBOMB addmess	((method) StaceyRemove,	"remove", A_GIMME, 0);
-	addmess ((method) StaceyClear,		"clear",		A_NOTHING);
-	addmess ((method) StaceyClearBang,	"clearbang",	A_NOTHING);
-	addmess	((method) StaceyAssist,		"assist",		A_CANT, 0);
-	addmess	((method) StaceyInfo,		"info",			A_CANT, 0);
-	addmess ((method) StaceyTattle,		"dblclick", 	A_CANT, 0);
-	addmess ((method) StaceyTattle,		"tattle",	 	A_NOTHING);
+	class_addmethod(c, (method) StaceyBang, "bang", 0);
+	class_addmethod(c, (method) StaceyInt, "int", A_LONG, 0);
+	class_addmethod(c, (method) StaceyFloat, "float", A_FLOAT, 0);
+	class_addmethod(c, (method) StaceyList, "list", A_GIMME, 0);
+	class_addmethod(c, (method) StaceyRemove,	"remove", A_GIMME, 0);
+	class_addmethod(c, (method) StaceyClear,		"clear",		A_NOTHING);
+	class_addmethod(c, (method) StaceyClearBang,	"clearbang",	A_NOTHING);
+	class_addmethod(c, (method) StaceyAssist,		"assist",		A_CANT, 0);
+	class_addmethod(c, (method) StaceyInfo,		"info",			A_CANT, 0);
+	class_addmethod(c, (method) StaceyTattle,		"dblclick", 	A_CANT, 0);
+	class_addmethod(c, (method) StaceyTattle,		"tattle",	 	A_NOTHING);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	}
 
@@ -180,7 +196,7 @@ StaceyNew(
 	tLStats*	me			= NIL;
 	
 	// Let Max allocate us. LitterStats has only the default inlet
-	me = (tLStats*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	if (me == NIL) goto punt;
 	
 	// Zero pointers and other stuff we may or may not allocate latter
@@ -501,14 +517,15 @@ StaceyFloat(
 void
 StaceyList(
 	tLStats*	me,
-	Symbol*		sym,				// unused, must be "list"
+	t_symbol*		sym,				// unused, must be "list"
 	short		iArgCount,
-	Atom*		iAtoms)
+	t_atom*		iAtoms)
 	
 	{
 	#pragma unused(sym)
-	
+	/*
 	while (iArgCount-- > 0) {
+     
 		switch (iAtoms->a_type) {
 		case A_LONG:
 			DoStats(me, (double) iAtoms->a_w.w_long);
@@ -523,7 +540,24 @@ StaceyList(
 			}
 		
 		iAtoms += 1;
-		}
+		}*/
+        
+    while (iArgCount-- > 0) {
+        switch (atom_gettype(iAtoms)) {
+            case A_LONG:
+                DoStats(me, (double) atom_getlong(iAtoms));
+                break;
+            case A_FLOAT:
+                DoStats(me, (double) atom_getfloat(iAtoms));
+                break;
+            default:
+                object_error((t_object*)me, "given list with invalid atom: ");
+                postatom(iAtoms);
+                break;
+        }
+        
+        iAtoms += 1;
+    }
 	
 	StaceyBang(me);
 	
@@ -532,9 +566,9 @@ StaceyList(
 void
 StaceyRemove(
 	tLStats*	me,
-	Symbol*		sym,				// unused, must be "remove"
+	t_symbol*		sym,				// unused, must be "remove"
 	short		iArgCount,
-	Atom*		iAtoms)
+	t_atom*		iAtoms)
 	
 	{
 	#pragma unused(sym)
@@ -542,19 +576,18 @@ StaceyRemove(
 	if (me->buffer == NIL) {
 		while (iArgCount-- > 0) {
 			if (me->count <= 0) {
-				error("%s: can't remove from empty data set", kClassName);
+				object_error((t_object*)me, "can't remove from empty data set");
 				break;
 				}
-			
-			switch (iAtoms->a_type) {
+			switch (atom_gettype(iAtoms)) {
 			case A_LONG:
-				UndoStats(me, (double) iAtoms->a_w.w_long);
+				UndoStats(me, (double) atom_getlong(iAtoms));
 				break;
 			case A_FLOAT:
-				UndoStats(me, (double) iAtoms->a_w.w_float);
+				UndoStats(me, (double) atom_getfloat(iAtoms));
 				break;
 			default:
-				error("LitterStats given list with invalid atom: ");
+				object_error((t_object*)me, "LitterStats given list with invalid atom: ");
 				postatom(iAtoms);
 				break;
 				}
@@ -565,7 +598,7 @@ StaceyRemove(
 		
 		StaceyBang(me);
 		}
-	else error("%s: can't remove data in running stats mode", kClassName);
+	else object_error((t_object*)me, "can't remove data in running stats mode");
 	
 	
 	}
@@ -619,7 +652,7 @@ StaceyTattle(
 	
 	{
 	
-	post("%s state:", kClassName);
+	object_post((t_object*)me, "state:");
 	if (me->buffer)
 		post("  calculating running stats on %ld elements", me->bufSize);
 	post("  Count: %ld", me->count);
@@ -645,7 +678,24 @@ void StaceyAssist(tLStats* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexTheInlet, strIndexOutCount, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexTheInlet, strIndexOutCount, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 1: sprintf (oCStr, LPAssistOut2); break;
+                case 2: sprintf (oCStr, LPAssistOut3); break;
+                case 3: sprintf (oCStr, LPAssistOut4); break;
+                case 4: sprintf (oCStr, LPAssistOut5); break;
+                case 5: sprintf (oCStr, LPAssistOut6); break;
+                case 6: sprintf (oCStr, LPAssistOut7); break;
+            }
+            
+        }
 	}
 
 void StaceyInfo(tLStats* me)

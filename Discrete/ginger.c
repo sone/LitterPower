@@ -38,7 +38,7 @@
 #pragma mark • Include Files
 
 #include "IChingCore.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 
 
@@ -47,6 +47,15 @@
 const char*	kClassName		= "lp.ginger";			// Class name
 
 
+// Assistance strings
+#define LPAssistIn1			"Bang (%s)"
+#define LPAssistOut1		"Int (Main Hexagram)"
+#define LPAssistOut2		"Int (Future Hexagram)"
+#define LPAssistOut3		"List (Details of oracle; yin = 2, yang = 3)"
+#define LPAssistFrag1		"toss coins"
+#define LPAssistFrag2		"throw yarrow sticks"
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexTheInlet		= lpStrIndexLastStandard + 1,
@@ -57,7 +66,7 @@ enum {
 	
 	strIndexFragCoin,
 	strIndexFragYarrow
-	};
+	};*/
 
 
 #pragma mark • Type Definitions
@@ -67,13 +76,13 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	voidPtr		futureOut,		// Outlets (main "present" outlet accessed through coreObject)
 				oracleOut,
 				detailOut;
 	
-	Atom		oracle[kMaxOracleLen],
+	t_atom		oracle[kMaxOracleLen],
 				details[kDetailLen];
 	
 	eYinYang	type;
@@ -87,7 +96,7 @@ typedef struct {
 
 	// Object message functions
 //static void GingerBang	(objIChing*);
-static void GingerSet	(objIChing*, Symbol*);
+static void GingerSet	(objIChing*, t_symbol*);
 //static void GingerYarrow(objIChing*);
 //static void GingerCoin	(objIChing*);
 //static void GingerZen	(objIChing*);
@@ -109,7 +118,7 @@ static void GingerSet	(objIChing*, Symbol*);
 
 static void*
 GingerNew(
-	Symbol* iOracle)
+	t_symbol* iOracle)
 	
 	{
 	objIChing*	me			= NIL;
@@ -181,7 +190,7 @@ GingerBang(
 static void
 GingerSet(
 	objIChing*	me,
-	Symbol*		iOracle)
+	t_symbol*		iOracle)
 	
 	{
 	
@@ -270,12 +279,29 @@ GingerAssist(
 	
 	{
 	#pragma unused(box)
-	
+	/*
 	if (iDir == ASSIST_INLET)
 		 LitterAssistResFrag(iDir, iArgNum, strIndexTheInlet, 0, oCStr,
 							 (me->type == yyCoin) ? strIndexFragCoin : strIndexFragYarrow);
 	else LitterAssist(iDir, iArgNum, 0, strIndexOutPresent, oCStr);
-	
+	*/
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0:
+                    if(me->type == yyCoin)
+                        sprintf (oCStr, LPAssistIn1, LPAssistFrag1);
+                    else
+                        sprintf (oCStr, LPAssistIn1, LPAssistFrag1);
+                    break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 1: sprintf (oCStr, LPAssistOut2); break;
+            }
+            
+        }
 	}
 
 #pragma mark -
@@ -327,8 +353,7 @@ static inline void AddInfo(void)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -337,7 +362,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -349,17 +374,21 @@ main(void)
 						myArgTypes);					// See above
 	
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) GingerBang);
-	LITTER_TIMEBOMB LitterAddMess0	((method) GingerYarrow,	"yarrow");
-	LITTER_TIMEBOMB LitterAddMess0	((method) GingerCoin,	"coin");
+	LitterAddBang	((method) GingerBang);
+	LitterAddMess0	((method) GingerYarrow,	"yarrow");
+	LitterAddMess0	((method) GingerCoin,	"coin");
 	LitterAddMess1	((method) GingerSet,		"set",		A_SYM);
 	LitterAddMess0	((method) GingerZen,		"zen");
 	LitterAddCant	((method) GingerZen,		"dblclick"); 
 	LitterAddCant	((method) GingerAssist,		"assist");
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, gObjectClass);
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 

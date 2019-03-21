@@ -99,36 +99,65 @@ ScampGenSymbols()
 	}
 
 void
-ScampAddMessages()
-
+ScampAddMessages(t_class *c)
 	{
 	
 		// Core parameter messages
-	addbang	((method) ScampBang);
-	addint	((method) ScampInt);
-	addfloat((method) ScampFloat);
+	class_addmethod(c, (method) ScampBang, "bang", 0);
+	class_addmethod(c, (method) ScampInt, "int", A_LONG, 0);
+	class_addmethod(c, (method) ScampFloat, "float", A_FLOAT, 0);
 	
 		// Mapping modes
-	addmess	((method) ScampMap,			"map",		A_GIMME, 0);	
-	addmess	((method) ScampSym,			"sym",		A_DEFLONG, 0);
-	addmess	((method) ScampLin,			"lin",		A_DEFFLOAT, 0);	
-	addmess	((method) ScampPow,			"pow",		A_GIMME, 0);	
-	addmess	((method) ScampExp,			"exp",		A_GIMME, 0);
+	class_addmethod(c, (method) ScampMap,			"map",		A_GIMME, 0);
+	class_addmethod(c, (method) ScampSym,			"sym",		A_DEFLONG, 0);
+	class_addmethod(c, (method) ScampLin,			"lin",		A_DEFFLOAT, 0);
+	class_addmethod(c, (method) ScampPow,			"pow",		A_GIMME, 0);
+	class_addmethod(c, (method) ScampExp,			"exp",		A_GIMME, 0);
 	
 		// Range correction messages
-	addmess ((method) ScampClip,		"clip",		A_NOTHING);
-	addmess ((method) ScampWrap,		"wrap",		A_NOTHING);
-	addmess ((method) ScampReflect,		"reflect",	A_NOTHING);
-	addmess ((method) ScampStet,		"stet",		A_NOTHING);
+	class_addmethod(c, (method) ScampClip,		"clip",		A_NOTHING);
+	class_addmethod(c, (method) ScampWrap,		"wrap",		A_NOTHING);
+	class_addmethod(c, (method) ScampReflect,		"reflect",	A_NOTHING);
+	class_addmethod(c, (method) ScampStet,		"stet",		A_NOTHING);
 	
 		// Informational methods
-	addmess	((method) ScampTattle,		"tattle",	A_NOTHING);
-	addmess ((method) ScampTattle,		"dblclick", A_CANT, 0);
-	addmess	((method) ScampAssist,		"assist",	A_CANT, 0);
-	addmess	((method) ScampInfo,		"info",		A_CANT, 0);
+	class_addmethod(c, (method) ScampTattle,		"tattle",	A_NOTHING);
+	class_addmethod(c, (method) ScampTattle,		"dblclick", A_CANT, 0);
+	class_addmethod(c, (method) ScampAssist,		"assist",	A_CANT, 0);
+	class_addmethod(c, (method) ScampInfo,		"info",		A_CANT, 0);
 	
 	}
 
+/*
+void
+ScampAddMessages()
+{
+    
+    // Core parameter messages
+    addbang    ((method) ScampBang);
+    addint    ((method) ScampInt);
+    addfloat((method) ScampFloat);
+    
+    // Mapping modes
+    addmess    ((method) ScampMap,            "map",        A_GIMME, 0);
+    addmess    ((method) ScampSym,            "sym",        A_DEFLONG, 0);
+    addmess    ((method) ScampLin,            "lin",        A_DEFFLOAT, 0);
+    addmess    ((method) ScampPow,            "pow",        A_GIMME, 0);
+    addmess    ((method) ScampExp,            "exp",        A_GIMME, 0);
+    
+    // Range correction messages
+    addmess ((method) ScampClip,        "clip",        A_NOTHING);
+    addmess ((method) ScampWrap,        "wrap",        A_NOTHING);
+    addmess ((method) ScampReflect,        "reflect",    A_NOTHING);
+    addmess ((method) ScampStet,        "stet",        A_NOTHING);
+    
+    // Informational methods
+    addmess    ((method) ScampTattle,        "tattle",    A_NOTHING);
+    addmess ((method) ScampTattle,        "dblclick", A_CANT, 0);
+    addmess    ((method) ScampAssist,        "assist",    A_CANT, 0);
+    addmess    ((method) ScampInfo,        "info",        A_CANT, 0);
+    
+}*/
 /******************************************************************************************
  *
  *	ScampParseArgs()
@@ -143,7 +172,7 @@ void
 ScampParseArgs(
 	objScamp*	me,
 	short		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 	
 	{
 	const short kUndefined	= -1;
@@ -417,7 +446,7 @@ void ScampCurve(objScamp* me, double iCurve)
  *
  ******************************************************************************************/
 
-void ScampMap(objScamp* me, Symbol* sym, short iArgC, Atom iArgV[])
+void ScampMap(objScamp* me, t_symbol* sym, short iArgC, t_atom iArgV[])
 	{
 	#pragma unused(sym)
 	
@@ -445,7 +474,7 @@ void ScampSym(objScamp* me, long iSymType)
 	// Utility providing a warning in the Max window that looks just like what the
 	// Max argument parser says.
 	// Should move this to MaxUtils.
-	static void WarnXtraArgs(const char iClassName[], Symbol* iMsg)
+	static void WarnXtraArgs(const char iClassName[], t_symbol* iMsg)
 	{ post("warning: %s: extra arguments for message \"%s\"", iClassName, iMsg->s_name); }
 
 void ScampLin(objScamp* me, double iBreak)
@@ -454,9 +483,9 @@ void ScampLin(objScamp* me, double iBreak)
 void
 ScampPow(
 	objScamp*	me,
-	Symbol*		iMsg,						// must be pow
+	t_symbol*		iMsg,						// must be pow
 	short		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 	
 	{
 	double curve = 1.0;
@@ -475,9 +504,9 @@ ScampPow(
 void
 ScampExp(
 	objScamp*	me,
-	Symbol*		iMsg,						// must be exp
+	t_symbol*		iMsg,						// must be exp
 	short		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 
 	{
 	double curve = 1.0;

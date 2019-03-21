@@ -13,10 +13,10 @@
 		042BEB820A9501FB0008B638 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		042BEBB40A9502A20008B638 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */; };
 		04E4A0E50A95BF98004B0E9C /* ccc.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A0E00A95BF98004B0E9C /* ccc.c */; };
-		04E4A0EE0A95D527004B0E9C /* ccc~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A0E10A95BF98004B0E9C /* ccc~.c */; };
 		04E4A0F30A95D7F5004B0E9C /* poppy.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A0E30A95BF98004B0E9C /* poppy.c */; };
 		04E4A0F60A95D8B3004B0E9C /* poppy~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A0E40A95BF98004B0E9C /* poppy~.c */; };
 		04E4A0FC0A95D90A004B0E9C /* lya.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A0E20A95BF98004B0E9C /* lya.c */; };
+		356326B32211BB4D00F8E404 /* ccc~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A0E10A95BF98004B0E9C /* ccc~.c */; };
 		35C401842035D2CE0033221D /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 35C4017E2035D2CE0033221D /* LitterLib.c */; };
 		35C401852035D2CE0033221D /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 35C4017E2035D2CE0033221D /* LitterLib.c */; };
 		35C401862035D2CE0033221D /* LitterLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 35C4017E2035D2CE0033221D /* LitterLib.c */; };
@@ -248,9 +248,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		042BE9CA0A94F6B80008B638 /* Population Grown/Signals (UB) */ = {
+		042BE9CA0A94F6B80008B638 /* Population Grown-Signals (UB) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 042BE9D80A94F6B80008B638 /* Build configuration list for PBXNativeTarget "Population Grown/Signals (UB)" */;
+			buildConfigurationList = 042BE9D80A94F6B80008B638 /* Build configuration list for PBXNativeTarget "Population Grown-Signals (UB)" */;
 			buildPhases = (
 				042BE9CC0A94F6B80008B638 /* Headers */,
 				042BE9CD0A94F6B80008B638 /* Resources */,
@@ -261,15 +261,15 @@
 			);
 			dependencies = (
 			);
-			name = "Population Grown/Signals (UB)";
+			name = "Population Grown-Signals (UB)";
 			productInstallPath = "$(HOME)/Library/Bundles";
 			productName = MaxExternal;
 			productReference = 042BE9DC0A94F6B80008B638 /* lp.poppy~.mxo */;
 			productType = "com.apple.product-type.bundle";
 		};
-		042BEA9F0A94FAB20008B638 /* Population Growth/Control (UB) */ = {
+		042BEA9F0A94FAB20008B638 /* Population Growth-Control (UB) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 042BEAAE0A94FAB20008B638 /* Build configuration list for PBXNativeTarget "Population Growth/Control (UB)" */;
+			buildConfigurationList = 042BEAAE0A94FAB20008B638 /* Build configuration list for PBXNativeTarget "Population Growth-Control (UB)" */;
 			buildPhases = (
 				042BEAA10A94FAB20008B638 /* Headers */,
 				042BEAA20A94FAB20008B638 /* Resources */,
@@ -280,15 +280,15 @@
 			);
 			dependencies = (
 			);
-			name = "Population Growth/Control (UB)";
+			name = "Population Growth-Control (UB)";
 			productInstallPath = "$(HOME)/Library/Bundles";
 			productName = MaxExternal;
 			productReference = 042BEAB20A94FAB20008B638 /* lp.poppy.mxo */;
 			productType = "com.apple.product-type.bundle";
 		};
-		042BEAFE0A94FF490008B638 /* Schuster Pink/Signals (UB) */ = {
+		042BEAFE0A94FF490008B638 /* Schuster Pink-Signals (UB) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 042BEB0E0A94FF490008B638 /* Build configuration list for PBXNativeTarget "Schuster Pink/Signals (UB)" */;
+			buildConfigurationList = 042BEB0E0A94FF490008B638 /* Build configuration list for PBXNativeTarget "Schuster Pink-Signals (UB)" */;
 			buildPhases = (
 				042BEB000A94FF490008B638 /* Headers */,
 				042BEB010A94FF490008B638 /* Resources */,
@@ -299,15 +299,15 @@
 			);
 			dependencies = (
 			);
-			name = "Schuster Pink/Signals (UB)";
+			name = "Schuster Pink-Signals (UB)";
 			productInstallPath = "$(HOME)/Library/Bundles";
 			productName = MaxExternal;
 			productReference = 042BEB120A94FF490008B638 /* lp.ccc~.mxo */;
 			productType = "com.apple.product-type.bundle";
 		};
-		042BEB780A9501FB0008B638 /* Schuster Pink/Control (UB) */ = {
+		042BEB780A9501FB0008B638 /* Schuster Pink-Control (UB) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 042BEB870A9501FB0008B638 /* Build configuration list for PBXNativeTarget "Schuster Pink/Control (UB)" */;
+			buildConfigurationList = 042BEB870A9501FB0008B638 /* Build configuration list for PBXNativeTarget "Schuster Pink-Control (UB)" */;
 			buildPhases = (
 				042BEB7A0A9501FB0008B638 /* Headers */,
 				042BEB7B0A9501FB0008B638 /* Resources */,
@@ -318,15 +318,15 @@
 			);
 			dependencies = (
 			);
-			name = "Schuster Pink/Control (UB)";
+			name = "Schuster Pink-Control (UB)";
 			productInstallPath = "$(HOME)/Library/Bundles";
 			productName = MaxExternal;
 			productReference = 042BEB8B0A9501FB0008B638 /* lp.ccc.mxo */;
 			productType = "com.apple.product-type.bundle";
 		};
-		042BEBAA0A9502A20008B638 /* Lyapunov/Control (UB) */ = {
+		042BEBAA0A9502A20008B638 /* Lyapunov-Control (UB) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 042BEBB90A9502A20008B638 /* Build configuration list for PBXNativeTarget "Lyapunov/Control (UB)" */;
+			buildConfigurationList = 042BEBB90A9502A20008B638 /* Build configuration list for PBXNativeTarget "Lyapunov-Control (UB)" */;
 			buildPhases = (
 				042BEBAC0A9502A20008B638 /* Headers */,
 				042BEBAD0A9502A20008B638 /* Resources */,
@@ -337,7 +337,7 @@
 			);
 			dependencies = (
 			);
-			name = "Lyapunov/Control (UB)";
+			name = "Lyapunov-Control (UB)";
 			productInstallPath = "$(HOME)/Library/Bundles";
 			productName = MaxExternal;
 			productReference = 042BEBBD0A9502A20008B638 /* lp.lya.mxo */;
@@ -362,11 +362,11 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				042BEB780A9501FB0008B638 /* Schuster Pink/Control (UB) */,
-				042BEAFE0A94FF490008B638 /* Schuster Pink/Signals (UB) */,
-				042BEA9F0A94FAB20008B638 /* Population Growth/Control (UB) */,
-				042BE9CA0A94F6B80008B638 /* Population Grown/Signals (UB) */,
-				042BEBAA0A9502A20008B638 /* Lyapunov/Control (UB) */,
+				042BEB780A9501FB0008B638 /* Schuster Pink-Control (UB) */,
+				042BEAFE0A94FF490008B638 /* Schuster Pink-Signals (UB) */,
+				042BEA9F0A94FAB20008B638 /* Population Growth-Control (UB) */,
+				042BE9CA0A94F6B80008B638 /* Population Grown-Signals (UB) */,
+				042BEBAA0A9502A20008B638 /* Lyapunov-Control (UB) */,
 			);
 		};
 /* End PBXProject section */
@@ -436,7 +436,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				04E4A0EE0A95D527004B0E9C /* ccc~.c in Sources */,
+				356326B32211BB4D00F8E404 /* ccc~.c in Sources */,
 				35C401992035D2CE0033221D /* MiscUtils.c in Sources */,
 				35C4018F2035D2CE0033221D /* MaxUtils.c in Sources */,
 				35C401852035D2CE0033221D /* LitterLib.c in Sources */,
@@ -678,7 +678,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Chaos/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/$(PROJECT)";
 				LIBRARY_STYLE = Bundle;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
@@ -720,6 +720,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEPLOYMENT_LOCATION = YES;
 				DSTROOT = "$(PROJECT_DIR)";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -754,7 +755,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Chaos/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/$(PROJECT)";
 				LIBRARY_STYLE = Bundle;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -788,6 +789,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEPLOYMENT_LOCATION = YES;
 				DSTROOT = "$(PROJECT_DIR)";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -821,7 +823,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
 				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Chaos/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/$(PROJECT)";
 				LIBRARY_STYLE = Bundle;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -844,7 +846,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		042BE9D80A94F6B80008B638 /* Build configuration list for PBXNativeTarget "Population Grown/Signals (UB)" */ = {
+		042BE9D80A94F6B80008B638 /* Build configuration list for PBXNativeTarget "Population Grown-Signals (UB)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				042BE9D90A94F6B80008B638 /* Development */,
@@ -854,7 +856,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Default;
 		};
-		042BEAAE0A94FAB20008B638 /* Build configuration list for PBXNativeTarget "Population Growth/Control (UB)" */ = {
+		042BEAAE0A94FAB20008B638 /* Build configuration list for PBXNativeTarget "Population Growth-Control (UB)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				042BEAAF0A94FAB20008B638 /* Development */,
@@ -864,7 +866,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Default;
 		};
-		042BEB0E0A94FF490008B638 /* Build configuration list for PBXNativeTarget "Schuster Pink/Signals (UB)" */ = {
+		042BEB0E0A94FF490008B638 /* Build configuration list for PBXNativeTarget "Schuster Pink-Signals (UB)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				042BEB0F0A94FF490008B638 /* Development */,
@@ -874,7 +876,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Default;
 		};
-		042BEB870A9501FB0008B638 /* Build configuration list for PBXNativeTarget "Schuster Pink/Control (UB)" */ = {
+		042BEB870A9501FB0008B638 /* Build configuration list for PBXNativeTarget "Schuster Pink-Control (UB)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				042BEB880A9501FB0008B638 /* Development */,
@@ -884,7 +886,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Default;
 		};
-		042BEBB90A9502A20008B638 /* Build configuration list for PBXNativeTarget "Lyapunov/Control (UB)" */ = {
+		042BEBB90A9502A20008B638 /* Build configuration list for PBXNativeTarget "Lyapunov-Control (UB)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				042BEBBA0A9502A20008B638 /* Development */,

@@ -32,6 +32,17 @@
 #include "LitterLib.h"
 #include "TrialPeriodUtils.h"
 
+// Assistance strings
+
+#define LPAssistIn1			"Jitter matrix to analyze"
+#define LPAssistOut1		"List (minima, 1/plane)"
+#define LPAssistOut2		"List (maxima, 1/plane)"
+#define LPAssistOut3		"List (mean values, 1/plane)"
+#define LPAssistOut4		"List (std. dev. values, 1/plane)"
+#define LPAssistOut5		"List (skew values, 1/plane)"
+#define LPAssistOut6		"List (kurtosis values, 1/plane)"
+#define LPAssistOut7		"Dump"
+
 
 #pragma mark • Constants
 
@@ -77,7 +88,7 @@ typedef double tPlaneStats[statArraySize];
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	voidPtr		jitObEx;			// This is the opaque Jitter data structure that
 									// is our sole means of communication with the
 									// jcobStacey object (defined below)
@@ -93,10 +104,10 @@ typedef struct {
 	} msobStacey;					// Max Shell Object
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	
 	long		planeCount;
-	Atom		minData[JIT_MATRIX_MAX_PLANECOUNT],
+	t_atom		minData[JIT_MATRIX_MAX_PLANECOUNT],
 				maxData[JIT_MATRIX_MAX_PLANECOUNT],
 				meanData[JIT_MATRIX_MAX_PLANECOUNT],
 				stdDevData[JIT_MATRIX_MAX_PLANECOUNT],
@@ -123,7 +134,7 @@ SymbolPtr		gSymGetMin		= NIL,
 #pragma mark • Function Prototypes
 
 	// Max methods/functions
-static void*StaceyNewMaxShell	(Symbol*, long, Atom*);
+static void*StaceyNewMaxShell	(t_symbol*, long, t_atom*);
 static void	StaceyFreeMaxShell	(msobStacey*);
 
 static void StaceyBang			(msobStacey*);
@@ -158,8 +169,7 @@ static t_jit_err StaceyJitMCalc	(jcobStacey*, void*, void*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const long kAttrFlags = MAX_JIT_MOP_FLAGS_OWN_OUTPUTMATRIX
@@ -170,7 +180,7 @@ main(void)
 	voidPtr	jitClassExt,
 			jitClass;
 	
-	LITTER_CHECKTIMEOUT(kMaxClassName);
+	//LITTER_CHECKTIMEOUT(kMaxClassName);
 	
 	StaceyJitInit();
 	
@@ -195,7 +205,7 @@ main(void)
     max_jit_classex_standard_wrap(jitClassExt, jitClass, 0); 	
 	
 	// Add messages...
-	LITTER_TIMEBOMB addbang	((method) StaceyBang);
+	addmess	((method) StaceyBang, "bang", 0);
 	addmess	((method) StaceyTattle,	"dblclick",	A_CANT, 0);
 	addmess	((method) StaceyTattle,	"tattle",	A_NOTHING);
 	addmess	((method) StaceyAssist,	"assist",	A_CANT, 0);
@@ -210,7 +220,7 @@ main(void)
 	gSymGetKurtosis	= gensym("getkurtosis");
 	
 	// Initialize Litter Library
-	LitterInit(kMaxClassName, 0);
+	//LitterInit(kMaxClassName, 0);
 	}
 
 
@@ -249,14 +259,14 @@ static void*
 StaceyNewMaxShell(
 	SymbolPtr	sym,
 	long		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 	
 	{
 	#pragma unused(sym)
 	
 	msobStacey*		me			= NIL;
 	voidPtr			jitObj		= NIL;
-	Symbol*			classSym	= gensym((char*) kMaxClassName);
+	t_symbol*			classSym	= gensym((char*) kMaxClassName);
 	
 	// In the 1.0 SDK max_jit_obex_new() is prototyped to expect a Maxclass* instead of
 	// a Messlist*. JKC said the next release of header files would be corrected to
@@ -321,10 +331,10 @@ StaceyFreeMaxShell(
  *
  ******************************************************************************************/
 
-	static void SendDataToOutlet(void* iJitOb, Symbol* iWhichAttr, void* iWhichOutlet)
+	static void SendDataToOutlet(void* iJitOb, t_symbol* iWhichAttr, void* iWhichOutlet)
 		{
 		long	atomCount = 0;
-		Atom*	outAtoms = NIL;
+		t_atom*	outAtoms = NIL;
 			
 		jit_object_method(iJitOb, iWhichAttr, &atomCount, &outAtoms);
 
@@ -398,7 +408,26 @@ void StaceyAssist(msobStacey* me, void* box, long iDir, long iArgNum, char* oCSt
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 1: sprintf (oCStr, LPAssistOut2); break;
+                case 2: sprintf (oCStr, LPAssistOut3); break;
+                case 3: sprintf (oCStr, LPAssistOut4); break;
+                case 4: sprintf (oCStr, LPAssistOut5); break;
+                case 5: sprintf (oCStr, LPAssistOut6); break;
+                case 6: sprintf (oCStr, LPAssistOut7); break;
+
+            }
+            
+        }
 	}
 
 
@@ -502,7 +531,7 @@ static void StaceyJitFree(jcobStacey* me)
 
 	static void CalcInit(tPlaneStats oStatData[], t_jit_matrix_info* iMInfo, BytePtr iBytes)
 		{
-		Symbol*	mType = iMInfo->type;
+		t_symbol*	mType = iMInfo->type;
 		long	planeCount = iMInfo->planecount,
 				i, j;
 		

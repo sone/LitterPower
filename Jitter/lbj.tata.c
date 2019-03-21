@@ -23,9 +23,16 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "Taus88.h"
+
+
+// Assistance strings
+
+#define LPAssistIn1			"Bang, other messages"
+#define LPAssistOut1		"Tinted noise noise"
+#define LPAssistOut2		"Dump"
 
 
 #pragma mark • Constants
@@ -35,7 +42,7 @@ const char	kMaxClassName[]		= "lbj.tata",			// Class name for Max
 
 const int	kMaxNN			= 31;
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInBang		= lpStrIndexLastStandard + 1,
 	
@@ -45,12 +52,12 @@ enum {
 	strIndexInLeft		= strIndexInBang,
 	strIndexOutLeft		= strIndexOutWhite
 	};
-
+*/
 
 #pragma mark • Type Definitions
 
 typedef struct {
-	Atom	min,
+	t_atom	min,
 			max;
 	} tVecData;
 typedef tVecData* tVecDataPtr;
@@ -59,16 +66,16 @@ typedef tVecData* tVecDataPtr;
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object	coreObject;
 	voidPtr		jitObject;
 	} msobTata;							// Mac Shell Object
 
 typedef struct {
-	Object	coreObject;
+	t_object	coreObject;
 	
 	long	minCount,
 			maxCount;
-	Atom	min[JIT_MATRIX_MAX_PLANECOUNT],
+	t_atom	min[JIT_MATRIX_MAX_PLANECOUNT],
 			max[JIT_MATRIX_MAX_PLANECOUNT];
 	} jcobTata;							// Jitter Core Object
 
@@ -81,7 +88,7 @@ Messlist*		gTataMaxClass	= NIL;
 #pragma mark • Function Prototypes
 
 	// Max methods/functions
-static void*TataNewMaxShell	(Symbol*, long, Atom*);
+static void*TataNewMaxShell	(t_symbol*, long, t_atom*);
 static void	TataFreeMaxShell(msobTata*);
 
 static void TataOutputMatrix(msobTata*);
@@ -121,14 +128,14 @@ Taus88CharVector(
 		min = 0;
 	else {
 		min = AtomGetLong(&iVecData->min);
-		CLIP(min, 0, 255);
+		CLIP_ASSIGN(min, 0, 255);
 		}
 	
 	if (iVecData->max.a_type == A_SYM)
 		max = 255;
 	else {
 		max = AtomGetLong(&iVecData->max);
-		CLIP(max, 0, 255);
+		CLIP_ASSIGN(max, 0, 255);
 		}
 	
 	if (min != max) {
@@ -202,14 +209,14 @@ static inline void
 		min = kLongMin;
 	else {
 		min = AtomGetLong(&iVecData->min);
-		CLIP(min, kLongMin, kLongMax);
+		CLIP_ASSIGN(min, kLongMin, kLongMax);
 		}
 	
 	if (iVecData->max.a_type == A_SYM)
 		max = kLongMax;
 	else {
 		max = AtomGetLong(&iVecData->max);
-		CLIP(max, kLongMin, kLongMax);
+		CLIP_ASSIGN(max, kLongMin, kLongMax);
 		}
 	
 	if (min != max) {
@@ -264,14 +271,14 @@ Taus88FloatVector(
 		min = 0.0;
 	else {
 		min = AtomGetFloat(&iVecData->min);
-		CLIP(min, 0.0, 1.0);
+		CLIP_ASSIGN(min, 0.0, 1.0);
 		}
 	
 	if (iVecData->max.a_type == A_SYM)
 		max = kLongMax;
 	else {
 		max = AtomGetFloat(&iVecData->max);
-		CLIP(max, 0.0, 1.0);
+		CLIP_ASSIGN(max, 0.0, 1.0);
 		}
 	
 	if (min != max) {
@@ -329,7 +336,7 @@ Taus88DoubleVector(
 		min = 0.0;
 	else {
 		min = AtomGetFloat(&iVecData->min);
-		CLIP(min, 0.0, 1.0);
+		CLIP_ASSIGN(min, 0.0, 1.0);
 		}
 	
 	if (min != max) {
@@ -384,16 +391,14 @@ Taus88DoubleVector(
  *	
  ******************************************************************************************/
 
-void
-main(void)
-	
+int C74_EXPORT main(void)
 	{
 	const long kAttr = MAX_JIT_MOP_FLAGS_OWN_OUTPUTMATRIX | MAX_JIT_MOP_FLAGS_OWN_JIT_MATRIX;
 	
 	voidPtr	p,									// Have to guess about what these two do
 			q;									// Not much is documented in the Jitter SDK
 	
-	LITTER_CHECKTIMEOUT(kMaxClassName);
+	//LITTER_CHECKTIMEOUT(kMaxClassName);
 	
 	TataJitInit();
 	
@@ -411,7 +416,7 @@ main(void)
 	q = jit_class_findbyname(gensym((char*) kMaxClassName));    
     max_jit_classex_mop_wrap(p, q, kAttr); 		
     max_jit_classex_standard_wrap(p, q, 0); 	
-	LITTER_TIMEBOMB max_addmethod_usurp_low((method) TataOutputMatrix, "outputmatrix");	
+	max_addmethod_usurp_low((method) TataOutputMatrix, "outputmatrix");
 	
 	// Back to adding messages...
 	addmess	((method) TataTattle,	"dblclick",	A_CANT, 0);
@@ -420,7 +425,7 @@ main(void)
 	addmess	((method) TataInfo,		"info",		A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kMaxClassName, 0);
+	//LitterInit(kMaxClassName, 0);
 	}
 
 
@@ -441,14 +446,14 @@ static void*
 TataNewMaxShell(
 	SymbolPtr	sym,
 	long		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 	
 	{
 	#pragma unused(sym)
 	
 	msobTata*	me			= NIL;
 	void*		jitObj		= NIL;
-	Symbol*		classSym	= gensym((char*) kMaxClassName);
+	t_symbol*		classSym	= gensym((char*) kMaxClassName);
 	
 	// In the 1.0 SDK max_jit_obex_new() is prototyped to expect a Maxclass* instead of
 	// a Messlist*. JKC said the next release of header files would be corrected to
@@ -557,7 +562,20 @@ void TataAssist(msobTata* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 1: sprintf (oCStr, LPAssistOut2); break;
+            }
+            
+        }
+        
 	}
 
 
@@ -574,7 +592,7 @@ static jcobTata* TataJitNew()
 	{
 	jcobTata* me = (jcobTata*) jit_object_alloc(gTataJitClass);
 	
-	
+        
 	return me;
 	}
 
@@ -609,6 +627,9 @@ RecurseDimensions(
 					maxCount;
 	tVecData		vecData;
 	t_jit_op_info	outOpInfo;
+        
+        //post("min: %ld", me->minCount);
+        //post("max: %ld", me->maxCount);
 		
 	if (iDimCount < 1)		// For safety: this also catches invalid (negative) values
 		return;
@@ -629,12 +650,13 @@ RecurseDimensions(
 		// Test if it's appropriate to flatten to a single plane
 		if (iPlaneCount > 1) {
 			Boolean flatten = true;
-			Atom	min	= me->min[0],
+			t_atom	min	= me->min[0],
 					max	= me->max[0];
 			
 			for (i = iPlaneCount - 1; i > 0; i -= 1) {
 				long	minIndex = i % minCount,
 						maxIndex = i % maxCount;
+                
 				if (me->min[minIndex].a_type != min.a_type
 						|| me->max[maxIndex].a_type != max.a_type
 							// The following conditions do what we want even if a_type is A_SYM
@@ -851,6 +873,7 @@ TataJitInit(void)
 							(method) NIL, (method) NIL,
 							calcoffset(jcobTata, minCount), calcoffset(jcobTata, min)
 							);
+        
 	jit_class_addattr(gTataJitClass, attr);
 		// Max
 	attr = jit_object_new(	_jit_sym_jit_attr_offset_array,
@@ -862,7 +885,6 @@ TataJitInit(void)
 							calcoffset(jcobTata, maxCount), calcoffset(jcobTata, max)
 							);
 	jit_class_addattr(gTataJitClass, attr);
-	
 	
 
 	jit_class_register(gTataJitClass);

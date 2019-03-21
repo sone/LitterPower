@@ -29,13 +29,21 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.logos";			// Class name
 
-	// Indices for STR# resource
+#define LPAssistNum			"%s (Dividend, triggers division)"
+#define LPAssistDenom		"%s (Divisor, triggers division)"
+#define LPAssistOut1		"%s (Quotient)"
+#define LPAssistOut2		"%s (Remainder)"
+#define LPAssistOut3		"%s (Modulo)"
+#define LPAssistFrag1		"int"
+#define LPAssistFrag2		"float"
+
+/*	// Indices for STR# resource
 enum {
 	strIndexNumInlet	= lpStrIndexLastStandard + 1,
 	strIndexDenomInlet,
@@ -49,7 +57,7 @@ enum {
 	
 	strIndexLeftIn		= strIndexNumInlet,
 	strIndexLeftOut		= strIndexQuotOutlet
-	};
+	};*/
 
 #pragma mark • Type Definitions
 
@@ -57,7 +65,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	
 	long		inletNum;			// Max tells us which inlet was used here
 	tWord		num,				// Numerator
@@ -74,13 +82,13 @@ typedef objLogos* objLogosPtr;
 #pragma mark • Function Prototypes
 
 	// Class message functions
-objLogosPtr	LogosNew(SymbolPtr, short, Atom[]);
+objLogosPtr	LogosNew(SymbolPtr, short, t_atom[]);
 
 	// Object message functions
 static void LogosBang(objLogos*);
 static void LogosFloat(objLogos*, double);
 static void LogosInt(objLogos*, long);
-static void LogosList(objLogos*, Symbol*, short, Atom*);
+static void LogosList(objLogos*, t_symbol*, short, t_atom*);
 static void LogosSet(objLogos*, double);
 static void LogosTattle(objLogos*);
 static void	LogosAssist(objLogos*, tBoxPtr, long, long, char*);
@@ -101,14 +109,14 @@ static void	LogosInfo(objLogos*);
  *	
  ******************************************************************************************/
 
-void
-main()
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,					// Pointer to our class definition
+	c = class_new(kClassName,					// Pointer to our class definition
 			(method) LogosNew,				// Instantiation method  
 			NIL,							// No custom deallocation function
 			(short) sizeof(objLogos),		// Class object size
@@ -117,18 +125,23 @@ main()
 			0);								// to determine if we're doing ints or floats
 	
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) LogosBang);
-	LITTER_TIMEBOMB addint	((method) LogosInt);
-	LITTER_TIMEBOMB addfloat((method) LogosFloat);
-	LITTER_TIMEBOMB addmess	((method) LogosList,	"list",			A_GIMME, 0);
-	addmess	((method) LogosSet,		"set",			A_FLOAT, 0);
-	addmess	((method) LogosAssist,	"assist",		A_CANT, 0);
-	addmess	((method) LogosInfo,	"info",			A_CANT, 0);
-	addmess ((method) LogosTattle,	"tattle",	 	A_NOTHING);
-	addmess ((method) LogosTattle,	"dblclick", 	A_CANT, 0);
+	class_addmethod(c,(method) LogosBang, "bang", 0);
+	class_addmethod(c,(method) LogosInt, "int", A_LONG, 0);
+	class_addmethod(c,(method) LogosFloat, "float", A_FLOAT, 0);
+	class_addmethod(c,(method) LogosList,	"list",			A_GIMME, 0);
+	class_addmethod(c,(method) LogosSet,		"set",			A_FLOAT, 0);
+	class_addmethod(c,(method) LogosAssist,	"assist",		A_CANT, 0);
+	class_addmethod(c,(method) LogosInfo,	"info",			A_CANT, 0);
+	class_addmethod(c,(method) LogosTattle,	"tattle",	 	A_NOTHING);
+	class_addmethod(c,(method) LogosTattle,	"dblclick", 	A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	}
 
@@ -145,7 +158,7 @@ objLogosPtr
 LogosNew(
 	SymbolPtr	sym,								// must be 'lp./'
 	short		iArgCount,
-	Atom		iArgVec[])
+	t_atom		iArgVec[])
 	
 	{
 	#pragma unused(sym)
@@ -167,21 +180,21 @@ LogosNew(
 			doFloats = true;
 			denom = iArgVec[1].a_w.w_float;
 			}
-		else denom = (double) AtomGetLong(iArgVec + 1);
+		else denom = (double) atom_getlong(iArgVec + 1);
 		// fall into next case
 	case 1:
 		if (iArgVec[0].a_type == A_FLOAT) {
 			doFloats = true;
 			num = iArgVec[0].a_w.w_float;
 			}
-		else num = (double) AtomGetLong(iArgVec);
+		else num = (double) atom_getlong(iArgVec);
 		// this is cheesy, but fall into next case;
 	case 0:
 		break;
 		}
 	
 	// Let Max allocate us
-	me = (objLogos*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	if (me == NIL) goto punt;
 	
 	// Add right inlet
@@ -306,12 +319,12 @@ LogosSet(
 	{
 	
 	if (me->doFloats) {
-		if (ObjectGetInlet((Object*) me, me->inletNum) == 1)
+		if (ObjectGetInlet((t_object*) me, me->inletNum) == 1)
 			me->denom.w_float = iVal;
 		else me->num.w_float = iVal;
 		}
 	else {
-		if (ObjectGetInlet((Object*) me, me->inletNum) == 1)
+		if (ObjectGetInlet((t_object*) me, me->inletNum) == 1)
 			me->denom.w_long = (long) iVal;
 		else me->num.w_long = (long) iVal;
 		}
@@ -338,14 +351,14 @@ void LogosFloat(objLogos* me, double iVal)
 void
 LogosList(
 	objLogos*	me,
-	Symbol*		sym,				// ignore, must be "list"
+	t_symbol*		sym,				// ignore, must be "list"
 	short		iArgCount,
-	Atom*		iAtoms)
+	t_atom*		iAtoms)
 	
 	{
 	#pragma unused(sym)
 	
-	const long kInletNum = ObjectGetInlet((Object*) me, me->inletNum);
+	const long kInletNum = ObjectGetInlet((t_object*) me, me->inletNum);
 	
 	switch (iArgCount + kInletNum) {
 	default:
@@ -354,15 +367,15 @@ LogosList(
 		// fall into next case
 	case 2:
 		if (me->doFloats)
-			 me->denom.w_float = AtomGetFloat(iAtoms + 1 - kInletNum);
-		else me->denom.w_long = AtomGetLong(iAtoms + 1 - kInletNum);
+			 me->denom.w_float = atom_getfloat(iAtoms + 1 - kInletNum);
+		else me->denom.w_long = atom_getlong(iAtoms + 1 - kInletNum);
 		if (kInletNum > 0)
 			break;
 		// otherwise fall into next case
 	case 1:
 		if (me->doFloats)
-			 me->num.w_float = AtomGetFloat(iAtoms);
-		else me->num.w_long = AtomGetLong(iAtoms);
+			 me->num.w_float = atom_getfloat(iAtoms);
+		else me->num.w_long = atom_getlong(iAtoms);
 		break;
 	case 0:
 		// This can't happen here
@@ -424,9 +437,52 @@ LogosAssist(
 	{
 	#pragma unused(box)
 	
-	short fragIndex = me->doFloats ? strIndexFloat : strIndexInt;
+	//short fragIndex = me->doFloats ? strIndexFloat : strIndexInt;
 	
-	LitterAssistResFrag(iDir, iArgNum, strIndexLeftIn, strIndexLeftOut, oCStr, fragIndex);
+	//LitterAssistResFrag(iDir, iArgNum, strIndexLeftIn, strIndexLeftOut, oCStr, fragIndex);
+    if(me->doFloats) {
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistNum, LPAssistFrag2); break;
+                case 1: sprintf (oCStr, LPAssistDenom, LPAssistFrag2); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1, LPAssistFrag2); break;
+                case 1: sprintf (oCStr, LPAssistOut2, LPAssistFrag2); break;
+                case 2: sprintf (oCStr, LPAssistOut3, LPAssistFrag2); break;
+            }
+            
+        }
+    }
+        else
+        {
+            if (iDir == ASSIST_INLET) {
+                switch(iArgNum) {
+                    case 0: sprintf (oCStr, LPAssistNum, LPAssistFrag1); break;
+                    case 1: sprintf (oCStr, LPAssistDenom, LPAssistFrag1); break;
+                }
+            }
+            else {
+                switch(iArgNum) {
+                    case 0: sprintf (oCStr, LPAssistOut1, LPAssistFrag1); break;
+                    case 1: sprintf (oCStr, LPAssistOut2, LPAssistFrag1); break;
+                    case 2: sprintf (oCStr, LPAssistOut3, LPAssistFrag1); break;
+                }
+                
+            }
+        }
+        
+        /*
+         #define LPAssistNum			"%s (Dividend, triggers division)"
+         #define LPAssistDenom		"%s (Divisor, triggers division)"
+         #define LPAssistOut1		"%s (Quotient)"
+         #define LPAssistOut2		"%s (Remainder)"
+         #define LPAssistOut3		"%s (Modulo)"
+         #define LPAssistFrag1		"int"
+         #define LPAssistFrag2		"float"
+         */
 	
 	}
 

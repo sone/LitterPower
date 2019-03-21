@@ -22,6 +22,12 @@
 #include "MiscUtils.h"
 #include "Taus88.h"
 
+// Assistance strings
+#define LPAssistIn1			"Bang, other messages"
+#define LPAssistOut1		"Exponential and Laplace noise"
+#define LPAssistOut2		"Dump"
+
+
 
 #pragma mark • Constants
 
@@ -49,12 +55,12 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	voidPtr		obex;					// The magic extended object thing.
 	} msobExpo;							// Mac Shell Object
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	
 	long		ltCount,				// Same counts for lambda and tau
 				locCount,
@@ -76,7 +82,7 @@ Messlist*		gExpoMaxClass	= NIL;
 #pragma mark • Function Prototypes
 
 	// Max methods/functions
-static void*ExpoNewMaxShell	(Symbol*, long, Atom*);
+static void*ExpoNewMaxShell	(t_symbol*, long, t_atom*);
 static void	ExpoFreeMaxShell(msobExpo*);
 
 static void ExpoOutputMatrix(msobExpo*);
@@ -106,8 +112,7 @@ static t_jit_err ExpoJitInit		(void);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const long kAttr = MAX_JIT_MOP_FLAGS_OWN_OUTPUTMATRIX | MAX_JIT_MOP_FLAGS_OWN_JIT_MATRIX;
@@ -115,7 +120,7 @@ main(void)
 	voidPtr	p,									// Have to guess about what these two do
 			q;									// Not much is documented in the Jitter SDK
 	
-	LITTER_CHECKTIMEOUT(kMaxClassName);
+	//LITTER_CHECKTIMEOUT(kMaxClassName);
 	ExpoJitInit();
 	
 	// Standard Max setup() call
@@ -132,7 +137,7 @@ main(void)
 	q = jit_class_findbyname(gensym((char*) kJitClassName));    
     max_jit_classex_mop_wrap(p, q, kAttr); 		
     max_jit_classex_standard_wrap(p, q, 0); 	
-	LITTER_TIMEBOMB max_addmethod_usurp_low((method) ExpoOutputMatrix, "outputmatrix");	
+	max_addmethod_usurp_low((method) ExpoOutputMatrix, "outputmatrix");
 	
 	// Back to adding messages...
 	addmess	((method) ExpoTattle,	"dblclick",	A_CANT, 0);
@@ -141,7 +146,7 @@ main(void)
 	addmess	((method) ExpoInfo,		"info",		A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kMaxClassName, 0);
+	//LitterInit(kMaxClassName, 0);
 	}
 
 
@@ -163,14 +168,14 @@ static void*
 ExpoNewMaxShell(
 	SymbolPtr	sym,
 	long		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 	
 	{
 	#pragma unused(sym)
 	
 	msobExpo*	me			= NIL;
 	void*		jitObj		= NIL;
-	Symbol*		classSym	= gensym((char*) kJitClassName);
+	t_symbol*		classSym	= gensym((char*) kJitClassName);
 	
 	me = (msobExpo*) max_jit_obex_new(gExpoMaxClass, classSym);
 	if (me == NIL) goto punt;
@@ -275,7 +280,19 @@ void ExpoAssist(msobExpo* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 1: sprintf (oCStr, LPAssistOut2); break;
+            }
+            
+        }
 	}
 
 

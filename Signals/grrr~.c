@@ -42,8 +42,6 @@ const char*	kClassName		= "lp.grrr~";			// Class name
 #define LPAssistOut1		"Signal (Gray noise)"
 
 
-const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
-
 const int	kMaxNN			= 31;
 
 /*
@@ -145,7 +143,7 @@ int C74_EXPORT main(void)
         gObjectClass = c;
 	Taus88Init();
         
-        post("%s: %s", kClassName, lpversion);
+        post("%s: %s", kClassName, LPVERSION);
         return 0;
 	
 	}
@@ -291,6 +289,6 @@ void GrrrPerform64(tGray* me, t_object *dsp64, double **ins, long numins, double
 		*outNoise++ = ULong2Signal(prev);
 		} while (--vecCounter > 0);
 	
-    // me->prev = prev;  NO???
+    me->prev = prev;  // vb, this should be here, NO???
 
 }

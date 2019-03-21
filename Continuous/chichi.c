@@ -52,7 +52,7 @@ const char	kClassName[]		= "lp.chichi";			// Class name
 
 #define LPAssistIn1			"Bang (Generate random number)"
 #define LPAssistIn2			"Int (f: degrees of freedom)"
-#define LPAssistOut1		"Float (Random value in [0 .. %ld])"
+#define LPAssistOut1		"Float (Random value in [0 .. %d])"
 
 
 	// Indices for STR# resource
@@ -105,7 +105,7 @@ typedef struct {
 									// but we don't need to be fussy
 					gamma;			// Aux parameter used when using Rejection algorith
 									
-	t_symbol*			varSym;			// Fast way to get name of variant
+	t_symbol*		varSym;			// Fast way to get name of variant
 	eDistVar		variant;		// More convenient for switch statements
 	eChi2Alg		alg;
 	} objChiSquare;
@@ -345,7 +345,7 @@ static void ChichiAssist(objChiSquare* me, void* box, long iDir, long iArgNum, c
         }
         else {
             switch(iArgNum) {
-                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 0: sprintf (oCStr, LPAssistOut1, me->dof); break;
                     //case 1: sprintf(s, "..."); break;
             }
             
@@ -756,6 +756,7 @@ int C74_EXPORT main(void)
 	// Initialize Litter Library
 	LitterInit(kClassName, 0);
 	Taus88Init();
+        
 	
 	}
 

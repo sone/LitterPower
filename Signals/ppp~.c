@@ -31,7 +31,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "Taus88.h"
 
@@ -40,7 +40,12 @@
 
 const char*	kClassName		= "lp.ppp~";			// Class name
 
+// Assistance strings
+#define LPAssistIn1			"Float (Clicks/second)"
+#define LPAssistIn2			"Int (Pop width)"
+#define LPAssistOut1		"Popcorn (dust) noise"
 
+/*
 	// Indices for STR# resource
 enum {
 	strIndexInDensity		= lpStrIndexLastStandard + 1,
@@ -48,7 +53,7 @@ enum {
 	
 	strIndexOutPop
 	};
-
+*/
 	// Indices for MSP Inlets and Outlets.
 enum {
 	inletPop			= 0,		// For begin~
@@ -90,7 +95,7 @@ SymbolPtr	gSymSymbol	= NIL,
 #pragma mark • Function Prototypes
 
 	// Class message functions
-void*	PppNew(double, long, Symbol*);
+void*	PppNew(double, long, t_symbol*);
 
 	// Object message functions
 static void PppDensity(tPop*, double);
@@ -104,8 +109,10 @@ static void	PppAssist(tPop*, void* , long , long , char*);
 static void	PppInfo(tPop*);
 
 	// MSP Messages
-static void	PppDSP(tPop*, t_signal**, short*);
-static int*	PppPerform(int*);
+//static void	PppDSP(tPop*, t_signal**, short*);
+//static int*	PppPerform(int*);
+void    PppDSP64(tPop*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void    PppPerform64(tPop*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 static void PppCalcNext(tPop*);
 
@@ -126,14 +133,14 @@ static void PppCalcNext(tPop*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) PppNew,		// Instance creation function
 			(method) dsp_free,		// Default deallocation function
 			sizeof(tPop),			// Class object size
@@ -143,22 +150,22 @@ main(void)
 			A_DEFSYM,				//						3. Symmetry
 			0);		
 	
-	dsp_initclass();
+	class_dspinit(c);
 
 	// Messages
-	addfloat((method) PppDensity);
-	addmess	((method) PppConstWidth,	"in1",		A_LONG, 0);
+    class_addmethod(c,(method) PppDensity, "float", A_FLOAT, 0);
+	class_addmethod(c,(method) PppConstWidth,	"in1",		A_LONG, 0);
 //	addmess	((method) PppPoisWidth,	"fl1",		A_FLOAT, 0);
-	addmess	((method) PppSym,		"sym",		A_NOTHING);
-	addmess	((method) PppPos,		"pos",		A_NOTHING);
-	addmess	((method) PppNeg,		"neg",		A_NOTHING);
-	addmess	((method) PppTattle,		"dblclick",	A_CANT, 0);
-	addmess	((method) PppTattle,		"tattle",	A_NOTHING);
-	addmess	((method) PppAssist,		"assist",	A_CANT, 0);
-	addmess	((method) PppInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) PppSym,		"sym",		A_NOTHING);
+	class_addmethod(c,(method) PppPos,		"pos",		A_NOTHING);
+	class_addmethod(c,(method) PppNeg,		"neg",		A_NOTHING);
+	class_addmethod(c,(method) PppTattle,		"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) PppTattle,		"tattle",	A_NOTHING);
+	class_addmethod(c,(method) PppAssist,		"assist",	A_CANT, 0);
+	class_addmethod(c,(method) PppInfo,		"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) PppDSP, "dsp",		A_CANT, 0);
+	class_addmethod(c,(method) PppDSP64, "dsp64",		A_CANT, 0);
 
 	// Stash pointers to commonly used symbols
 	gSymSymbol	= gensym("sym");
@@ -167,9 +174,13 @@ main(void)
 	gNullSymbol	= gensym("");
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
-	
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	}
 
 
@@ -189,7 +200,7 @@ void*
 PppNew(
 	double	iDensity,
 	long	iPopWidth,
-	Symbol*	iSymmetry)
+	t_symbol*	iSymmetry)
 	
 	{
 	const double	kDefDensity		= 10.0;
@@ -212,7 +223,7 @@ noMoreDefaults:
 	// Finished checking intialization parameters
 
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (tPop*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 1);				// Signal inlet for benefit of begin~
 													// Otherwise left inlet does "NN" only
 	
@@ -349,7 +360,27 @@ void PppAssist(tPop* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInDensity, strIndexOutPop, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInDensity, strIndexOutPop, oCStr);
+        
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
+        
+        /*
+         #define LPAssistIn1			"Float (Clicks/second)"
+         #define LPAssistIn2			"Int (Pop width)"
+         #define LPAssistOut1		"Popcorn (dust) noise"
+         */
 	}
 
 void PppInfo(tPop* me)
@@ -416,7 +447,7 @@ void PppInfo(tPop* me)
 		me->nextLevel = x;
 		
 		}
-
+/*
 void
 PppDSP(
 	tPop*		me,
@@ -436,8 +467,20 @@ PppDSP(
 		me, (long) ioDSPVectors[outletPop]->s_n, ioDSPVectors[outletPop]->s_vec
 		);
 	
-	}
-	
+	}*/
+
+void    PppDSP64(tPop *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    me->curSR = samplerate;
+    
+    if (me->sampsToNext < 0)
+        PppCalcNext(me);
+    
+    object_method(dsp64, gensym("dsp_add64"), me, PppPerform64, 0, NULL);
+
+}
+
+
 
 /******************************************************************************************
  *
@@ -550,6 +593,53 @@ PppDSP(
 		return sampsAtStart - vecCounter;
 		}
 
+
+
+void    PppPerform64(tPop *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    long			vecCounter;
+    tSampleVector	outNoise;
+    long			sampsToNext;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    // Copy parameters into registers
+    vecCounter	= sampleframes;
+    outNoise	= outs[0];
+    sampsToNext	= (me->curLevel == 0.0) ? me->sampsToNext : 0;
+    
+    do {
+        
+        if (sampsToNext > 0) {
+            long sampsThisTime = sampsToNext;
+            if (sampsThisTime > vecCounter)
+                sampsThisTime = vecCounter;
+            
+            // ASSERT:	0 < sampsThisTime ≤ vecCounter
+            // 			0 < sampsThisTime ≤ sampsToNext
+            vecCounter	-= sampsThisTime;
+            sampsToNext	-= sampsThisTime;
+            
+            while (sampsThisTime-- > 0) *outNoise++ = 0.0;
+        }
+        
+        else {
+            long sampsDone = PopCorn(me, vecCounter, outNoise);
+            
+            vecCounter	-= sampsDone;
+            outNoise	+= sampsDone;
+            
+            // This component may have been updated in PopCorn()
+            sampsToNext	= me->sampsToNext;
+        }
+        
+    } while (vecCounter > 0);
+    
+    me->sampsToNext = sampsToNext;
+
+}
+
+/*
 int*
 PppPerform(
 	int* iParams)
@@ -608,3 +698,4 @@ PppPerform(
 exit:
 	return iParams + paramNextLink;
 	}
+ */

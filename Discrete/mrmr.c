@@ -21,7 +21,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "UniformExpectations.h"
 
@@ -31,6 +31,12 @@
 const char*	kClassName		= "lp.mrmr";			// Class name
 
 
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Int (Minimum)"
+#define LPAssistIn3			"Int (Maximum)"
+#define LPAssistOut1		"Int (Random value, %ld <= x <= %ld)"
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexBang		= lpStrIndexLastStandard + 1,
@@ -41,7 +47,7 @@ enum {
 	
 	strIndexFirstInlet	= strIndexBang,
 	strIndexFirstOutlet	= strIndexTheOutlet
-	};
+	};*/
 
 	// Constants for Mrmr Twister algorighm
 enum {
@@ -56,7 +62,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	long			min,
 					max;
@@ -276,7 +282,7 @@ MrmrAssist(
 		max = kLongMax;
 		}
 	
-	LitterAssistVA(iDir, iArgNum, strIndexFirstInlet, strIndexFirstOutlet, oCStr, min, max);
+	//LitterAssistVA(iDir, iArgNum, strIndexFirstInlet, strIndexFirstOutlet, oCStr, min, max);
 	
 	}
 
@@ -324,49 +330,49 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err MrmrGetMean(objMersenne* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MrmrGetMean(objMersenne* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV);
 		}
-	static t_max_err MrmrGetMedian(objMersenne* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MrmrGetMedian(objMersenne* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV);
 		}
-	static t_max_err MrmrGetMode(objMersenne* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MrmrGetMode(objMersenne* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV);
 		}
-	static t_max_err MrmrGetVar(objMersenne* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MrmrGetVar(objMersenne* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV);
 		}
-	static t_max_err MrmrGetStdDev(objMersenne* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MrmrGetStdDev(objMersenne* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV);
 		}
-	static t_max_err MrmrGetSkew(objMersenne* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MrmrGetSkew(objMersenne* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV);
 		}
-	static t_max_err MrmrGetKurtosis(objMersenne* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MrmrGetKurtosis(objMersenne* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV);
 		}
-	static t_max_err MrmrGetEntropy(objMersenne* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err MrmrGetEntropy(objMersenne* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
@@ -376,9 +382,9 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-		Symbol*	symLong			= gensym("long");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+		t_symbol*	symLong			= gensym("long");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new("min", symLong, 0, NULL, NULL, calcoffset(objMersenne, min));
@@ -408,16 +414,16 @@ DoExpect(
 static void
 MrmrTell(
 	objMersenne*	me,
-	Symbol*			iTarget,
-	Symbol*			iAttrName)
+	t_symbol*			iTarget,
+	t_symbol*			iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -445,8 +451,7 @@ static void MrmrTell(objMersenne* me, Symbol* iTarget, Symbol* iAttrName)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -456,7 +461,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	// Standard Max setup() call
 	LitterSetupClass(	kClassName,
@@ -469,7 +474,7 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) MrmrBang);
+	LitterAddBang	((method) MrmrBang);
 	LitterAddMess1	((method) MrmrMin,		"in1",		A_LONG);
 	LitterAddMess1	((method) MrmrMax,		"in2",		A_LONG);
 	LitterAddMess1	((method) MrmrSeed,		"seed",		A_DEFLONG);
@@ -481,8 +486,12 @@ main(void)
 	AddInfo();
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	MrmrInit( MachineKharma() );
+        class_register(CLASS_BOX, gObjectClass);
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 

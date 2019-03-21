@@ -34,13 +34,23 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 
 #pragma mark • Global Constants
 
 const char*	kClassName		= "lp.grl~";			// Class name
 
+#ifdef RC_INVOKED
+#define piSymbol	"pi"
+#else
+#define piSymbol	"�"
+#endif
+#define LPAssistIn1			"Signal. Float or " piSymbol " sets maximum step between samples."
+#define LPAssistOut1		"Unwrapped Signal"
+
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexInSig	= lpStrIndexLastStandard + 1,
@@ -52,18 +62,19 @@ enum {
 	inletSigIn		= 0,
 	outletSigOut
 	};
-
+*/
 
 #pragma mark • Object Structure
 
 typedef struct {
 	t_pxobject	coreObject;
-	float		maxStep,
+	double		maxStep,
 				prevSamp;			// Only used if histSize == 1;
 	// Circular buffer for maintaining a history of elements
 	unsigned	histSize,
 				curElem;
-	floatPtr	buffer;
+	//floatPtr	buffer;
+    double      *buffer;
 	} tRanger;
 
 
@@ -71,17 +82,21 @@ typedef struct {
 
 #pragma mark • Function Prototypes
 
-static void*	GrlNew(long, float);
+static void*	GrlNew(long, double);
 static void		GrlFree(tRanger*);
-static void		GrlDSP(tRanger*, t_signal**, short*);
-static int*		GrlPerformSimple(int*);
-static int*		GrlPerformHist(int*);
+//static void		GrlDSP(tRanger*, t_signal**, short*);
+//static int*		GrlPerformSimple(int*);
+//static int*		GrlPerformHist(int*);
+void GrlDSP64(tRanger*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void GrlPerformSimple64(tRanger*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
+void GrlPerformHist64(tRanger*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
+
 
 	// Various Max messages
 static void		GrlAssist(tRanger*, void* , long , long , char*);
 static void		GrlInfo(tRanger*);
 
-static void		GrlFloat(tRanger*, float);
+static void		GrlFloat(tRanger*, double);
 static void		GrlPi(tRanger*, long);
 static void		GrlClear(tRanger*);
 
@@ -97,14 +112,14 @@ static void		GrlClear(tRanger*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) GrlNew,			// Instance creation function
 			(method) GrlFree,		// Custom deallocation function
 			(short) sizeof(tRanger),	// Class object size
@@ -115,23 +130,28 @@ main(void)
 			0);		
 	
 	// Max/MSP class initialization mantra, including registering all aliases
-	dsp_initclass();
+	class_dspinit(c);
 	
 	// Parameter messages
-	addfloat((method) GrlFloat);
-	addmess	((method) GrlPi,		"pi",		A_DEFLONG, 0);
-	addmess	((method) GrlPi,		"π",		A_DEFLONG, 0);
-	addmess	((method) GrlClear,		"clear",	A_NOTHING, 0);
+	class_addmethod(c,(method) GrlFloat,"float", A_FLOAT, 0);
+	class_addmethod(c,(method) GrlPi,	"pi",		A_DEFLONG, 0);
+	class_addmethod(c,(method) GrlPi,	"π",		A_DEFLONG, 0);
+	class_addmethod(c,(method) GrlClear,"clear",	A_NOTHING, 0);
 	
 	// Fairly standard Max messages
-	addmess	((method) GrlAssist,	"assist",	A_CANT, 0);
-	addmess	((method) GrlInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) GrlAssist,"assist",	A_CANT, 0);
+	class_addmethod(c,(method) GrlInfo,  "info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) GrlDSP,		"dsp",		A_CANT, 0);
+	class_addmethod(c,(method) GrlDSP64,	"dsp64",		A_CANT, 0);
 
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	}
 
@@ -147,14 +167,15 @@ main(void)
 void*
 GrlNew(
 	long	iHistSize,
-	float	iMaxStep)
+	double	iMaxStep)
 	
 	{
 	const unsigned	kMinHistSize	= 1,
 					kMaxHistSize	= 2048;
 
 	tRanger*	me			= NIL;
-	floatPtr	histBuf		= NIL;
+	//floatPtr	histBuf		= NIL;
+    double      *histBuf		= NIL;
 	
 	// First things first: allocate memory for our circular buffer
 	// BTW: Make sure we have a valid argument for history size.
@@ -164,14 +185,15 @@ GrlNew(
 		iHistSize = kMaxHistSize;
 	
 	if (iHistSize > 1) {
-		histBuf = (float*) NewPtr(iHistSize * sizeof(float));
+		//histBuf = (float*) NewPtr(iHistSize * sizeof(float));
+        histBuf = (double*) sysmem_newptr(iHistSize * sizeof(double));
 		if (histBuf == NIL) goto punt;
 		}
 	else iHistSize = 1;		// Default value, also used if invalid negative argument given.
 	
 	// So far, so good...
 	// Let Max/MSP allocate us and give us inlets;
-	me = (tRanger*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 1);
 	
 	// And one outlet
@@ -214,7 +236,7 @@ GrlFree(
 	dsp_free(&(me->coreObject));
 	
 	if (me->buffer != NIL)
-		DisposePtr((void*) me->buffer);
+		sysmem_freeptr(me->buffer);
 	
 	}
 
@@ -229,7 +251,7 @@ GrlFree(
  *
  ******************************************************************************************/
 
-void GrlFloat(tRanger*	me, float iVal)
+void GrlFloat(tRanger*	me, double iVal)
 	{ me->maxStep = iVal; }
 
 void GrlPi(tRanger* me, long iFactor)
@@ -240,7 +262,7 @@ void GrlClear(tRanger* me)
 	if (me->buffer != NIL) {
 		// ASSERT: me->histSize > 1
 		unsigned	counter = me->histSize;
-		floatPtr	p		= me->buffer;
+		double      *p		= me->buffer;
 		do {
 			*p++ = 0.0;
 			} while (--counter > 0);
@@ -264,7 +286,19 @@ void GrlAssist(tRanger* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInSig, strIndexOutSig, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInSig, strIndexOutSig, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void GrlInfo(tRanger* me)
@@ -285,7 +319,7 @@ void GrlInfo(tRanger* me)
  *	GrlDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 GrlDSP(
 	tRanger*	me,
@@ -311,8 +345,148 @@ GrlDSP(
 				ioDSPVectors[outletSigOut]->s_vec
 				);
 	
-	}
-	
+	}*/
+
+void GrlDSP64(tRanger* me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    if (me->histSize > 1)
+        object_method(dsp64, gensym("dsp_add64"), me, GrlPerformHist64, 0, NULL);
+    else
+        object_method(dsp64, gensym("dsp_add64"), me, GrlPerformSimple64, 0, NULL);
+    
+}
+
+
+void GrlPerformSimple64(tRanger *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    long			vecCounter;
+    tSampleVector	inSig, outSig;
+    double			maxStep, maxStep2, prevSamp;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    vecCounter	= sampleframes;
+    inSig		= ins[0];
+    outSig		= outs[0];
+    
+    maxStep		= me->maxStep;
+    maxStep2	= maxStep + maxStep;
+    prevSamp	= me->prevSamp;
+    
+    if (maxStep > 0.0) do {
+        // Unwrap
+        t_sample	curSamp = *inSig++,
+        diff	= fmod(curSamp - prevSamp, maxStep2);
+        if (diff > maxStep) {
+            diff -= maxStep2;
+        }
+        else if (diff < -maxStep) {
+            diff += maxStep2;
+        }
+        *outSig++ = prevSamp +=  diff;
+    } while (--vecCounter > 0);
+    
+    else if (maxStep == 0.0) do {
+        *outSig++ = prevSamp;
+    } while (--vecCounter > 0);
+    
+    else if (inSig != outSig) {
+        // me->min > me->max, so we do no unwrapping, just copy samples
+        // Note that we're so lazy we don't even do that much if inSig == outSig.
+        do {
+            *outSig++ = *inSig++;
+        } while (--vecCounter > 0);
+        
+        // We need an updated value for prevSig
+        prevSamp = outSig[-1];
+    }
+    
+    else {
+        // We just need an updated value for prevSig
+        prevSamp = outSig[vecCounter];
+    }
+    
+    // Whether or not we used me->prevSamp in this run, we must update it. It might
+    // be used in the next run.
+    me->prevSamp = prevSamp;
+    
+}
+
+void GrlPerformHist64(tRanger *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    long			vecCounter;
+    tSampleVector	inSig, outSig;
+    t_double		maxStep, maxStep2;
+    double*			histPtr;
+    unsigned		bufCounter;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    vecCounter	= sampleframes;
+    inSig		= ins[0];
+    outSig		= outs[0];
+    
+    maxStep		= me->maxStep;
+    maxStep2	= maxStep + maxStep;
+    histPtr		= me->buffer + me->curElem;
+    bufCounter	= me->histSize - me->curElem;
+    
+    // Now that I have local copies of the descriptors for my circular buffer,
+    // I update the values stored in the unwrap~ object. Best to do this now
+    // before vecCounter is invalidated from my abusing it as loop counter.
+    me->curElem = (me->curElem + vecCounter) % me->histSize;
+    
+    // What happens next depends upon the current value of maxStep
+    if (maxStep > 0.0) do {
+        // Unwrap
+        t_sample	curSamp		= *inSig++,
+        prevSamp	= *histPtr,
+        diff		= fmod(curSamp - prevSamp, maxStep2);
+        
+        if (diff > maxStep) {
+            diff -= maxStep2;
+        }
+        else if (diff < -maxStep) {
+            diff += maxStep2;
+        }
+        *histPtr++ = *outSig++ = prevSamp +=  diff;
+        if (--bufCounter == 0) {
+            bufCounter	= me->histSize;
+            histPtr		= me->buffer;
+        }
+    } while (--vecCounter > 0);
+    
+    else if (maxStep2 == 0.0) do {
+        *outSig++ = *histPtr++;
+        if (--bufCounter == 0) {
+            bufCounter	= me->histSize;
+            histPtr		= me->buffer;
+        }
+    } while (--vecCounter > 0);
+    
+    else if (inSig != outSig) do {
+        // me->min > me->max, so we do no unwrapping, just copy samples
+        // Note that we're so lazy we don't even do that much if inSig == outSig.
+        *histPtr++ = *outSig++ = *inSig++;
+        if (--bufCounter == 0) {
+            bufCounter	= me->histSize;
+            histPtr		= me->buffer;
+        }
+    } while (--vecCounter > 0);
+    
+    else {
+        // Well, we don't need to copy MSP signal vectors, but we *do* need to maintain
+        // our own history
+        do {
+            *histPtr++ = *inSig++;
+            if (--bufCounter == 0) {
+                bufCounter	= me->histSize;
+                histPtr		= me->buffer;
+            }
+        } while (--vecCounter > 0);
+    }
+    
+}
 
 /******************************************************************************************
  *
@@ -326,7 +500,7 @@ GrlDSP(
  *		- Output signal
  *
  ******************************************************************************************/
-
+/*
 	// Used by both GrlPerformSimple() and GrlPerformHist()
 enum {
 	paramFuncAddress	= 0,
@@ -486,4 +660,4 @@ GrlPerformHist(
 exit:
 	return iParams + paramNextLink;
 	}
-
+*/

@@ -30,7 +30,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "Taus88.h"
 
@@ -56,11 +56,11 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object			coreObject;
+	t_object			coreObject;
 	
 	tTaus88DataPtr	tausData;
-	
-	unsigned long	prev;				// Value depends on nn
+	// unsigned long prev
+	unsigned int	prev;				// Value depends on nn
 	} tGray;
 
 
@@ -99,14 +99,14 @@ static void	GrrrInfo	(tGray*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,			// Pointer to our class definition
+	c = class_new(kClassName,			// Pointer to our class definition
 			(method) GrrrNew,		// Instance creation function
 			(method) GrrrFree,		// Custom deallocation function
 			sizeof(tGray),			// Class object size
@@ -116,16 +116,21 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) GrrrBang);
-	addmess ((method) GrrrSeed,		"seed",		A_DEFLONG, 0);
-	addmess	((method) GrrrTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) GrrrTattle,	"tattle",	A_NOTHING);
-	addmess	((method) GrrrAssist,	"assist",	A_CANT, 0);
-	addmess	((method) GrrrInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) GrrrBang,    "bang", 0);
+	class_addmethod(c,(method) GrrrSeed,	"seed",		A_DEFLONG, 0);
+	class_addmethod(c,(method) GrrrTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) GrrrTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) GrrrAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) GrrrInfo,	"info",		A_CANT, 0);
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -167,7 +172,7 @@ GrrrNew(
 	// Finished checking intialization parameters
 
 	// Let Max allocate us, and andour outlet. We (currently) only have the default inled
-	me = (tGray*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 		
 	floatout(me);								// Access through me->coreObject.o_outlet
 	
@@ -192,7 +197,7 @@ GrrrBang(
 	tGray* me)
 	
 	{
-	unsigned long	gray = me->prev,
+	unsigned int	gray = me->prev,
 					mask;
 	
 	mask = Taus88(me->tausData);
@@ -216,7 +221,7 @@ GrrrSeed(
 	
 	{
 	
-	Taus88Seed(me->tausData, (unsigned long) iSeed);
+	Taus88Seed(me->tausData, (unsigned int) iSeed);
 	
 	}
 

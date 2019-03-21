@@ -25,7 +25,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "Taus88.h"
 
@@ -34,13 +34,19 @@
 
 const char*	kClassName		= "lp.epoisse~";		// Class name
 
+#define LPAssistIn1			"Float (frequency)"
+#define LPAssistIn2			"Float (Pi: pitchiness factor)"
+#define LPAssistIn3			"Float (Rho: Hurst factor, the color of noise)"
+#define LPAssistOut1		"Signal (Pitched noise)"
+
+
 enum {												// Have to use enum for GNU C
 	kMaxBuf	= 512									// rather than const int
 	};
 const int	kMaxBufMask		= 0x01ff,				// Bit mask for % kMaxBuf
 			kIterations		= 9;					// ld(kMaxBuf)
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInFreq		= lpStrIndexLastStandard + 1,
 	strIndexInNu,
@@ -51,7 +57,7 @@ enum {
 	strIndexInLeft		= strIndexInFreq,
 	strIndexOutLeft		= strIndexOutEpoisse
 	};
-
+*/
 enum eFlags {
 	flagStochastic		= 1,
 	
@@ -68,7 +74,7 @@ enum eFlags {
 typedef struct {
 	t_pxobject	coreObject;
 	
-	float		freq,			// Center frequency
+	double		freq,			// Center frequency
 				pi,				// Pitchiness factor (0 = noise, larger values are more stable)
 				hurstExp,		// Hurst exponent (aka 'rho'), determines "color" of base noise
 				hurstFac,		// Hurst factor, precalced from pow(0.5, hurstExp)
@@ -112,8 +118,11 @@ static void	EpoisseAssist(objEpoisse*, void* , long , long , char*);
 static void	EpoisseInfo(objEpoisse*);
 
 	// MSP Messages
-static void	EpoisseDSP(objEpoisse*, t_signal**, short*);
-static int*	EpoissePerform(int*);
+//static void	EpoisseDSP(objEpoisse*, t_signal**, short*);
+//static int*	EpoissePerform(int*);
+void    EpoisseDSP64(objEpoisse*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void    EpoissePerform64(objEpoisse*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
+
 #endif
 
 #pragma mark -
@@ -132,14 +141,14 @@ GenBuf(
 	objEpoisse* me)
 	
 	{
-	const float		kHurstFac	= me->hurstFac,
+	const double	kHurstFac	= me->hurstFac,
 					kEnergy		= 0.25;						// ?? Need to tweak this ??
 	
 	tSampleVector const	goal	= me->goal,
 						cur		= me->cur,
 						interp	= me->interp;
 	
-	float	scale		= me->hurstGain;
+	double	scale		= me->hurstGain;
 	long	stride		= kMaxBuf / 2,
 			offset		= kMaxBuf / 4;
 	
@@ -341,7 +350,22 @@ void EpoisseAssist(objEpoisse* me, void* box, long iDir, long iArgNum, char* oCS
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void EpoisseInfo(objEpoisse* me)
@@ -364,7 +388,7 @@ void EpoisseInfo(objEpoisse* me)
  *		- Imaginary output signal
  *
  *****************************************************************************************/
-	
+	/*
 int*
 EpoissePerform(
 	int* iParams)
@@ -446,7 +470,70 @@ EpoissePerform(
 exit:
 	return iParams + paramNextLink;
 	}
-	
+*/
+
+void    EpoissePerform64(objEpoisse *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    long			n;									// Count samples in sample vector
+    tSampleVector	out;								// Signal outlet
+    double			phiFrac, cumPhiErr;
+    long			phiStep, curPhi, countDown, interpSamp;
+    tSampleVector	cur, interp;
+    Boolean			stochInterp;
+    
+    
+    if (me->coreObject.z_disabled) return;			// Quick punt
+    
+    // Copy parameters and object members into registers
+    n			= sampleframes;
+    out			= outs[0];
+    phiFrac		= me->phiFrac;
+    cumPhiErr	= me->cumPhiErr;
+    phiStep		= me->phiStep;
+    curPhi		= me->curPhi;
+    countDown	= me->countDown;
+    interpSamp	= me->interpSamp;
+    cur			= me->cur;
+    interp		= me->interp;
+    stochInterp	= me->flags & flagStochastic;			// Relies on flagStochastic <= 255
+    
+    do {
+        // Interpolate output value
+        *out++ = (1.0 - cumPhiErr) * cur[curPhi] + cumPhiErr * cur[curPhi + 1];
+        
+        // Calculate phi for next sample
+        curPhi		+= phiStep;
+        cumPhiErr	+= phiFrac;
+        if (cumPhiErr >= 1.0) {
+            cumPhiErr	-= 1.0;
+            curPhi		+= 1;
+        }
+        if (curPhi >= kMaxBuf)
+            curPhi -= kMaxBuf;
+        
+        // Interpolate one sample from cur towards goal. Time to generate new wave table?
+        if (countDown-- <= 0) {
+            GenBuf(me);
+            countDown = kMaxBuf * me->pi + 0.5;
+        }
+        else {
+            cur[interpSamp] += stochInterp
+            ? interp[interpSamp] * (ULong2Signal(Taus88(NIL)) + 1.0)    
+            : interp[interpSamp];
+            // Move incrementer index to next sample; wrap around at end of
+            interpSamp += 1;
+            interpSamp &= kMaxBufMask;			
+        }
+    } while (--n > 0);
+    
+    // Save state
+    me->cumPhiErr	= cumPhiErr;
+    me->curPhi		= curPhi;
+    me->countDown	= countDown;
+    me->interpSamp	= interpSamp;
+}
+
+
 
 /*****************************************************************************************
  *
@@ -454,6 +541,22 @@ exit:
  *
  *****************************************************************************************/
 
+
+void    EpoisseDSP64(objEpoisse *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    double sr = samplerate;				// Get real Sample Rate used by object
+    // It may be different from global SR
+    
+    if (me->sRate != sr) {
+        me->sRate	= sr;
+        EpoisseFreq(me, me->freq);					// This deals with all dependent members
+    }
+    
+    object_method(dsp64, gensym("dsp_add64"), me, EpoissePerform64, 0, NULL);
+
+}
+
+/*
 void
 EpoisseDSP(
 	objEpoisse*	me,
@@ -481,7 +584,7 @@ EpoisseDSP(
 		);
 	
 	}
-	
+	*/
 
 #pragma mark -
 #pragma mark • Class Message Handlers
@@ -504,7 +607,7 @@ EpoisseNew(
 	// Take all initialization values as give to us by Max/MSP
 
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (objEpoisse*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 0);
 	floatin(me, 2);							// Extra inlet for rho
 	floatin(me, 1);							// Extra inlet for pi
@@ -512,13 +615,13 @@ EpoisseNew(
 	outlet_new(me, "signal");
 	
 	// Set up object to default state
-	me->freq		= 0.0f;
-	me->pi			= 1.0f;					// cf. EpoissePi()
-	me->hurstExp	= 0.0f;
-	me->hurstFac	= 1.0f;					// = pow(2.0, kDefHurstExp)
-	me->hurstGain	= 1.0f / kIterations;
+	me->freq		= 0.0;
+	me->pi			= 1.0;					// cf. EpoissePi()
+	me->hurstExp	= 0.0;
+	me->hurstFac	= 1.0;					// = pow(2.0, kDefHurstExp)
+	me->hurstGain	= 1.0 / kIterations;
 	me->sRate		= sys_getsr();			// Provisional, recheck at DSP time
-	me->sDur		= 1.0f / me->sRate;
+	me->sDur		= 1.0 / me->sRate;
 	me->phiFrac		= 0.0;
 	me->cumPhiErr	= 0.0;
 	me->phiStep		= 0;
@@ -550,14 +653,14 @@ EpoisseNew(
  *	
  *****************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) EpoisseNew,		// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(objEpoisse),			// Class object size
@@ -568,25 +671,30 @@ main(void)
 			A_DEFFLOAT,					//	3) Initial Hurst Factor [0.0]
 			0);		
 	
-	dsp_initclass();
+	class_dspinit(c);
 
 	// Messages
-	addbang	((method) EpoisseReset);
-	addfloat((method) EpoisseFreq);
-	addftx	((method) EpoissePi, 1);
-	addftx	((method) EpoisseRho, 2);
-	addmess	((method) EpoisseReset,	"reset",	A_NOTHING);
-	addmess	((method) EpoisseTattle,"dblclick",	A_CANT, 0);
-	addmess	((method) EpoisseTattle,"tattle",	A_NOTHING);
-	addmess	((method) EpoisseAssist,"assist",	A_CANT, 0);
-	addmess	((method) EpoisseInfo,	"info",		A_CANT, 0);
+	class_addmethod(c,(method) EpoisseReset, "bang", 0);
+	class_addmethod(c,(method) EpoisseFreq, "float", A_FLOAT, 0);
+	class_addmethod(c,(method) EpoissePi, "ft1", A_FLOAT, 0);
+    class_addmethod(c,(method) EpoisseRho, "ft2", A_FLOAT, 0);
+	class_addmethod(c,(method) EpoisseReset,	"reset",	A_NOTHING);
+	class_addmethod(c,(method) EpoisseTattle,"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) EpoisseTattle,"tattle",	A_NOTHING);
+	class_addmethod(c,(method) EpoisseAssist,"assist",	A_CANT, 0);
+	class_addmethod(c,(method) EpoisseInfo,	"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) EpoisseDSP,	"dsp",		A_CANT, 0);
+	class_addmethod(c,(method) EpoisseDSP64,	"dsp64",		A_CANT, 0);
 
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 

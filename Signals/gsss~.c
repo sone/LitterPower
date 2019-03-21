@@ -28,9 +28,21 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "RNGGauss.h"
 #include "Taus88.h"
+
+
+#ifdef RC_INVOKED
+#define LPmuString	"mu"
+#else
+#define LPmuString	"�"
+#endif
+
+// Assistance strings
+#define LPAssistIn1			"Signal/float (" LPmuString ": DC Offset)"
+#define LPAssistIn2			"Signal/float (s: Scaling factor)"
+#define LPAssistOut1		"Signal (Gaussian noise)"
 
 
 #pragma mark • Constants
@@ -39,7 +51,7 @@ const char*	kClassName		= "lp.gsss~";			// Class name
 
 const int	kMaxNN			= 31;
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInMu		= lpStrIndexLastStandard + 1,
 	strIndexInStdDev,
@@ -47,7 +59,7 @@ enum {
 	
 	strIndexInLeft		= strIndexInMu,
 	strIndexOutLeft		= strIndexOutGauss
-	};
+	};*/
 
 	// Inlets/Outlet MSP knows about
 enum {
@@ -90,9 +102,12 @@ static void	GsssAssist(objGaussNoise*, void* , long , long , char*);
 static void	GsssInfo(objGaussNoise*);
 
 	// MSP Messages
-static void	GsssDSP(objGaussNoise*, t_signal**, short*);
-static int*	GsssPerformStat(int*);
-static int*	GsssPerformDyn(int*);
+//static void	GsssDSP(objGaussNoise*, t_signal**, short*);
+//static int*	GsssPerformStat(int*);
+//static int*	GsssPerformDyn(int*);
+void GsssDSP64(objGaussNoise*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void GsssPerformStat64(objGaussNoise*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
+void GsssPerformDyn64(objGaussNoise*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -112,14 +127,14 @@ static int*	GsssPerformDyn(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
-	
+	//LITTER_CHECKTIMEOUT(kClassName);
+	t_class *c;
+        
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) GsssNew,			// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(objGaussNoise),		// Class object size
@@ -128,21 +143,26 @@ main(void)
 			A_DEFFLOAT,					//						2. Std Var.
 			0);	
 	
-	dsp_initclass();
+	class_dspinit(c);
 
 	// Messages
-	addfloat((method) GsssFloat);
-	addmess	((method) GsssTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) GsssTattle,	"tattle",	A_NOTHING);
-	addmess	((method) GsssAssist,	"assist",	A_CANT, 0);
-	addmess	((method) GsssInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) GsssFloat, "float", A_FLOAT, 0);
+	class_addmethod(c,(method) GsssTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) GsssTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) GsssAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) GsssInfo,		"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) GsssDSP, "dsp", A_CANT, 0);
+	class_addmethod(c,(method) GsssDSP64, "dsp64", A_CANT, 0);
 
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -169,7 +189,7 @@ GsssNew(
 	// GsssStdDev method
 
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (objGaussNoise*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 		if (me == NIL) goto punt;
 		
 	dsp_setup(&(me->coreObject), 2);
@@ -212,7 +232,7 @@ void GsssFloat(
 	
 	{
 	
-	switch ( ObjectGetInlet((Object*) me, me->coreObject.z_in) ) {
+	switch ( ObjectGetInlet((t_object*) me, me->coreObject.z_in) ) {
 		case inletMu:
 			GsssMu(me, iVal);
 			break;
@@ -263,7 +283,21 @@ void GsssAssist(objGaussNoise* me, void* box, long iDir, long iArgNum, char* oCS
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+            }
+            
+        }
+
 	}
 
 void GsssInfo(objGaussNoise* me)
@@ -279,7 +313,7 @@ void GsssInfo(objGaussNoise* me)
  *	GsssDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 GsssDSP(
 	objGaussNoise*	me,
@@ -310,7 +344,19 @@ GsssDSP(
 				);
 	
 	}
-	
+*/
+
+void GsssDSP64(objGaussNoise *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    if (count[inletMu] == 0 && count[inletStdDev] == 0)
+        object_method(dsp64, gensym("dsp_add64"), me, GsssPerformStat64, 0, NULL);
+
+    else
+        object_method(dsp64, gensym("dsp_add64"), me, GsssPerformDyn64, 0, NULL);
+
+}
+
+
 
 /******************************************************************************************
  *
@@ -336,6 +382,74 @@ GsssDSP(
  *
  ******************************************************************************************/
 
+void GsssPerformStat64(objGaussNoise *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    double			mu,
+    stdDev;
+    long			vecCounter;
+    tSampleVector	outNoise;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    // Copy parameters into registers
+    mu			= me->mu;
+    stdDev		= me->stdDev;
+    vecCounter	= sampleframes;
+    outNoise	= (tSampleVector) outs[0];
+    
+    // Do our stuff
+    if (mu == 0.0 && stdDev == 1.0)
+        do { *outNoise++ = NormalKRTaus88(NIL); } while (--vecCounter > 0);
+    else do { *outNoise++ = stdDev * NormalKRTaus88(NIL) + mu; } while (--vecCounter > 0);
+    
+
+}
+
+
+void GsssPerformDyn64(objGaussNoise *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    enum {
+        paramInMu = 0,
+        paramInStdDev
+    };
+    
+    long			vecCounter;
+    tSampleVector	muSig,
+    sdSig,
+    outNoise;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    // Copy parameters into registers
+    vecCounter	= sampleframes;
+    muSig		= ins[paramInMu];
+    sdSig		= ins[paramInStdDev];
+    outNoise	= outs[0];
+    
+    // ASSERT: vecCount is even.
+    if (muSig && sdSig) do {
+        *outNoise++ = *sdSig++ * NormalKRTaus88(NIL) + *muSig++;
+    } while (--vecCounter > 0);
+    
+    else if (muSig) {
+        // No signal for Std. Dev.
+        double stdDev = me->stdDev;
+        do	{
+            *outNoise++ = stdDev * NormalKRTaus88(NIL) + *muSig++;
+        } while (--vecCounter > 0);
+    }
+    else {
+        // ASSERT: no signal for µ, but there must be one for Std.Dev.
+        double mu = me->mu;
+        do	{
+            *outNoise++ = *sdSig++ * NormalKRTaus88(NIL) + mu;
+        } while (--vecCounter > 0);
+    }
+    
+}
+
+
+/*
 int*
 GsssPerformStat(
 	int iParams[])
@@ -427,3 +541,4 @@ exit:
 	return iParams + paramNextLink;
 	
 	}
+*/

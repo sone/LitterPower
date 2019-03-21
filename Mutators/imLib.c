@@ -418,7 +418,7 @@ void DoDelta(tMutator* me, double iDelta)
 		double		iValue)
 		
 		{
-		const long	kInlet = ObjectGetInlet((Object*) me, me->coreObject.z_in);
+		const long	kInlet = ObjectGetInlet((t_object*) me, me->coreObject.z_in);
 		
 		switch (kInlet) {
 			case inletOmega:

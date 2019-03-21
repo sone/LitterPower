@@ -286,6 +286,9 @@ typedef struct {
 	
 	tHistory			history;
 	tMutationParams		params;
+    
+    
+    short               connected[5];       // keep track of signal connections, vb
 	
 	#if __IM_HISTORY__
 		tMutationParams frameParams;

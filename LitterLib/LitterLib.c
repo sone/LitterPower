@@ -153,7 +153,6 @@ tMaxClassPtr		gObjectClass	= NIL;
 #endif
 
 
-
 #pragma mark • Function Prototypes
 
 #pragma mark -
@@ -723,7 +722,7 @@ void LitterInit(
 											// of 0 will indicate default behavior.
 	
 	Boolean	foundResource = false;
-	
+    
 #ifdef WIN_VERSION
 
 //	XQT_InitializeQTML(0);
@@ -853,12 +852,46 @@ void LitterInit(
 	
 	LitterAddClass(iClassName, kLPcatID);
 	
-	// Coy copyright message. But only if we could read the resource data
-	if (foundResource)
-		LitterHello(iClassName);
+        // Coy copyright message. But only if we could read the resource data
+        if (foundResource)
+            LitterHello(iClassName);
 	
+        
+        post("%s: %s", iClassName, LPVERSION);      // vb
 	}
-	
+
+// new init function, vb
+void LitterInit_vb(const char	iClassName[], t_class *c) {
+    
+#if LITTER_USE_OBEX
+    {
+        t_object*	attr;
+        
+        // Add global message/attribute that all Litter objects implement uniformly
+        class_addmethod	(gObjectClass, (method) LitterVers,	"vers",	A_DEFLONG, A_DEFLONG, 0);
+        attr = attribute_new("vers",
+                             gensym("symbol"),
+                             kAttrFlagsReadOnly,
+                             (method) LitterGetVers,
+                             NULL);
+        class_addattr(gObjectClass, attr);
+        
+        // Obex voodoo
+        class_addmethod(gObjectClass, (method) object_obex_quickref, "quickref", A_CANT, 0);
+        class_register(CLASS_BOX, gObjectClass);
+        
+    }
+#else
+    // Add global message that all Litter objects implement uniformly
+    addmess	((method) LitterVers,	"vers",	A_DEFLONG, A_DEFLONG, 0);
+#endif
+    
+    class_register(CLASS_BOX, c);
+    gObjectClass = c;
+    
+    post("%s: %s", iClassName, LPVERSION);
+}
+
 /******************************************************************************************
  *
  *	LitterAddClass()

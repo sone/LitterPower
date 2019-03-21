@@ -38,7 +38,6 @@ const char*			kClassName		= "lp.zzz~";			// Class name
 #define LPAssistIn1			"Int (NN factor)"
 #define LPAssistOut1		"Signal (Pink noise)"
 
-const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 #ifdef __GNUC__
 	// Lame
@@ -149,7 +148,7 @@ int C74_EXPORT main(void)
         gObjectClass = c;
 	Taus88Init();
         
-        post("%s: %s", kClassName, lpversion);
+        post("%s: %s", kClassName, LPVERSION);
         return 0;
 	
 	}

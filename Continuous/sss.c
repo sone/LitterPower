@@ -32,7 +32,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "Taus88.h"
 
@@ -40,6 +40,11 @@
 #pragma mark • Constants
 
 const char*			kClassName		= "lp.sss";			// Class name
+
+// Assistance strings
+#define LPAssistIn1         "Bang (Generate random number)"
+#define LPAssistIn2         "Int (NN factor)"
+#define LPAssistOut1        "Float (Random value, 0 <= x <= 1)"
 
 
 #ifdef __MWERKS__
@@ -55,16 +60,16 @@ const char*			kClassName		= "lp.sss";			// Class name
 	#define kMaxNN			31
 #endif
 
-const unsigned long	kDiceBits		= 0x0fffffff;
+const unsigned int	kDiceBits		= 0x0fffffff;
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInBang		= lpStrIndexLastStandard + 1,
 	strIndexInNN,
 	
 	strIndexOutPink
 	};
-
+*/
 
 #pragma mark • Type Definitions
 
@@ -73,13 +78,13 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object			coreObject;
+	t_object		coreObject;
 	
 	tTaus88DataPtr	tausData;
 	
 	unsigned short	counter;
 	int				nn;					// Number of bits to mask out
-	unsigned long	nnMask,				// Value depends on nn
+	unsigned int	nnMask,				// Value depends on nn
 					nnOffset,
 					sum,
 					dice[kArraySize];
@@ -122,14 +127,14 @@ static void	SssInfo(tPink*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,			// Pointer to our class definition
+	c = class_new(kClassName,			// Pointer to our class definition
 			(method) SssNew,		// Instance creation function
 			(method) SssFree,		// Custom deallocation function
 			sizeof(tPink),			// Class object size
@@ -140,17 +145,22 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB addbang	((method) SssBang);
-	addmess	((method) SssNN,		"in1",		A_LONG);
-	addmess ((method) SssSeed,		"seed",		A_DEFLONG, 0);
-	addmess	((method) SssTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) SssTattle,	"tattle",	A_NOTHING);
-	addmess	((method) SssAssist,	"assist",	A_CANT, 0);
-	addmess	((method) SssInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) SssBang,     "bang", 0);
+	class_addmethod(c,(method) SssNN,		"in1",		A_LONG);
+	class_addmethod(c,(method) SssSeed,		"seed",		A_DEFLONG, 0);
+	class_addmethod(c,(method) SssTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) SssTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) SssAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) SssInfo,		"info",		A_CANT, 0);
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -192,7 +202,7 @@ SssNew(
 	// Finished checking intialization parameters
 
 	// Let Max allocate us, our inlets, and outlets.
-	me = (tPink*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	
 	intin(me, 1);								// NN inlet
 	
@@ -225,8 +235,8 @@ SssBang(
 	unsigned short	c			= me->counter++;	// We rely on the increment wrapping
 													// every 2^16 iterations (16-bit integer
 													// representation).
-	unsigned long*	curDie	= me->dice;
-	unsigned long	sum 	= me->sum;
+	unsigned int*	curDie	= me->dice;
+	unsigned int	sum 	= me->sum;
 	int				i;
 	
 	if (c == 0) {
@@ -309,7 +319,7 @@ void SssNN(
 	else {
 		if (iNN > kMaxNN)
 			iNN = kMaxNN;
-		me->nn			= iNN;
+		me->nn			= (int)iNN;
 		me->nnMask		= kULongMax << iNN;
 		me->nnOffset	= (~me->nnMask) >> 1;
 		}
@@ -330,7 +340,7 @@ SssSeed(
 	
 	{
 	
-	Taus88Seed(me->tausData, (unsigned long) iSeed);
+	Taus88Seed(me->tausData, (unsigned int) iSeed);
 	
 	}
 
@@ -378,7 +388,14 @@ SssAssist(
 	{
 	#pragma unused(me, sym)
 	
-	LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOutPink, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOutPink, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+            }
+        }
+        else sprintf (oCStr, LPAssistOut1);
 	
 	}
 

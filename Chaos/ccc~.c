@@ -52,8 +52,6 @@
 
 const char*			kClassName		= "lp.ccc~";			// Class name
 
-const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
-
 #define LPAssistIn1			"Enable message"
 #define LPAssistOut1		"Signal (Schuster/Procaccia noise)"
 
@@ -148,7 +146,7 @@ int C74_EXPORT main(void)
         class_register(CLASS_BOX, c);
         gObjectClass = c;
         
-        post("%s: %s", kClassName, lpversion);
+        post("%s: %s", kClassName, LPVERSION);
         return 0;
 	
 	}

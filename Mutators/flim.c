@@ -24,10 +24,19 @@
 
 */
 
+// Assistance strings
+#define LPAssistIn1			"Float or Int (Source). Lots of other messages."
+#define LPAssistIn2			"Float or Int (Target)"
+#define LPAssistIn3			"Float in [0.0 ... 1.0] (Mutation Index, mu )"
+#define LPAssistIn4			"Float in [0.0 ... 1.0) (Clumping Factor, pi )"
+#define LPAssistIn5			"Float in [-1.0 ... 1.0] (Delta Emphasis, d )"
+#define LPAssistOut1		"Float (Mutant)"
+
+
 
 #pragma mark • Include Files
 
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "imLib.h"
 
 
@@ -38,7 +47,7 @@ const char*	kClassName		= "lp.vim";				// Class name
 
 #pragma mark • Function Prototypes
 
-void*	NewMutator(Symbol*, short, Atom*);
+void*	NewMutator(t_symbol*, short, t_atom*);
 
 	// Various Max messages
 void	FlimAssist(tMutator*, void* , long , long , char*);
@@ -70,14 +79,14 @@ static void FlimDeltaInt(tMutator*, long);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) NewMutator,		// Instance creation function
 			NIL,						// No custom deallocation function
 			(short) sizeof(tMutator),	// Class object size
@@ -86,46 +95,51 @@ main(void)
 			0);		
 	
 	// Very standard messages
-	LITTER_TIMEBOMB addbang	((method) DoBang);
-	LITTER_TIMEBOMB addfloat((method) FlimSource);
-	LITTER_TIMEBOMB addint	((method) FlimSourceInt);
-	addftx	((method) FlimTarget, 1);
-	addinx	((method) FlimTargetInt, 1);
-	addftx	((method) DoOmega, 2);
-	addinx	((method) FlimOmegaInt, 2);
-	addftx	((method) DoPi, 3);
-	addinx	((method) FlimPiInt, 3);
-	addftx	((method) DoDelta, 4);
-	addinx	((method) FlimDeltaInt, 4);
+	class_addmethod(c,(method) DoBang, "bang", 0);
+	class_addmethod(c,(method) FlimSource, "float", A_FLOAT, 0);
+	class_addmethod(c,(method) FlimSourceInt, "int", A_LONG, 0);
+	class_addmethod(c,(method) FlimTarget, "ft1", A_FLOAT, 0);
+	class_addmethod(c,(method) FlimTargetInt, "in1", A_LONG, 0);
+	class_addmethod(c,(method) DoOmega, "ft2", A_FLOAT, 0);
+	class_addmethod(c,(method) FlimOmegaInt, "in2", A_LONG, 0);
+	class_addmethod(c,(method) DoPi, "ft3", A_FLOAT, 0);
+	class_addmethod(c,(method) FlimPiInt, "in3", A_LONG, 0);
+	class_addmethod(c,(method) DoDelta, "ft4", A_FLOAT, 0);
+	class_addmethod(c,(method) FlimDeltaInt, "in4", A_LONG, 0);
 	
 	// Fairly standard Max messages
-	addmess	((method) FlimAssist,		"assist",	A_CANT, 0);
-	addmess	((method) FlimInfo,			"info",		A_CANT, 0);
-	addmess	((method) FlimTattle,		"dblclick",	A_CANT, 0);
-	addmess	((method) FlimTattle,		"tattle",	A_NOTHING);
+	class_addmethod(c,(method) FlimAssist,		"assist",	A_CANT, 0);
+	class_addmethod(c,(method) FlimInfo,			"info",		A_CANT, 0);
+	class_addmethod(c,(method) FlimTattle,		"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) FlimTattle,		"tattle",	A_NOTHING);
 	
 	// Vaguely standard messages
-	addmess ((method) DoClear,			"clear",	A_NOTHING);
-	addmess	((method) FlimSet,			"set",		A_DEFFLOAT, 0);
+	class_addmethod(c,(method) DoClear,			"clear",	A_NOTHING);
+	class_addmethod(c,(method) FlimSet,			"set",		A_DEFFLOAT, 0);
 	
 	//Our messages
-	addmess ((method) DoUSIM,			"usim",		A_NOTHING);
-	addmess ((method) DoISIM,			"isim",		A_NOTHING);
-	addmess ((method) DoUUIM,			"uuim",		A_NOTHING);
-	addmess ((method) DoIUIM,			"iuim",		A_NOTHING);
-	addmess ((method) DoWCM,			"wcm",		A_NOTHING);
-	addmess ((method) DoLCM,			"lcm",		A_NOTHING);
+	class_addmethod(c,(method) DoUSIM,			"usim",		A_NOTHING);
+	class_addmethod(c,(method) DoISIM,			"isim",		A_NOTHING);
+	class_addmethod(c,(method) DoUUIM,			"uuim",		A_NOTHING);
+	class_addmethod(c,(method) DoIUIM,			"iuim",		A_NOTHING);
+	class_addmethod(c,(method) DoWCM,			"wcm",		A_NOTHING);
+	class_addmethod(c,(method) DoLCM,			"lcm",		A_NOTHING);
 	
-	addmess	((method) DoAbsInt,			"abs",		A_NOTHING);
-	addmess	((method) DoRelInt,			"rel",		A_DEFFLOAT, 0);
+	class_addmethod(c,(method) DoAbsInt,			"abs",		A_NOTHING);
+	class_addmethod(c,(method) DoRelInt,			"rel",		A_DEFFLOAT, 0);
 	
-	addmess ((method) FlimClumpStrict,	"strict",	A_NOTHING);
-	addmess	((method) FlimClumpTight,	"tight",	A_DEFLONG, 0);
-	addmess ((method) FlimClumpHard,	"hard",		A_DEFLONG, 0);
+	class_addmethod(c,(method) FlimClumpStrict,	"strict",	A_NOTHING);
+	class_addmethod(c,(method) FlimClumpTight,	"tight",	A_DEFLONG, 0);
+	class_addmethod(c,(method) FlimClumpHard,	"hard",		A_DEFLONG, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	}
 
@@ -140,9 +154,9 @@ main(void)
 
 void*
 NewMutator(
-	Symbol* iSelector,
+	t_symbol* iSelector,
 	short	iArgCount,
-	Atom*	iArgVector)
+	t_atom*	iArgVector)
 	
 	{
 	Boolean			gotInitType		= false,		// The gotInitXXX variables are for 
@@ -150,7 +164,7 @@ NewMutator(
 					gotInitPi		= false,		// into our object box.
 					gotInitDelta	= false;
 	short			initType		= imDefault;	// Values to use if nothing specified
-	float			initOmega		= 0.0,
+	double			initOmega		= 0.0,
 					initPi			= 0.0,
 					initDelta		= 0.0;
 	
@@ -162,19 +176,19 @@ NewMutator(
 			case A_FLOAT:
 				if (!gotInitOmega) {
 					gotInitOmega = true;
-					initOmega = iArgVector->a_w.w_float;
+					initOmega = atom_getfloat(iArgVector);
 					if		(initOmega < 0.0)	initOmega = 0.0;
 					else if	(1.0 < initOmega)	initOmega = 1.0;
 					}
 				else if (!gotInitPi) {
 					gotInitPi = true;
-					initPi = iArgVector->a_w.w_float;
+					initPi = atom_getfloat(iArgVector);
 					if		(initPi < 0.0)		initPi = 0.0;
 					else if	(kMaxPi < initPi)	initPi = kMaxPi;
 					}
 				else if (!gotInitDelta) {
 					gotInitDelta = true;
-					initDelta = iArgVector->a_w.w_float;
+					initDelta = atom_getfloat(iArgVector);
 					if		(initDelta < -1.0)	initDelta = 0.0;
 					else if	(1.0 < initDelta)	initDelta = 1.0;
 					}
@@ -185,7 +199,7 @@ NewMutator(
 				if (gotInitType) goto punt_argument;		// naughty argument
 				
 				gotInitType = true;
-				initType = MapStrToMutationType(iArgVector->a_w.w_sym->s_name);
+				initType = MapStrToMutationType(atom_getsym(iArgVector)->s_name);
 				if (initType < 0) {
 					initType = imDefault;
 					goto punt_argument;
@@ -202,7 +216,7 @@ NewMutator(
 		}
 	
 	// Let Max/MSP allocate us
-	me = (tMutator*) newobject(gObjectClass);
+        me = object_alloc(gObjectClass);
 	
 	// Add inlets, from right to left
 	floatin(me, 4);
@@ -391,11 +405,27 @@ static void FlimDeltaInt(tMutator* me, long iDelta)
  *
  ******************************************************************************************/
 
-void FlimAssist(tMutator* me, void* box, long iDir, long iArgNum, char oDestCStr[])
+void FlimAssist(tMutator* me, void* box, long iDir, long iArgNum, char oCStr[])
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexFirstIn, strIndexFirstOut, oDestCStr);
+	//LitterAssist(iDir, iArgNum, strIndexFirstIn, strIndexFirstOut, oDestCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+                case 3: sprintf (oCStr, LPAssistIn4); break;
+                case 4: sprintf (oCStr, LPAssistIn5); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
 	}
 
 void FlimInfo(tMutator* me)

@@ -45,13 +45,18 @@
 const char*		kClassName		= "lp.pfishie";			// Class name
 
 
-	// Indices for STR# resource
+// Assistance strings
+#define LPAssistIn1			"Bang (Generate random number)"
+#define LPAssistIn2			"Float (lamda: mean)"
+#define LPAssistOut1		"Int (Random value)"
+
+/*	// Indices for STR# resource
 enum {
 	strIndexInBang		= lpStrIndexLastStandard + 1,
 	strIndexInLambda,
 	
 	strIndexTheOutlet
-	};
+	};*/
 
 
 #pragma mark • Type Definitions
@@ -65,7 +70,7 @@ typedef union {
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	tTaus88DataPtr	tausData;
 	ePoisAlg		alg;
@@ -258,7 +263,19 @@ static void PfishieAssist(objPoisson* me, void* iBox, long iDir, long iArgNum, c
 	{
 	#pragma unused (me, iBox)
 	
-	LitterAssist(iDir, iArgNum, strIndexInBang, strIndexTheOutlet, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInBang, strIndexTheOutlet, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+            }
+            
+        }
 	}
 
 
@@ -329,61 +346,61 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err PfishieGetMin(objPoisson* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err PfishieGetMin(objPoisson* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV);
 		}
-	static t_max_err PfishieGetMax(objPoisson* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err PfishieGetMax(objPoisson* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV);
 		}
-	static t_max_err PfishieGetMean(objPoisson* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err PfishieGetMean(objPoisson* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV);
 		}
-//	static t_max_err PfishieGetMedian(objPoisson* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+//	static t_max_err PfishieGetMedian(objPoisson* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 //		{ 
 //		#pragma unused(iAttr)
 //		
 //		return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV);
 //		}
-	static t_max_err PfishieGetMode(objPoisson* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err PfishieGetMode(objPoisson* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV);
 		}
-	static t_max_err PfishieGetVar(objPoisson* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err PfishieGetVar(objPoisson* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV);
 		}
-	static t_max_err PfishieGetStdDev(objPoisson* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err PfishieGetStdDev(objPoisson* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV);
 		}
-	static t_max_err PfishieGetSkew(objPoisson* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err PfishieGetSkew(objPoisson* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV);
 		}
-	static t_max_err PfishieGetKurtosis(objPoisson* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err PfishieGetKurtosis(objPoisson* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV);
 		}
-//	static t_max_err PfishieGetEntropy(objPoisson* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+//	static t_max_err PfishieGetEntropy(objPoisson* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 //		{ 
 //		#pragma unused(iAttr)
 //		
@@ -393,9 +410,9 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-		Symbol*	symLong			= gensym("long");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+		t_symbol*	symLong			= gensym("long");
 		
 		// Read-Write Attributes
 //		attr = attr_offset_new("p", symFloat64, 0, NULL, NULL, calcoffset(objPoisson, prob));
@@ -429,16 +446,16 @@ DoExpect(
 static void
 PfishieTell(
 	objPoisson*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -465,8 +482,7 @@ static void PfishieTell(objPoisson* me, Symbol* iTarget, Symbol* iMsg)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -476,7 +492,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	LitterSetupClass(	kClassName,
 						sizeof(objPoisson),				// Class object size
@@ -487,7 +503,7 @@ main(void)
 						myArgTypes);				// See above
 	
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) PfishieBang);
+	LitterAddBang	((method) PfishieBang);
 	LitterAddMess1	((method) PfishieLambda,	"ft1",	A_FLOAT);
 	LitterAddMess1	((method) PfishieSeed,		"seed",	A_DEFLONG);
 	LitterAddMess2	((method) PfishieTell,		"tell",	A_SYM, A_SYM);
@@ -498,7 +514,11 @@ main(void)
 	AddInfo();
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, gObjectClass);
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}

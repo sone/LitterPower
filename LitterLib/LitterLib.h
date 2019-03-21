@@ -98,6 +98,11 @@
 
 #pragma mark ¥ Constants
 
+// vb: generic info string, printed at instantiation of the object
+#define LPVERSION "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8"
+
+
+
 	// Standard STR# indices
 #ifdef WIN_VERSION
 
@@ -185,7 +190,7 @@ enum CategoryClass {
 
 
 	// Some constants we need. This stuff is simple enough to handle with macros
-// vb: had to change these from long to int to make pfff~ work - ok???
+// vb: had to change these from long to int which seems crucial for Taus88 implementation - ok???
 #ifndef kULongMax
 	//#define kULongMax			((unsigned long) 0xffffffff)
     #define kULongMax			((unsigned int) 0xffffffff)
@@ -301,6 +306,7 @@ void	LitterSetupClassGimme(const char	iName[],
 
 	//	Initialize the Litter Toolbox (call once)
 void	LitterInit			(const char[], UInt32);
+//void    LitterInit_vb       (const char[], t_class*);       // new init function
 
 	// Pattr-agnostice wrapper for object_alloc()/newobject()
 t_object* LitterAllocateObject(void);

@@ -26,13 +26,21 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 
 #pragma mark • Constants
 
 const char*	kClassName		= "lp.lll~";			// Class name
 
+// Assistance strings
+#define LPAssistIn1			"Int (Seed)"
+#define LPAssistIn2			"Int (Multiplier)"
+#define LPAssistIn3			"Int (Adder)"
+#define LPAssistIn4			"Int (Modulo)"
+#define LPAssistOut1		"Signal (Triangular noise)"
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexInSeed		= lpStrIndexLastStandard + 1,
@@ -45,7 +53,7 @@ enum {
 	strIndexInLeft		= strIndexInSeed,
 	strIndexOutLeft		= strIndexOutLCN
 	};
-	
+	*/
 #pragma mark • Repertoire Type & Constants
 
 #if 0
@@ -126,8 +134,10 @@ static void	LllAssist(tLCN*, void* , long , long , char*);
 static void	LllInfo(tLCN*);
 
 	// MSP Messages
-static void	LllDSP(tLCN*, t_signal**, short*);
-static int*	LllPerform(int*);
+//static void	LllDSP(tLCN*, t_signal**, short*);
+//static int*	LllPerform(int*);
+void LllDSP64(tLCN*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void LllPerform64(tLCN*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -147,14 +157,14 @@ static int*	LllPerform(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,					// Pointer to our class definition
+	c = class_new(kClassName,					// Pointer to our class definition
 			(method) LllNew,			// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(tLCN),				// Class object size
@@ -165,23 +175,28 @@ main(void)
 			A_DEFLONG,					//						4. Seed
 			0);		
 	
-	dsp_initclass();
+	class_dspinit(c);
 
 	// Messages
-	addint	((method) LllSeed);
-	addmess	((method) LllMul,		"in1",		A_LONG, 0);
-	addmess	((method) LllAdd,		"in2",		A_LONG,	0);
-	addmess	((method) LllMod,		"in3",		A_LONG, 0);
-	addmess	((method) LllTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) LllTattle,	"tattle",	A_NOTHING);
-	addmess	((method) LllAssist,	"assist",	A_CANT, 0);
-	addmess	((method) LllInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) LllSeed, "int", A_LONG, 0);
+	class_addmethod(c,(method) LllMul,		"in1",		A_LONG, 0);
+	class_addmethod(c,(method) LllAdd,		"in2",		A_LONG,	0);
+	class_addmethod(c,(method) LllMod,		"in3",		A_LONG, 0);
+	class_addmethod(c,(method) LllTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) LllTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) LllAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) LllInfo,		"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) LllDSP,		"dsp",		A_CANT, 0);
+	class_addmethod(c,(method) LllDSP64,		"dsp64",		A_CANT, 0);
 
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -226,7 +241,7 @@ noMoreDefaults:
 	// Finished checking intialization parameters
 
 	// Let Max/MSP allocate us, our inlets (from right to left), and outlets.
-	me = (tLCN*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 1);				// Signal inlet for benefit of begin~
 													// Otherwise left inlet does multiplier
 													// only
@@ -319,7 +334,30 @@ void LllAssist(tLCN* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+                case 3: sprintf (oCStr, LPAssistIn4); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
+        /*
+         // Assistance strings
+         #define LPAssistIn1			"Int (Seed)"
+         #define LPAssistIn2			"Int (Multiplier)"
+         #define LPAssistIn3			"Int (Adder)"
+         #define LPAssistIn4			"Int (Modulo)"
+         #define LPAssistOut1		"Signal (Triangular noise)"
+         */
 	}
 
 void LllInfo(tLCN* me)
@@ -334,7 +372,7 @@ void LllInfo(tLCN* me)
  *	LllDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 LllDSP(
 	tLCN*		me,
@@ -355,7 +393,16 @@ LllDSP(
 		);
 	
 	}
-	
+*/
+
+void LllDSP64(tLCN *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    object_method(dsp64, gensym("dsp_add64"), me, LllPerform64, 0, NULL);
+    
+
+}
+
+
 
 /******************************************************************************************
  *
@@ -369,7 +416,7 @@ LllDSP(
  *		- Imaginary output signal
  *
  ******************************************************************************************/
-
+/*
 int*
 LllPerform(
 	int* iParams)
@@ -434,3 +481,51 @@ LllPerform(
 exit:
 	return iParams + paramNextLink;
 	}
+
+*/
+
+void LllPerform64(tLCN *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    long			vecCounter;
+    tSampleVector	outNoise;
+    unsigned long	mul, add, mod, seed;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    // Copy parameters into registers
+    vecCounter	= sampleframes;
+    outNoise	= outs[0];
+    mul			= me->mul;
+    add			= me->add;
+    mod			= me->mod;
+    seed		= me->seed;
+    
+    // Do our stuff
+    if (mod == 0) do {
+        // Treat modulo as 2^32, which means we just let the processor truncate arithmetic overflow
+        seed *= mul;
+        seed += add;
+        *outNoise++ = ULong2Signal(seed);
+    } while (--vecCounter > 0);
+    
+    else {
+        unsigned long	modMask = me->modMask;
+        double			scale	= (double) kULongMax / (double) mod;
+        
+        if (modMask != 0)  do {
+            seed *= mul;
+            seed += add;
+            seed &= modMask;
+            *outNoise++ = scale * Long2Signal((long) seed) - 1.0;
+        } while (--vecCounter > 0);
+        
+        else  do {
+            seed *= mul;
+            seed += add;
+            seed %= mod;
+            *outNoise++ = scale * Long2Signal((long) seed) - 1.0;
+        } while (--vecCounter > 0);
+    }
+    
+    me->seed = seed;
+}

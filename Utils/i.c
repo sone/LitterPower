@@ -36,7 +36,7 @@
 #include <string.h>								// all for strchr()
 
 #include "IChingCore.h"							// #includes LitterLib.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 
 
@@ -156,7 +156,7 @@ typedef enum CommonSymbols	eCommonSyms;
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	int			mainHex,			// Stash input hexagrams here.
 				futureHex;			// Valid range is [1 .. 64] only.
@@ -186,7 +186,7 @@ typedef struct {
 								// 0-index for trigram names, other indices for Houses
 #endif
 
-Symbol*		gCommonSym[csCount + 1]	= {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+t_symbol*		gCommonSym[csCount + 1]	= {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
 #pragma mark -
@@ -237,7 +237,7 @@ IChingNew(
 	//
 	// Let Max allocate us, our outlets, and additional inlets
 	//
-	me = (objIChing*) LitterAllocateObject();
+	me = object_alloc(gObjectClass);
 		if (me == NIL) goto punt;
 	
 	// One additional inlet
@@ -284,7 +284,7 @@ punt:
 		do {
 			// Check if there is a linebreak character and get a pointer to it.
 			char*	nextLine = strchr(curLine, '\r');
-//			Atom	lineAsAtom;
+//			t_atom	lineAsAtom;
 			
 			if (nextLine != NIL) {
 				*nextLine++ = '\0';
@@ -360,22 +360,22 @@ TrigramOut(
 	{
 	char	theStr[kMaxResourceStrSize];
 	short	strIndex;
-	Atom	atomVec[3];				// Hardwired to three symbols: position,
+	t_atom	AtomVec[3];				// Hardwired to three symbols: position,
 									// Original Trigram name, and translation
 	
 	// 1: Position
-	SetSym(atomVec, gCommonSym[iSymIndex]);
+	SetSym(AtomVec, gCommonSym[iSymIndex]);
 	
 	// 2: Trigram name
 	strIndex = 2 * iTrigram - 1;
 	IChingGetResourceString(theStr, 0, strIndex);
-	SetSym(atomVec + 1, gensym(theStr));
+	SetSym(AtomVec + 1, gensym(theStr));
 	
 	// 3: Trigram meaning
 	IChingGetResourceString(theStr, 0, ++strIndex);
-	SetSym(atomVec + 2, gensym(theStr));
+	SetSym(AtomVec + 2, gensym(theStr));
 	
-	return outlet_list(iOutlet, NIL, 3, atomVec);
+	return outlet_list(iOutlet, NIL, 3, AtomVec);
 	}
 
 
@@ -408,17 +408,17 @@ LineHeadOut(
 #endif
 	
 	enum {
-		atomRulers			= 0,	// Symbolic constants for accessing the local
-		atomSixOrNine,				// vector of atoms
-		atomLineNum,
-		atomMeans,
+		AtomRulers			= 0,	// Symbolic constants for accessing the local
+		AtomSixOrNine,				// vector of Atoms
+		AtomLineNum,
+		AtomMeans,
 		
-		atomCount					// = atomMeans + 1
+		AtomCount					// = AtomMeans + 1
 		};
 	
-	Symbol*		rulerSym	= gCommonSym[csNoRulers];	// Initial assumption
+	t_symbol*		rulerSym	= gCommonSym[csNoRulers];	// Initial assumption
 	eLineBits	lineBit		= 1 << (iLineNum - 1);
-	Atom		atomVec[atomCount];
+	t_atom		AtomVec[AtomCount];
 	
 	// See if we're checking for ruler lines, and adjust rulerSym as necessary
 	if (iFlagRulers) {
@@ -437,17 +437,17 @@ LineHeadOut(
 		
 		}
 	
-	// Set up atoms
-	SetSym(	atomVec + atomRulers,
+	// Set up t_atoms
+	SetSym(	AtomVec + AtomRulers,
 			rulerSym);
-	SetSym(	atomVec + atomSixOrNine,
+	SetSym(	AtomVec + AtomSixOrNine,
 			gCommonSym[(iInfo->theLines & lineBit) ? csSix : csNine]);
-	SetSym(	atomVec + atomLineNum,
+	SetSym(	AtomVec + AtomLineNum,
 			gCommonSym[iLineNum + csLineBottom - 1]);
-	SetSym(	atomVec + atomMeans,
+	SetSym(	AtomVec + AtomMeans,
 			gCommonSym[csMeans]);
 	
-	return outlet_list(iOutlet, NIL, atomCount, atomVec);
+	return outlet_list(iOutlet, NIL, AtomCount, AtomVec);
 	}
 
 #pragma mark -
@@ -462,9 +462,9 @@ LineHeadOut(
 static void
 DoNameNow(
 	objIChing*	me,
-	Symbol*		sym,
+	t_symbol*		sym,
 	short		iArgC,						// Either 1 or 0. Take hexagram from me->main
-	Atom*		iArgV)						// unless iArgV specifies something else.
+	t_atom*		iArgV)						// unless iArgV specifies something else.
 	
 	{
 	#pragma unused(sym)
@@ -473,8 +473,8 @@ DoNameNow(
 	tHexInfoPtr	mainInfo;
 	short		/*houseID,*/					// Which STR# to use
 				offsetBase,					// Base index into GetStrInd(houseID, xxx);
-				atomCount	= 0;			// Variable number of atoms, three max:
-	Atom		atomVec[3];					// number, original name, translated name.
+				AtomCount	= 0;			// Variable number of t_atoms, three max:
+	t_atom		AtomVec[3];					// number, original name, translated name.
 	char		theStr[kMaxResourceStrSize];
 	
 	if (iArgC > 0 && iArgV->a_type == A_LONG)
@@ -491,24 +491,24 @@ DoNameNow(
 		NumToString(hexID, numStr);			// Convert number to text
 		numStr[++numStr[0]] = '.';			// Append period
 		MoveP2CStr(numStr, theStr);
-		SetSym(atomVec, gensym((char*) theStr));
-		atomCount += 1;
+		SetSym(AtomVec, gensym((char*) theStr));
+		AtomCount += 1;
 		}
 	
 	if (me->origName) {
 //		GetIndCString(theStr, houseID, offsetBase + offOrigName);
 		IChingGetResourceString(theStr, mainInfo->house, offsetBase + offOrigName);
-		SetSym(atomVec + atomCount++, gensym(theStr));
+		SetSym(AtomVec + AtomCount++, gensym(theStr));
 		}
 	
 	if (me->transName) {
 //		GetIndCString(theStr, houseID, offsetBase + offTransName);
 		IChingGetResourceString(theStr, mainInfo->house, offsetBase + offTransName);
-		SetSym(atomVec + atomCount++, gensym(theStr));
+		SetSym(AtomVec + AtomCount++, gensym(theStr));
 		}
 	
-	if (atomCount > 0)
-		outlet_list(me->coreObject.o_outlet, NIL, atomCount, atomVec);
+	if (AtomCount > 0)
+		outlet_list(me->coreObject.o_outlet, NIL, AtomCount, AtomVec);
 		
 	}
 	
@@ -521,9 +521,9 @@ DoNameNow(
 static void
 DoTrigramsNow(
 	objIChing*	me,
-	Symbol*		sym,
+	t_symbol*		sym,
 	short		argc,
-	Atom		argv[])
+	t_atom		argv[])
 	
 	{
 	#pragma unused(sym, argc, argv)
@@ -564,26 +564,26 @@ DoTrigramsNow(
 static void
 DoRulersNow(
 	objIChing*	me,
-	Symbol*		sym,
+	t_symbol*		sym,
 	short		argc,
-	Atom		argv[])
+	t_atom		argv[])
 	
 	{
 	#pragma unused(sym, argc, argv)
 	
-	enum {						// Symbolic indices into atomVec
-		atomIntro		= 0,
-		atomRuler1Val,
-		atomRuler1Pos,
-		atomConjunction,
-		atomRuler2Val,
-		atomRuler2Pos,
+	enum {						// Symbolic indices into t_atomVec
+		AtomIntro		= 0,
+		AtomRuler1Val,
+		AtomRuler1Pos,
+		AtomConjunction,
+		AtomRuler2Val,
+		AtomRuler2Pos,
 		
-		atomVecSize				// = atomRuler2Pos + 1
+		AtomVecSize				// = AtomRuler2Pos + 1
 		};
 		
-	Atom		atomVec[atomVecSize];
-	short		atomCount,
+	t_atom		AtomVec[AtomVecSize];
+	short		AtomCount,
 				curLine;
 	tHexInfoPtr	hexInfo;
 	eLineBits	rulingLines,
@@ -599,21 +599,21 @@ DoRulersNow(
 	
 	rulingLines = hexInfo->con;
 	if (rulingLines) {
-		SetSym(atomVec, gCommonSym[csConRuler]);
-		atomCount = 1;
+		SetSym(AtomVec, gCommonSym[csConRuler]);
+		AtomCount = 1;
 		
 		curLine = 1;
 		curLineBit = lineBottom;
 		do {
 			if (rulingLines & curLineBit) {
-				if (atomCount >= atomConjunction) {
+				if (AtomCount >= AtomConjunction) {
 					// This is pretty rare, so lazy us gensym()s the conjunction
 					// on the fly
-					SetSym(atomVec + atomCount++, gensym("and"));
+					SetSym(AtomVec + AtomCount++, gensym("and"));
 					}
-				SetSym(	atomVec + atomCount++,
+				SetSym(	AtomVec + AtomCount++,
 						gCommonSym[(hexInfo->theLines & curLineBit) ? csSix : csNine]);
-				SetSym(	atomVec + atomCount++,
+				SetSym(	AtomVec + AtomCount++,
 						gCommonSym[curLine + csLineBottom - 1]);
 				
 				if ((rulingLines ^= curLineBit) == linesNone) break;
@@ -622,27 +622,27 @@ DoRulersNow(
 			curLineBit	<<= 1;
 			} while (true);						// Loop terminates internally!
 		
-		noProblem = outlet_list(me->coreObject.o_outlet, NIL, atomCount, atomVec);
+		noProblem = outlet_list(me->coreObject.o_outlet, NIL, AtomCount, AtomVec);
 		if ( !noProblem) return;			// other quick punt
 		}
 	
 	// ASSERT: rulingLines != linesNone, so execute the following unconditionally
 	rulingLines = hexInfo->gov;	
-	SetSym(atomVec, gCommonSym[csGovRuler]);
-	atomCount = 1;
+	SetSym(AtomVec, gCommonSym[csGovRuler]);
+	AtomCount = 1;
 	
 	curLine = 1;
 	curLineBit = lineBottom;
 	do {
 		if (rulingLines & curLineBit) {
-			if (atomCount >= atomConjunction) {
+			if (AtomCount >= AtomConjunction) {
 				// This is pretty rare, so lazy us gensym()s the conjunction
 				// on the fly
-				SetSym(atomVec + atomCount++, gensym("and"));
+				SetSym(AtomVec + AtomCount++, gensym("and"));
 				}
-			SetSym(	atomVec + atomCount++,
+			SetSym(	AtomVec + AtomCount++,
 					gCommonSym[(hexInfo->theLines & curLineBit) ? csSix : csNine]);
-			SetSym(	atomVec + atomCount++,
+			SetSym(	AtomVec + AtomCount++,
 					gCommonSym[curLine + csLineBottom - 1]);
 			
 			if ((rulingLines ^= curLineBit) == linesNone) break;
@@ -651,7 +651,7 @@ DoRulersNow(
 		curLineBit	<<= 1;
 		} while (true);						// Loop terminates internally!
 	
-	noProblem = outlet_list(me->coreObject.o_outlet, NIL, atomCount, atomVec);
+	noProblem = outlet_list(me->coreObject.o_outlet, NIL, AtomCount, AtomVec);
 	if ( !noProblem) return;
 	
 	outlet_anything(me->coreObject.o_outlet, gCommonSym[csNoRulers], 0, NIL);
@@ -667,9 +667,9 @@ DoRulersNow(
 static void
 DoJudgementNow(
 	objIChing*	me,
-	Symbol*		sym,
+	t_symbol*		sym,
 	short		iArgC,
-	Atom*		iArgV)
+	t_atom*		iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -706,9 +706,9 @@ DoJudgementNow(
 static void
 DoImageNow(
 	objIChing*	me,
-	Symbol*		sym,
+	t_symbol*		sym,
 	short		argc,
-	Atom		argv[])
+	t_atom		argv[])
 	
 	{
 	#pragma unused(sym, argc, argv)
@@ -740,9 +740,9 @@ DoImageNow(
 static void
 DoLinesNow(
 	objIChing*	me,
-	Symbol*		sym,
+	t_symbol*		sym,
 	short		argc,
-	Atom		argv[])
+	t_atom		argv[])
 	
 	{
 	#pragma unused(sym, argc, argv)
@@ -834,9 +834,9 @@ DoLinesNow(
 static void
 IChingDoBang(
 	objIChing*	me,
-	Symbol*		sym,
+	t_symbol*		sym,
 	short		argc,
-	Atom		argv[])
+	t_atom		argv[])
 	
 	{
 	#pragma unused(sym, argc, argv)
@@ -849,7 +849,7 @@ IChingDoBang(
 	DoLinesNow(me, NIL, 0, NIL);
 	
 	if (me->futureHex != 0 && me->futureHex != me->mainHex) {
-		Atom	theParam;
+		t_atom	theParam;
 		SetLong(&theParam, me->futureHex);
 		
 		outlet_anything(me->coreObject.o_outlet, gCommonSym[csFuture], 0, NIL);
@@ -1085,8 +1085,8 @@ static void IChingInfo(objIChing* me)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -1097,33 +1097,36 @@ main(void)
 	
 	short	symIndex;
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
 	
-	LitterSetupClass(	kClassName,
+	c = class_new(kClassName,
 						sizeof(objIChing),				// Class object size
-						LitterCalcOffset(objIChing),	// Magic "Obex" Calculation
+						//LitterCalcOffset(objIChing),	// Magic "Obex" Calculation
 						(method) IChingNew,				// Instance creation function
 						NIL,							// No custom deallocation function
+                        sizeof(objIChing),
 						NIL,							// No menu function
-						myArgTypes);				// See above
+						myArgTypes,                     // See above
+                        0);
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) IChingBang);
-	LITTER_TIMEBOMB LitterAddInt	((method) IChingPresent);
-	LitterAddMess1	((method) IChingFuture,		"in1",			A_LONG);
-	LitterAddMess2	((method) IChingSet,		"set",			A_LONG, A_DEFLONG);
-	LitterAddMess1	((method) IChingName,		"name",			A_DEFLONG);
-	LitterAddMess1	((method) IChingTrigrams,	"trigrams",		A_DEFLONG);
-	LitterAddMess0	((method) IChingJudgement,	"judgement");
-	LitterAddMess0	((method) IChingImage,		"image");
-	LitterAddMess1	((method) IChingLines,		"lines",		A_DEFLONG);
+	class_addmethod(c, (method) IChingBang, "bang", 0);
+	class_addmethod(c, (method) IChingPresent, "int", A_LONG, 0);
+	class_addmethod(c, (method) IChingFuture,	"in1",			A_LONG, 0);
+	class_addmethod(c, (method) IChingSet,		"set",			A_LONG, A_DEFLONG, 0);
+	class_addmethod(c, (method) IChingName,		"name",			A_DEFLONG, 0);
+	class_addmethod(c, (method) IChingTrigrams,	"trigrams",		A_DEFLONG, 0);
+	class_addmethod(c, (method) IChingJudgement,"judgement", 0);
+	class_addmethod(c, (method) IChingImage,	"image", 0);
+	class_addmethod(c, (method) IChingLines,	"lines",		A_DEFLONG, 0);
 	
-	LitterAddMess0	((method) IChingTattle,		"tattle"); 
-	LitterAddCant	((method) IChingTattle,		"dblclick"); 
-	LitterAddCant	((method) IChingAssist,		"assist");
-	LitterAddCant	((method) IChingInfo,		"info");
+	class_addmethod(c, (method) IChingTattle,	"tattle", A_NOTHING, 0);
+	class_addmethod(c, (method) IChingTattle,	"dblclick", A_CANT, 0);
+	class_addmethod(c, (method) IChingAssist,	"assist", A_CANT, 0);
+	class_addmethod(c, (method) IChingInfo,		"info", A_CANT, 0);
 	
 	// Generate common symbols we use a lot
 	for (symIndex = csCount; symIndex > 0; symIndex -= 1) {
@@ -1196,8 +1199,10 @@ main(void)
 #endif				// WIN_VERSION/__LITTER_UB__
 	
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
 
 	}
 

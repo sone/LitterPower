@@ -26,7 +26,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "Taus88.h"
 
@@ -35,9 +35,13 @@
 
 const char*	kClassName		= "lp.trrr~";			// Class name
 
+// Assistance strings
+#define LPAssistIn1			"Int (NN factor)"
+#define LPAssistOut1		"Signal (Triangular noise)"
+
 const int	kMaxNN			= 31;
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInNN		= lpStrIndexLastStandard + 1,
 	strIndexOutTri,
@@ -51,7 +55,7 @@ enum {
 	inletTriNoise			= 0,		// For begin~
 	
 	outletTriNoise
-	};
+	};*/
 
 #pragma mark • Type Definitions
 
@@ -63,7 +67,7 @@ typedef struct {
 	t_pxobject		coreObject;
 	
 	int				nn;					// Number of bits to mask out
-	unsigned long	mask,				// Values depend on nn
+	unsigned int	mask,				// Values depend on nn
 					offset;
 	} tTriNoise;
 
@@ -83,8 +87,10 @@ static void	TrrrAssist(tTriNoise*, void* , long , long , char*);
 static void	TrrrInfo(tTriNoise*);
 
 	// MSP Messages
-static void	TrrrDSP(tTriNoise*, t_signal**, short*);
-static int*	TrrrPerform(int*);
+//static void	TrrrDSP(tTriNoise*, t_signal**, short*);
+//static int*	TrrrPerform(int*);
+void    TrrrDSP64(tTriNoise*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void    TrrrPerform64(tTriNoise*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -104,14 +110,15 @@ static int*	TrrrPerform(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) TrrrNew,			// Instance creation function
 			(method) dsp_free,				// Default deallocation function
 			sizeof(tTriNoise),				// Class object size
@@ -119,21 +126,26 @@ main(void)
 			A_DEFLONG,						// Optional arguments:	1. NN Factor
 			0);	
 	
-	dsp_initclass();
+	class_dspinit(c);
 
 	// Messages
-	addint	((method) TrrrNN);
-	addmess	((method) TrrrTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) TrrrTattle,	"tattle",	A_NOTHING);
-	addmess	((method) TrrrAssist,	"assist",	A_CANT, 0);
-	addmess	((method) TrrrInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) TrrrNN,      "int", A_LONG, 0);
+	class_addmethod(c,(method) TrrrTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) TrrrTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) TrrrAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) TrrrInfo,	"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess((method) TrrrDSP, "dsp", A_CANT, 0);
+	class_addmethod(c,(method) TrrrDSP64, "dsp64", A_CANT, 0);
 
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -158,7 +170,7 @@ TrrrNew(
 	// Take intialization parameters as they come.
 
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (tTriNoise*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	dsp_setup(&(me->coreObject), 1);				// Signal inlet for benefit of begin~
 													// Otherwise left inlet does "NN" and
 													// symmetry
@@ -240,7 +252,11 @@ void TrrrAssist(tTriNoise* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET)
+            sprintf (oCStr, LPAssistIn1);
+        else
+            sprintf (oCStr, LPAssistOut1);
 	}
 
 void TrrrInfo(tTriNoise* me)
@@ -255,7 +271,7 @@ void TrrrInfo(tTriNoise* me)
  *	TrrrDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 TrrrDSP(
 	tTriNoise*	me,
@@ -271,7 +287,13 @@ TrrrDSP(
 		);
 	
 	}
-	
+	*/
+        
+void    TrrrDSP64(tTriNoise *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    object_method(dsp64, gensym("dsp_add64"), me, TrrrPerform64, 0, NULL);
+}
+        
 
 /******************************************************************************************
  *
@@ -285,6 +307,34 @@ TrrrDSP(
  *
  ******************************************************************************************/
 
+        
+void    TrrrPerform64(tTriNoise *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+{
+    long			vecCounter;
+    tSampleVector	outNoise;
+    
+    
+    if (me->coreObject.z_disabled) return;
+    
+    // Copy parameters into registers
+    vecCounter	= sampleframes;
+    outNoise	= outs[0];
+    
+    // Do our stuff
+    if (me->nn > 0) {
+        unsigned int	mask	= me->mask,
+        offset	= me->offset;
+        do {
+            unsigned int t = (Taus88(NULL) >> 1) + (Taus88(NULL) >> 1);
+            *outNoise++ = ULong2Signal((t & mask) + offset);
+        } while (--vecCounter > 0);
+    }
+    
+    else do {
+        *outNoise++ = Taus88TriSig();
+    } while (--vecCounter > 0);
+}
+   /*
 int*
 TrrrPerform(
 	int iParams[])
@@ -326,3 +376,4 @@ TrrrPerform(
 exit:
 	return iParams + paramNextLink;
 	}
+    */

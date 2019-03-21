@@ -19,9 +19,16 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 #include "MiscUtils.h"
+
+// Assistance strings
+#define LPAssistIn1			"Bang (Generate random value)"
+#define LPAssistIn2			"Int (Extent of memory)"
+#define LPAssistOut1		"Int (Random value)"
+
+
 
 #pragma mark • Constants
 
@@ -29,7 +36,7 @@ const char*		kClassName	= "lp.cuthbert";			// Class name
 
 const long		kDefMemory	= 1;
 
-	// Indices for STR# resource
+/*	// Indices for STR# resource
 enum {
 	strIndexInBang		= lpStrIndexLastStandard + 1,
 	strIndexInMemLen,
@@ -39,16 +46,16 @@ enum {
 	strIndexInLeft		= strIndexInBang,
 	strIndexOutLeft		= strIndexOutCuthbert
 	};
-
+*/
 
 #pragma mark Macros
 
 	// Ugly macro to change BlockMoveData() to memcpy() on Windows.
 	// I don't understand why BlockMoveData() isn't working on Windows,
 	// but this change makes things work
-#ifdef WIN_VERSION
+//#ifdef WIN_VERSION
 	#define BlockMoveData(SRC, DEST, BYTES)		memcpy(DEST, SRC, BYTES)
-#endif
+//#endif
 
 #pragma mark • Type Definitions
 
@@ -57,7 +64,7 @@ enum {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object			coreObject;
+	t_object		coreObject;
 	
 	tTaus88DataPtr	tausData;
 	
@@ -67,7 +74,7 @@ typedef struct {
 									// than is possible with the current valCount
 					memSize;		// Size of memory buffer, >= sizeof(long) * curMemLen
 	long*			memory;			// Initial state of urn
-	long*			state;						// Current state (after removing balls)
+	long*			state;			// Current state (after removing balls)
 		// Cache total number of balls in both master and state vectors
 	long			totalBalls,
 					ballsInUrn;
@@ -87,16 +94,16 @@ void	CuthbertFree	(tCuthbert*);
 
 	// Object message functions
 static void CuthbertBang	(tCuthbert*);
-static void CuthbertTable	(tCuthbert*, Symbol*);
-static void CuthbertSet	(tCuthbert*, Symbol*, short, Atom*);
+static void CuthbertTable	(tCuthbert*, t_symbol*);
+static void CuthbertSet     (tCuthbert*, t_symbol*, short, t_atom*);
 static void CuthbertClear	(tCuthbert*);
 static void CuthbertConst	(tCuthbert*, long);
 static void CuthbertReset	(tCuthbert*);
 static void CuthbertSize	(tCuthbert*, long);
 static void CuthbertCount	(tCuthbert*, long);
 static void CuthbertSeed	(tCuthbert*, long);
-static void CuthbertTattle(tCuthbert*);
-static void	CuthbertAssist(tCuthbert*, void* , long , long , char*);
+static void CuthbertTattle  (tCuthbert*);
+static void	CuthbertAssist  (tCuthbert*, void* , long , long , char*);
 static void	CuthbertInfo	(tCuthbert*);
 
 
@@ -117,14 +124,15 @@ static void	CuthbertInfo	(tCuthbert*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
-	
+
+int C74_EXPORT main(void)
+
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max setup() call
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(kClassName,				// Pointer to our class definition
 			(method) CuthbertNew,			// Instance creation function
 			(method) CuthbertFree,			// Deallocation function
 			(short) sizeof(tCuthbert),		// Class object size
@@ -135,23 +143,29 @@ main(void)
 	
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) CuthbertBang);
-	addmess	((method) CuthbertTable,		"refer",	A_SYM, 0);
-	addmess	((method) CuthbertSet,			"set",		A_GIMME, 0);
-	addmess ((method) CuthbertSeed,		"seed",		A_DEFLONG, 0);
-	addmess ((method) CuthbertClear,		"clear",	A_NOTHING);
-	addmess ((method) CuthbertClear,		"zero",		A_NOTHING);
-	addmess ((method) CuthbertConst,		"const",	A_DEFLONG, 0);
-	addmess ((method) CuthbertReset,		"reset",	A_NOTHING);
-	addmess	((method) CuthbertSize,		"size",		A_LONG, 0);
-	addmess	((method) CuthbertCount,		"count",	A_DEFLONG, 0);
-	addmess	((method) CuthbertTattle,		"dblclick",	A_CANT, 0);
-	addmess	((method) CuthbertTattle,		"tattle",	A_NOTHING);
-	addmess	((method) CuthbertAssist,		"assist",	A_CANT, 0);
-	addmess	((method) CuthbertInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) CuthbertBang, "bang", 0);
+	class_addmethod(c,(method) CuthbertTable,		"refer",	A_SYM, 0);
+	class_addmethod(c,(method) CuthbertSet,			"set",		A_GIMME, 0);
+	class_addmethod(c,(method) CuthbertSeed,		"seed",		A_DEFLONG, 0);
+	class_addmethod(c,(method) CuthbertClear,		"clear",	A_NOTHING);
+	class_addmethod(c,(method) CuthbertClear,		"zero",		A_NOTHING);
+	class_addmethod(c,(method) CuthbertConst,		"const",	A_DEFLONG, 0);
+	class_addmethod(c,(method) CuthbertReset,		"reset",	A_NOTHING);
+	class_addmethod(c,(method) CuthbertSize,		"size",		A_LONG, 0);
+	class_addmethod(c,(method) CuthbertCount,		"count",	A_DEFLONG, 0);
+	class_addmethod(c,(method) CuthbertTattle,		"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) CuthbertTattle,		"tattle",	A_NOTHING);
+	class_addmethod(c,(method) CuthbertAssist,		"assist",	A_CANT, 0);
+	class_addmethod(c,(method) CuthbertInfo,		"info",		A_CANT, 0);
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 
@@ -188,7 +202,8 @@ noMoreDefaults:
 	// Finished checking intialization parameters
 
 	// Let Max allocate us and our outlets. We only use the default inlet
-	me = (tCuthbert*) LitterAllocateObject
+        me = (tCuthbert*) LitterAllocateObject;
+        //me = object_alloc(gObjectClass);
 
 	if (me == NIL) goto punt;
 	
@@ -224,7 +239,7 @@ punt:
  *
  ******************************************************************************************/
 
-	static void DeferDisposePtr(Ptr iPtr, Symbol* sym, short argc, Atom argv[])
+	static void DeferDisposePtr(Ptr iPtr, t_symbol* sym, short argc, t_atom argv[])
 		{
 		#pragma unused(sym, argc, argv)
 		
@@ -349,7 +364,7 @@ CuthbertBang(
 void
 CuthbertTable(
 	tCuthbert*	me,
-	Symbol*	iTable)
+	t_symbol*	iTable)
 	
 	{
 	long**	tableData;			// Isn't there a typedef that could be used???
@@ -381,9 +396,9 @@ CuthbertTable(
 void
 CuthbertSet(
 	tCuthbert*	me,
-	Symbol*	sym,				// Is always gensym("set")
+	t_symbol*	sym,				// Is always gensym("set")
 	short	iArgC,
-	Atom*	iArgV)
+	t_atom*	iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -652,7 +667,16 @@ CuthbertAssist(
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOutCuthbert, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInBang, strIndexOutCuthbert, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+            }
+        }
+        else
+            sprintf (oCStr, LPAssistOut1); break;
+        
 	}
 
 /******************************************************************************************

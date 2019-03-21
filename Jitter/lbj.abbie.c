@@ -18,8 +18,15 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "RNGDistBeta.h"
+
+
+// Assistance strings
+
+#define LPAssistIn1			"Bang, other messages"
+#define LPAssistOut1		"Beta noise"
+#define LPAssistOut2		"Dump"
 
 
 #pragma mark • Constants
@@ -56,12 +63,12 @@ typedef union betaParams {
 #pragma mark • Object Structure
 
 typedef struct {
-	Object		coreObject;
+	t_object		coreObject;
 	voidPtr		obex;					// The magic extended object thing.
 	} msobAbbie;							// Mac Shell Object
 
 typedef struct {
-	Object		coreObject;
+	t_object	coreObject;
 	
 	long		alphaCount,
 				betaCount;
@@ -82,7 +89,7 @@ Messlist*		gAbbieMaxClass	= NIL;
 #pragma mark • Function Prototypes
 
 	// Max methods/functions
-static void*AbbieNewMaxShell	(Symbol*, long, Atom*);
+static void*AbbieNewMaxShell	(t_symbol*, long, t_atom*);
 static void	AbbieFreeMaxShell	(msobAbbie*);
 
 static void AbbieOutputMatrix	(msobAbbie*);
@@ -254,7 +261,7 @@ main(void)
 	voidPtr	p,									// Have to guess about what these two do
 			q;									// Not much is documented in the Jitter SDK
 	
-	LITTER_CHECKTIMEOUT(kMaxClassName);
+	//LITTER_CHECKTIMEOUT(kMaxClassName);
 	
 	AbbieJitInit();
 	
@@ -272,7 +279,8 @@ main(void)
 	q = jit_class_findbyname(gensym((char*) kJitClassName));    
     max_jit_classex_mop_wrap(p, q, kFlags); 		
     max_jit_classex_standard_wrap(p, q, 0); 	
-	LITTER_TIMEBOMB max_addmethod_usurp_low((method) AbbieOutputMatrix, "outputmatrix");	
+	max_addmethod_usurp_low((method) AbbieOutputMatrix, "outputmatrix");
+    //LITTER_TIMEBOMB max_addmethod_usurp_low((method) AbbieOutputMatrix, "outputmatrix");
 	
 	// Back to adding messages...
 	addmess	((method) AbbieTattle,	"dblclick",	A_CANT, 0);
@@ -281,7 +289,7 @@ main(void)
 	addmess	((method) AbbieInfo,	"info",		A_CANT, 0);
 	
 	// Initialize Litter Library
-	LitterInit(kMaxClassName, 0);
+	//LitterInit(kMaxClassName, 0);
 	
 	}
 
@@ -304,14 +312,14 @@ static void*
 AbbieNewMaxShell(
 	SymbolPtr	sym,
 	long		iArgC,
-	Atom		iArgV[])
+	t_atom		iArgV[])
 	
 	{
 	#pragma unused(sym)
 	
 	msobAbbie*		me			= NIL;
 	void*			jitObj		= NIL;
-	Symbol*			classSym	= gensym((char*) kJitClassName);
+	t_symbol*			classSym	= gensym((char*) kJitClassName);
 	
 	me = (msobAbbie*) max_jit_obex_new(gAbbieMaxClass, classSym);
 	if (me == NIL) goto punt;
@@ -416,7 +424,19 @@ void AbbieAssist(msobAbbie* me, void* box, long iDir, long iArgNum, char* oCStr)
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                case 1: sprintf (oCStr, LPAssistOut2); break;
+            }
+            
+        }
 	}
 
 

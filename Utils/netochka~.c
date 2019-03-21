@@ -30,7 +30,7 @@
 
 #include "LitterLib.h"	// Also #includes MaxUtils.h, ext.h
 #include "MiscUtils.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "Taus88.h"
 
 
@@ -38,9 +38,15 @@
 
 const char*	kClassName		= "lp.nn~";			// Class name
 
+// Assistance strings
+#define LPAssistIn1			"Signal (Input)"
+#define LPAssistIn2			"Float (NN Factor)"
+#define LPAssistIn3			"Float (Effective Sample Rate)"
+#define LPAssistOut1		"Signal (Output)"
+
 const int	kMaxNN			= 31,
 			kMinNN			= -31;
-
+/*
 	// Indices for STR# resource
 enum {
 	strIndexInSig		= lpStrIndexLastStandard + 1,
@@ -59,6 +65,7 @@ enum {
 	
 	outletSigOut
 	};
+ */
 
 #pragma mark • Type Definitions
 
@@ -78,7 +85,7 @@ typedef struct {
 					curSkipFrac;		// Use this to maintain accuracy of stepping through
 										// the signal in integral steps even when skipSamps
 										// has a fractional component.
-	float			curSamp;			// Cache downsampled value between calls to Perform()
+	double			curSamp;			// Cache downsampled value between calls to Perform()
 	} tDegrade;
 
 
@@ -100,8 +107,10 @@ static void	NetochkaInfo(tDegrade*);
 
 
 	// MSP Messages
-static void	NetochkaDSP(tDegrade*, t_signal**, short*);
-static int*	NetochkaPerform(int*);
+//static void	NetochkaDSP(tDegrade*, t_signal**, short*);
+void NetochkaDSP64(tDegrade* me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+//static int*	NetochkaPerform(int*);
+void NetochkaPerform64(tDegrade*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -118,15 +127,14 @@ static int*	NetochkaPerform(int*);
  *	Standard Max/MSP External Object Entry Point Function
  *	
  ******************************************************************************************/
-
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP initialization mantra
-	setup(	&gObjectClass,				// Pointer to our class definition
+	c = class_new(	kClassName,					// Pointer to our class definition
 			(method) NetochkaNew,			// Instance creation function
 			(method) dsp_free,			// Default deallocation function
 			sizeof(tDegrade),			// Class object size
@@ -135,22 +143,28 @@ main(void)
 			A_DEFFLOAT,					// 						2. Effective Sample Rate
 			0);	
 	
-	dsp_initclass();
+	//dsp_initclass();
+        class_dspinit(c);
 	
 	// Messages
-	addftx	((method) NetochkaNN, 1);
-	addftx	((method) NetochkaESR, 2);
-	addmess	((method) NetochkaTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) NetochkaTattle,	"tattle",	A_NOTHING);
-	addmess	((method) NetochkaAssist,	"assist",	A_CANT, 0);
-	addmess	((method) NetochkaInfo,		"info",		A_CANT, 0);
+	class_addmethod(c, (method) NetochkaNN, "ft1", A_FLOAT, 0);
+	class_addmethod(c, (method) NetochkaESR, "ft2", A_FLOAT, 0);
+	class_addmethod(c, (method) NetochkaTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c, (method) NetochkaTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c, (method) NetochkaAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c, (method) NetochkaInfo,		"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) NetochkaDSP,		"dsp",		A_CANT, 0);
+	class_addmethod(c, (method) NetochkaDSP64,		"dsp64",		A_CANT, 0);
 
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 	Taus88Init();
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	}
 
@@ -175,7 +189,7 @@ NetochkaNew(
 	// Take intialization parameters as they come
 
 	// Let Max/MSP allocate us, our inlets, and outlets.
-	me = (tDegrade*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 		if (me == NIL) goto punt;
 		
 	dsp_setup(&(me->coreObject), 1);			// Signal inlet
@@ -307,8 +321,23 @@ void NetochkaAssist(tDegrade* me, void* box, long iDir, long iArgNum, char* oCSt
 	{
 	#pragma unused(me, box)
 	
-	LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
-	}
+	//LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                    //case 1: sprintf(s, "..."); break;
+            }
+            
+        }
+    }
+
 
 void NetochkaInfo(tDegrade* me)
 	{ LitterInfo(kClassName, &me->coreObject.z_ob, (method) NetochkaTattle); }
@@ -322,7 +351,7 @@ void NetochkaInfo(tDegrade* me)
  *	NetochkaDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 NetochkaDSP(
 	tDegrade*	me,
@@ -344,7 +373,20 @@ NetochkaDSP(
 		ioDSPVectors[outletSigOut]->s_vec
 		);
 	
-	}
+	}*/
+
+void NetochkaDSP64(tDegrade* me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    double    curSR = samplerate;
+    
+    if (me->curSR != curSR) {
+        me->curSR = curSR;
+        NetochkaESR(me, me->effSR);        // Safest way to make sure everything is recalculated
+    }
+    
+    object_method(dsp64, gensym("dsp_add64"), me, NetochkaPerform64, 0, NULL);
+    
+}
 	
 
 /******************************************************************************************
@@ -359,7 +401,7 @@ NetochkaDSP(
  *
  ******************************************************************************************/
 
-	static /*inline*/ float
+	static /*inline*/ double
 	Mask(double iSamp, double iFactor, double iOffset, long iShift)
 		{
 		iSamp += 1.0;
@@ -371,7 +413,7 @@ NetochkaDSP(
 		else return 1.0 - iOffset;
 		}
 	
-	static /*inline*/ float
+	static /*inline*/ double
 	MaskAndNudge(double iSamp, double iFactor, double iOffset, double iNudge, long iShift)
 		{
 		iSamp += 1.0;
@@ -392,7 +434,7 @@ NetochkaDSP(
 			}
 		}
 		
-	static /*inline*/ float
+	static /*inline*/ double
 	Dither(double iSamp, double iFactor, double iOffset, long iShift)
 		{
 		iSamp += 1.0;
@@ -410,7 +452,7 @@ NetochkaDSP(
 			}
 		}
 
-	static /*inline*/ float
+	static /*inline*/ double
 	DitherAndNudge(double iSamp, double iFactor, double iOffset, double iNudge, long iShift)
 		{
 		iSamp += 1.0;
@@ -432,7 +474,208 @@ NetochkaDSP(
 			return 1.0 - iNudge * iOffset * dither;
 			}
 		}
-	
+
+void NetochkaPerform64(tDegrade *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam)
+    
+    {
+        
+        long			vecCounter;
+        tSampleVector	inSig, outSig;
+        int				nn;
+        double			skipSamps;
+
+        
+        if (me->coreObject.z_disabled) return;
+        
+        // Copy parameters into registers
+        vecCounter	= sampleframes;
+        inSig		= ins[0];
+        outSig		= outs[0];
+        
+        // Do our stuff
+        nn			= me->nn;
+        skipSamps	= me->skipSamps;
+        
+        if (nn == 0) {
+            // No nn factor
+            if (skipSamps == 0.0) {
+                // Not much to do...
+                // ...and even then, only if input and output are not sharing the same
+                // vector.
+                if (inSig != outSig)
+                    do { *outSig++ = *inSig++; } while (--vecCounter > 0);
+            }
+            
+            else {
+                // Downsample
+                double	curSamp		= me->curSamp;
+                double	curSkipFrac	= me->curSkipFrac;
+                long	extraSteps	= curSkipFrac;					// Truncate float-to-integer
+                
+                if (extraSteps >= vecCounter) {
+                    // Fill vector with current sample; update cached counter.
+                    me->curSkipFrac -= vecCounter;
+                    do { *outSig++ = curSamp; } while (--vecCounter > 0);
+                }
+                
+                else {
+                    // Finish off last run of the current sample...
+                    inSig		+= extraSteps;
+                    vecCounter	-= extraSteps;
+                    curSkipFrac -= extraSteps;
+                    
+                    while (extraSteps-- > 0)
+                        *outSig++ = curSamp;
+                    
+                    // ... and run through the rest of the vector
+                    while (vecCounter > 0) {
+                        curSamp = *outSig++ = *inSig++;
+                        vecCounter -= 1;
+                        
+                        extraSteps	= skipSamps + curSkipFrac;
+                        if (extraSteps > vecCounter)
+                            extraSteps = vecCounter;
+                        inSig		+= extraSteps;
+                        vecCounter	-= extraSteps;
+                        curSkipFrac	+= skipSamps - extraSteps;
+                        
+                        while (extraSteps-- > 0)
+                            *outSig++ = curSamp;
+                    }
+                    
+                    me->curSamp		= curSamp;
+                    me->curSkipFrac	= curSkipFrac;
+                }
+            }
+        }														// END IF (nn == 0)
+        
+        else {
+            double	nnFrac	= me->nnFrac,
+            offset	= me->offset,
+            factor	= me->factor;
+            
+            if (nnFrac == 0.0) {
+                // Integral NN/Dither
+                double (*IntNNFunc)(double, double, double, long);
+                
+                if (nn < 0) {
+                    IntNNFunc = Dither;
+                    nn = -nn;
+                }
+                else IntNNFunc = Mask;
+                
+                if (skipSamps == 0.0) do {
+                    // Just mask/dither
+                    *outSig++ = IntNNFunc(*inSig++, factor, offset, nn);
+                } while (--vecCounter > 0);
+                
+                else {
+                    // Mask/dither and downsample
+                    double	curSamp		= me->curSamp;
+                    double	curSkipFrac	= me->curSkipFrac;
+                    long	extraSteps	= curSkipFrac;				// Truncate float-to-integer
+                    
+                    if (extraSteps >= vecCounter) {
+                        // Fill vector with current sample; update cached counter.
+                        me->curSkipFrac -= vecCounter;
+                        do { *outSig++ = curSamp; } while (--vecCounter > 0);
+                    }
+                    
+                    else {
+                        // Finish off last run of the current sample...
+                        inSig		+= extraSteps;
+                        vecCounter	-= extraSteps;
+                        curSkipFrac -= extraSteps;
+                        
+                        while (extraSteps-- > 0)
+                            *outSig++ = curSamp;
+                        
+                        // ... and run through the rest of the vector
+                        while (vecCounter > 0) {
+                            curSamp = *outSig++ = IntNNFunc(*inSig++, factor, offset, nn);
+                            vecCounter -= 1;
+                            
+                            extraSteps	= skipSamps + curSkipFrac;
+                            if (extraSteps > vecCounter)
+                                extraSteps = vecCounter;
+                            inSig		+= extraSteps;
+                            vecCounter	-= extraSteps;
+                            curSkipFrac	+= skipSamps - extraSteps;
+                            
+                            while (extraSteps-- > 0)
+                                *outSig++ = curSamp;
+                        }
+                        
+                        me->curSamp		= curSamp;
+                        me->curSkipFrac	= curSkipFrac;
+                    }											// END (extraSteps < vecCounter)
+                }												// END (skipSamps != 0.0)
+            }													// END IF (nnFrac == 0.0)
+            
+            else {
+                // Fractional NN/Dither
+                double (*FloatNNFunc)(double, double, double, double, long);
+                
+                if (nn < 0) {
+                    FloatNNFunc = DitherAndNudge;
+                    nn = -nn;
+                }
+                else FloatNNFunc = MaskAndNudge;
+                
+                if (skipSamps == 0.0) do {
+                    // Just mask/dither
+                    *outSig++ = FloatNNFunc(*inSig++, factor, offset, nnFrac, nn);
+                } while (--vecCounter > 0);
+                
+                else {
+                    // Mask/dither and downsample
+                    double	curSamp		= me->curSamp;
+                    double	curSkipFrac	= me->curSkipFrac;
+                    long	extraSteps	= curSkipFrac;				// Truncate float-to-integer
+                    
+                    if (extraSteps >= vecCounter) {
+                        // Fill vector with current sample; update cached counter.
+                        me->curSkipFrac -= vecCounter;
+                        do { *outSig++ = curSamp; } while (--vecCounter > 0);
+                    }
+                    
+                    else {
+                        // Finish off last run of the current sample...
+                        inSig		+= extraSteps;
+                        vecCounter	-= extraSteps;
+                        curSkipFrac -= extraSteps;
+                        
+                        while (extraSteps-- > 0)
+                            *outSig++ = curSamp;
+                        
+                        // ... and run through the rest of the vector
+                        while (vecCounter > 0) {
+                            curSamp = *outSig++ = FloatNNFunc(*inSig++, factor, offset, nnFrac, nn);
+                            vecCounter -= 1;
+                            
+                            extraSteps	= skipSamps + curSkipFrac;
+                            if (extraSteps > vecCounter)
+                                extraSteps = vecCounter;
+                            inSig		+= extraSteps;
+                            vecCounter	-= extraSteps;
+                            curSkipFrac	+= skipSamps - extraSteps;
+                            
+                            while (extraSteps-- > 0) 
+                                *outSig++ = curSamp;
+                        }
+                        
+                        me->curSamp		= curSamp;
+                        me->curSkipFrac	= curSkipFrac;
+                    }											// END (extraSteps < vecCounter)
+                }												// END (skipSamps != 0.0)
+            }													// END (nnFrac != 0.0)
+        }														// END (nn != 0)
+        
+    
+}
+
+
+	/*
 int*
 NetochkaPerform(
 	int iParams[])
@@ -644,3 +887,4 @@ NetochkaPerform(
 exit:
 	return iParams + paramNextLink;
 	}
+     */

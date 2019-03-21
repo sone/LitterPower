@@ -50,11 +50,13 @@
 
 const char	kClassName[]		= "lp.gammer";			// Class name
 
-
+// Assistence strings
 #define LPAssistIn1			"Bang (Generate random number)"
 #define LPAssistIn2			"Float (Order)"
 #define LPAssistIn3			"Float (Location)"
 #define LPAssistOut1		"Float (%s distributed random value)"
+#define LPAssistFrag1        "Erlang"
+#define LPAssistFrag2        "Gamma"
 
 
 	// Indices for STR# resource
@@ -318,15 +320,32 @@ GammerAssist(
 	{
 	#pragma unused(box)
 	
-	if (iDir == ASSIST_INLET)
-		LitterAssist(iDir, iArgNum, strIndexLeftInlet, 0, oCStr);
-	else {
-		short fragIndex = (me->alg == algErlDir || me->alg == algErlRej)
-									? strIndexFragErlang
-									: strIndexFragGamma;
-		
-		LitterAssistResFrag(iDir, iArgNum, 0, strIndexLeftOutlet, oCStr, fragIndex);
-		}	
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+            }
+        }
+		//LitterAssist(iDir, iArgNum, strIndexLeftInlet, 0, oCStr);
+        else {
+            short fragIndex = (me->alg == algErlDir || me->alg == algErlRej);
+									
+            switch(fragIndex) {
+                case 0: sprintf (oCStr, LPAssistOut1, LPAssistFrag2); break;
+                case 1: sprintf (oCStr, LPAssistOut1, LPAssistFrag1); break;
+            }
+            //LitterAssistResFrag(iDir, iArgNum, 0, strIndexLeftOutlet, oCStr, fragIndex);
+		}
+        
+        /*
+         #define LPAssistIn1            "Bang (Generate random number)"
+         #define LPAssistIn2            "Float (Order)"
+         #define LPAssistIn3            "Float (Location)"
+         #define LPAssistOut1           "Float (%s distributed random value)"
+         #define LPAssistFrag1          "Erlang"
+         #define LPAssistFrag2          "Gamma"
+         */
 	}
 
 static void

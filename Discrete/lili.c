@@ -27,7 +27,7 @@
 #pragma mark • Include Files
 
 #include "LitterLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 #include "MiscUtils.h"
 #include "UniformExpectations.h"
 
@@ -37,6 +37,14 @@
 const char	kClassName[]		= "lp.lili";			// Class name
 
 
+// Assistance strings
+#define LPAssistIn1			"Bang (or Int to seed)"
+#define LPAssistIn2			"Int (multiplier)"
+#define LPAssistIn3			"Int (adder)"
+#define LPAssistIn4			"Int (modulo)"
+#define LPAssistOut1		"Int (more-or-less random value)"
+
+/*
 	// Indices for STR# resource
 enum {
 	strIndexSeed		= lpStrIndexLastStandard + 1,
@@ -49,12 +57,12 @@ enum {
 	strIndexLeftInlet	= strIndexSeed,
 	strIndexLeftOutlet	= strIndexTheOutlet
 	};
-
+*/
 
 #pragma mark • Object Structure
 
 typedef struct {
-	LITTER_CORE_OBJECT(Object, coreObject);
+	LITTER_CORE_OBJECT(t_object, coreObject);
 	
 	UInt32	seed,
 			mul,
@@ -81,10 +89,10 @@ static void LiliSet		(objLili*, UInt32);
 
 static void*
 LiliNew(
-	unsigned long	iMul,					// Note that Max is thinking signed; we think
-	unsigned long	iAdd,					// unsigned. Hope no one gets too confused.
-	unsigned long	iMod,
-	unsigned long	iSeed)
+	UInt32	iMul,					// Note that Max is thinking signed; we think
+	UInt32	iAdd,					// unsigned. Hope no one gets too confused.
+	UInt32	iMod,
+	UInt32	iSeed)
 	
 	{
 	const long	kDefMul		= 65539,
@@ -156,7 +164,7 @@ LiliBang(
 static void
 LiliSeed(
 	objLili*			me,
-	unsigned long	iSeed)
+	UInt32	iSeed)
 	
 	{
 	LiliSet(me, iSeed);
@@ -195,13 +203,28 @@ static void LiliAssist(objLili* me, void* iBox, long iDir, long iArgNum, char* o
 	{
 	#pragma unused(me, iBox)
 	
-	 LitterAssist(iDir, iArgNum, strIndexSeed, strIndexTheOutlet, oCStr);
+	 //LitterAssist(iDir, iArgNum, strIndexSeed, strIndexTheOutlet, oCStr);
+        if (iDir == ASSIST_INLET) {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistIn1); break;
+                case 1: sprintf (oCStr, LPAssistIn2); break;
+                case 2: sprintf (oCStr, LPAssistIn3); break;
+                case 3: sprintf (oCStr, LPAssistIn4); break;
+            }
+        }
+        else {
+            switch(iArgNum) {
+                case 0: sprintf (oCStr, LPAssistOut1); break;
+                //case 1: sprintf (oCStr, LPAssistOut2); break;
+            }
+            
+        }
 	 }
 
 static void
 LiliTattle(
 	objLili* me)
-	
+
 	{
 	
 	post("%s state",
@@ -252,61 +275,61 @@ DoExpect(
 
 #if LITTER_USE_OBEX
 
-	static t_max_err LiliGetMin(objLili* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LiliGetMin(objLili* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMin), ioArgC, ioArgV);
 		}
-	static t_max_err LiliGetMax(objLili* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LiliGetMax(objLili* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMax), ioArgC, ioArgV);
 		}
-	static t_max_err LiliGetMean(objLili* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LiliGetMean(objLili* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMean), ioArgC, ioArgV);
 		}
-	static t_max_err LiliGetMedian(objLili* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LiliGetMedian(objLili* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMedian), ioArgC, ioArgV);
 		}
-	static t_max_err LiliGetMode(objLili* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LiliGetMode(objLili* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expMode), ioArgC, ioArgV);
 		}
-	static t_max_err LiliGetVar(objLili* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LiliGetVar(objLili* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expVar), ioArgC, ioArgV);
 		}
-	static t_max_err LiliGetStdDev(objLili* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LiliGetStdDev(objLili* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expStdDev), ioArgC, ioArgV);
 		}
-	static t_max_err LiliGetSkew(objLili* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LiliGetSkew(objLili* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expSkew), ioArgC, ioArgV);
 		}
-	static t_max_err LiliGetKurtosis(objLili* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LiliGetKurtosis(objLili* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
 		return LitterGetAttrFloat(DoExpect(me, expKurtosis), ioArgC, ioArgV);
 		}
-	static t_max_err LiliGetEntropy(objLili* me, void* iAttr, long* ioArgC, Atom** ioArgV)
+	static t_max_err LiliGetEntropy(objLili* me, void* iAttr, long* ioArgC, t_atom** ioArgV)
 		{ 
 		#pragma unused(iAttr)
 		
@@ -316,9 +339,9 @@ DoExpect(
 	static inline void
 	AddInfo(void)
 		{
-		Object*	attr;
-		Symbol*	symFloat64		= gensym("float64");
-		Symbol*	symLong			= gensym("long");
+		t_object*	attr;
+		t_symbol*	symFloat64		= gensym("float64");
+		t_symbol*	symLong			= gensym("long");
 		
 		// Read-Write Attributes
 		attr = attr_offset_new("seed", symLong, 0, NULL, NULL, calcoffset(objLili, seed));
@@ -356,16 +379,16 @@ DoExpect(
 static void
 LiliTell(
 	objLili*	me,
-	Symbol*		iTarget,
-	Symbol*		iAttrName)
+	t_symbol*		iTarget,
+	t_symbol*		iAttrName)
 	
 	{
 	long	argC = 0;
-	Atom*	argV = NIL;
+	t_atom*	argV = NIL;
 		
 	if (object_attr_getvalueof(me, iAttrName, &argC, &argV) == MAX_ERR_NONE) {
 		ForwardAnything(iTarget, iAttrName, argC, argV);
-		freebytes(argV, argC * sizeof(Atom));	// ASSERT (argC > 0 && argV != NIL)
+		freebytes(argV, argC * sizeof(t_atom));	// ASSERT (argC > 0 && argV != NIL)
 		}
 	}
 
@@ -394,8 +417,7 @@ static void LiliTell(objLili* me, Symbol* iTarget, Symbol* iMsg)
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
 	const tTypeList myArgTypes = {
@@ -406,7 +428,7 @@ main(void)
 						A_NOTHING
 						};
 	
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
 	
 	LitterSetupClass(	kClassName,
 						sizeof(objLili),			// Class object size
@@ -417,8 +439,8 @@ main(void)
 						myArgTypes);				// See above
 
 	// Messages
-	LITTER_TIMEBOMB LitterAddBang	((method) LiliBang);
-	LITTER_TIMEBOMB LitterAddInt	((method) LiliSeed);
+	LitterAddBang	((method) LiliBang);
+	LitterAddInt	((method) LiliSeed);
 	LitterAddMess1	((method) LiliSet,		"set",		A_LONG);
 	LitterAddMess1	((method) LiliSet,		"seed",		A_LONG);
 	LitterAddMess1	((method) LiliMul,		"in1",		A_LONG);
@@ -432,7 +454,11 @@ main(void)
 	AddInfo();
 	
 	//Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
+        class_register(CLASS_BOX, gObjectClass);
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 	
 	}
 

@@ -33,12 +33,32 @@
 #pragma mark • Include Files
 
 #include "scampLib.h"
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 #pragma mark • Constants
 
 const char	kClassName[]	= "lp.scamp~";	    		// Class name
 
+// Assistance strings...
+#define LPAssistIn1            "Signal/Float/Int to %s. Other messages..."
+#define LPAssistIn2            "Signal/Float/Int (%s)"
+#define LPAssistIn3            "Signal/Float/Int (%s)"
+#define LPAssistIn4            "Signal/Float/Int (Output Range Min.)"
+#define LPAssistIn5            "Signal/Float/Int (Output Range Max.)"
+#define LPAssistIn6            "Signal/Float/Int (Curvature)"
+#define LPAssistOut1        "Signal (Scaled value)"
+#define LPAssistOut2        "Int (Out-of-range count)"
+// ...and fragments
+#define LPAssistFrag1        "scale/offset"
+#define LPAssistFrag2        "map"
+#define LPAssistFrag3        "Scale factor"
+#define LPAssistFrag4        "Input Min."
+#define LPAssistFrag5        "Offset"
+#define LPAssistFrag6        "Input Max."
+
+
+
+/*
 // Indices for STR# resource
 enum {
 	strIndexInSig		= lpStrIndexLastStandard + 1,
@@ -60,7 +80,7 @@ enum {
 
 	strIndexInLeft		= strIndexInSig,
 	strIndexOutLeft		= strIndexOutSig
-	};
+	};*/
 
 // Indices for MSP Inlets and Outlets (don't count plain-vanilla inlets or outlets).
 enum {
@@ -82,8 +102,11 @@ enum {
 	void	ScampDSP(objScamp*, t_signal**, short*);
 #endif
 
-int*	ScampPerformStatic(int*);
-int*	ScampPerformDynamic(int*);
+//int*	ScampPerformStatic(int*);
+//int*	ScampPerformDynamic(int*);
+void ScampDSP64(objScamp*, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags);
+void ScampPerformStatic64(objScamp*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
+void ScampPerformDynamic64(objScamp*, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long flags, void *userparam);
 
 
 #pragma mark -
@@ -101,14 +124,14 @@ int*	ScampPerformDynamic(int*);
  *	
  ******************************************************************************************/
 
-void
-main(void)
+int C74_EXPORT main(void)
 	
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        t_class *c;
 	
 	// Standard Max/MSP/Litter setup() call
-	setup(	&gObjectClass,						// Pointer to our class definition
+	c = class_new(kClassName,						// Pointer to our class definition
 			(method) NewScamp,					// Instance creation function
 			(method) dsp_free,              	// Custom deallocation function
 			(short) sizeof(objScamp),			// Class object size
@@ -116,20 +139,26 @@ main(void)
 			A_GIMME,							// Variable-length argument list
 			0);
 	
-	dsp_initclass();
+	class_dspinit(c);
 	
 	// Messages
 	//
-	ScampAddMessages();
+	ScampAddMessages(c);
 	
-	LITTER_TIMEBOMB addmess	((method) ScampDSP, 	"dsp",		A_CANT, 0);
+	class_addmethod(c, (method) ScampDSP64, 	"dsp64",		A_CANT, 0);
 
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
-
+	//LitterInit(kClassName, 0);
+        
 	// Generate global symbols
 	//
 	ScampGenSymbols();
+        
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	
 	}
@@ -148,9 +177,9 @@ main(void)
 
 objScamp*
 NewScamp(
-	Symbol*	sym,
+	t_symbol*	sym,
 	short	iArgC,
-	Atom*	iArgV)
+	t_atom*	iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -173,7 +202,7 @@ NewScamp(
 	// Let Max allocate us, our inlets, and our outlets
 	//
 	
-	me = (objScamp*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	if (me == NIL) {
 		error("%s: insufficient memory to create object", kClassName);
 		goto punt;
@@ -432,33 +461,91 @@ ScampAssist(
 	void*		box,
 	long		iDir,
 	long		iArgNum,
-	char		oCDestStr[])
+	char		oCStr[])
 	
 	{
 	#pragma unused(box)
 	
-	short strIndex = 0;
-	
 	if (iDir == ASSIST_INLET) {
-		switch (iArgNum) {
-		case inletSigIn:
-			strIndex = me->flags.map ? strIndexFragMap : strIndexFragScale;
-			break;
-		case inlet1:
-			strIndex = me->flags.map ? strIndexFragInLow : strIndexFragFactor;
-			break;
-		case inlet2:
-			strIndex = me->flags.map ? strIndexFragInHigh : strIndexFragOffset;
-			break;
-		default:
-			break;
-			}
-		}
+        switch(iArgNum) {
+            case 0:
+                if(me->flags.map)
+                    sprintf (oCStr, LPAssistIn1, LPAssistFrag2);
+                else
+                    sprintf (oCStr, LPAssistIn1, LPAssistFrag1);
+                break;
+            case 1:
+                if(me->flags.map)
+                    sprintf (oCStr, LPAssistIn2, LPAssistFrag4);
+                else
+                    sprintf (oCStr, LPAssistIn2, LPAssistFrag3);
+                break;
+            case 2:
+                if(me->flags.map)
+                    sprintf (oCStr, LPAssistIn3, LPAssistFrag6);
+                else
+                    sprintf (oCStr, LPAssistIn3, LPAssistFrag5);
+                break;
+            case 3: sprintf (oCStr, LPAssistIn4); break;
+            case 4: sprintf (oCStr, LPAssistIn5); break;
+            case 5: sprintf (oCStr, LPAssistIn6); break;
+        }
+    }
+        
+    else {
+        switch(iArgNum) {
+            case 0: sprintf (oCStr, LPAssistOut1); break;
+            case 1: sprintf (oCStr, LPAssistOut2); break;
+        }
+        
+    }
 		
-	if (strIndex > 0)
-		 LitterAssistResFrag(iDir, iArgNum, strIndexInLeft, 0, oCDestStr, strIndex);
-	else LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCDestStr);
+	//if (strIndex > 0)
+		 //LitterAssistResFrag(iDir, iArgNum, strIndexInLeft, 0, oCDestStr, strIndex);
+	//else LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCDestStr);
+        
+        
+        /*
+         #define LPAssistIn1            "Signal/Float/Int to %s. Other messages" ellipsisSymbol
+         #define LPAssistIn2            "Signal/Float/Int (%s)"
+         #define LPAssistIn3            "Signal/Float/Int (%s)"
+         #define LPAssistIn4            "Signal/Float/Int (Output Range Min.)"
+         #define LPAssistIn5            "Signal/Float/Int (Output Range Max.)"
+         #define LPAssistIn6            "Signal/Float/Int (Curvature)"
+         #define LPAssistOut1        "Signal (Scaled value)"
+         #define LPAssistOut2        "Int (Out-of-range count)"
+         // ...and fragments
+         #define LPAssistFrag1        "scale/offset"
+         #define LPAssistFrag2        "map"
+         #define LPAssistFrag3        "Scale factor"
+         #define LPAssistFrag4        "Input Min."
+         #define LPAssistFrag5        "Offset"
+         #define LPAssistFrag6        "Input Max."
+         */
 	
+        /*
+         // Indices for STR# resource
+         enum {
+         strIndexInSig        = lpStrIndexLastStandard + 1,
+         strIndexIn1,
+         strIndexIn2,
+         strIndexInMinOut,
+         strIndexInMaxOut,
+         strIndexInCurve,
+         
+         strIndexOutSig,
+         strIndexOutRngXCeptionCount,
+         
+         strIndexFragScale,
+         strIndexFragMap,
+         strIndexFragFactor,
+         strIndexFragInLow,
+         strIndexFragOffset,
+         strIndexFragInHigh,
+         
+         strIndexInLeft        = strIndexInSig,
+         strIndexOutLeft        = strIndexOutSig
+         };*/
 	}
 
 	
@@ -471,7 +558,7 @@ ScampAssist(
  *	ScampDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 ScampDSP(
 	objScamp*	me,
@@ -506,7 +593,29 @@ ScampDSP(
 		}
 	
 	}
-	
+*/
+
+void ScampDSP64(objScamp *me, t_object *dsp64, short *count, double samplerate, long maxvectorsize, long flags)
+{
+    int i;
+    for(i=0; i<outletSigOut; i++)
+        me->connected[i] = count[i];
+    
+    if (count[outletSigOut] > 0) {
+        Boolean    isStatic = count[inlet1] == 0
+            && count[inlet2] == 0
+            && count[inletMinOut] == 0
+            && count[inletMaxOut] == 0
+            && count[inletCurve] == 0;
+        
+        if(isStatic)
+            object_method(dsp64, gensym("dsp_add64"), me, ScampPerformStatic64, 0, NULL);
+        else
+            object_method(dsp64, gensym("dsp_add64"), me, ScampPerformDynamic64, 0, NULL);
+    }
+
+}
+
 
 /******************************************************************************************
  *
@@ -860,6 +969,40 @@ PerformStatCurveLim(
 	
 	}
 
+
+void ScampPerformStatic64(objScamp *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long pflags, void *userparam)
+{
+
+    tScampFlags    flags;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    flags = me->flags;
+    
+    if (flags.rangeInval)
+        ScampCalcRange(me);
+    
+    if (flags.degenerate) {
+        if (me->action == actStet)
+            PerformStatLinStet(    me, sampleframes,
+                               (tSampleVector) ins[0],
+                               (tSampleVector) outs[0]);
+        else PerformStatLinLim(    me, sampleframes,
+                               (tSampleVector) ins[0],
+                               (tSampleVector) outs[0]);
+    }
+    else {
+        if (me->action == actStet)
+            PerformStatCurveStet(me, sampleframes,
+                                 (tSampleVector) ins[0],
+                                 (tSampleVector) outs[0]);
+        else PerformStatCurveLim(me, sampleframes,
+                                 (tSampleVector) ins[0],
+                                 (tSampleVector) outs[0]);
+    }
+}
+
+/*
 int*
 ScampPerformStatic(
 	int*	iParams)
@@ -908,7 +1051,7 @@ ScampPerformStatic(
 exit:
 	return iParams + paramNextLink;
 	}
-	
+	*/
 
 
 /******************************************************************************************
@@ -1489,6 +1632,71 @@ PerformDynCurveLim(
 	
 	}
 
+
+void ScampPerformDynamic64(objScamp *me, t_object *dsp64, double **ins, long numins, double **outs, long numouts, long sampleframes, long pflags, void *userparam)
+{
+    enum {
+        paramInput = 0,
+        param1,
+        param2,
+        paramMinOut,
+        paramMaxOut,
+        paramCurve,
+        paramOutput = 0
+    };
+    
+    tScampFlags    flags;
+    
+    if (me->coreObject.z_disabled) return;
+    
+    flags = me->flags;
+    
+    if (flags.rangeInval
+        && (me->connected[param1] == 0 || me->connected[param2] == 0))        // Cheesy, should typecast
+        ScampCalcRange(me);
+    
+    if (me->mappingType == mapLin
+        || (flags.degenerate && me->connected[paramCurve] == 0)) {    // Cheesy, should typecast
+        if (me->action == actStet)
+            PerformDynLinStet(    me, sampleframes,
+                              (tSampleVector) ins[paramInput],
+                              (tSampleVector) ins[param1],
+                              (tSampleVector) ins[param2],
+                              (tSampleVector) ins[paramMinOut],
+                              (tSampleVector) ins[paramMaxOut],
+                              (tSampleVector) outs[paramOutput]);
+        else PerformDynLinLim(    me, sampleframes,
+                              (tSampleVector) ins[paramInput],
+                              (tSampleVector) ins[param1],
+                              (tSampleVector) ins[param2],
+                              (tSampleVector) ins[paramMinOut],
+                              (tSampleVector) ins[paramMaxOut],
+                              (tSampleVector) outs[paramOutput]);
+    }
+    else {
+        if (me->action == actStet)
+            PerformDynCurveStet(me, sampleframes,
+                                (tSampleVector) ins[paramInput],
+                                (tSampleVector) ins[param1],
+                                (tSampleVector) ins[param2],
+                                (tSampleVector) ins[paramMinOut],
+                                (tSampleVector) ins[paramMaxOut],
+                                (tSampleVector) ins[paramCurve],
+                                (tSampleVector) outs[paramOutput]);
+        else PerformDynCurveLim(me, sampleframes,
+                                (tSampleVector) ins[paramInput],
+                                (tSampleVector) ins[param1],
+                                (tSampleVector) ins[param2],
+                                (tSampleVector) ins[paramMinOut],
+                                (tSampleVector) ins[paramMaxOut],
+                                (tSampleVector) ins[paramCurve],
+                                (tSampleVector) outs[paramOutput]);
+    }
+    
+}
+
+
+/*
 int*
 ScampPerformDynamic(
 	int*	iParams)
@@ -1562,4 +1770,4 @@ ScampPerformDynamic(
 exit:
 	return iParams + paramNextLink;
 	}
-	
+*/

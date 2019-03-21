@@ -43,11 +43,16 @@
 const char		kClassName[]		= "lp.expo";			// Class name
 
 
+// Assistance strings
 #define LPAssistIn1			"Bang, Float (mapping), and symmetry messages"
 #define LPAssistIn2			"Float (scale)"
 #define LPAssistIn3			"Float (location)"
 #define LPAssistOut1		"Random value from %s distribution"
-	
+#define LPOutFragNegExp     "negative exponential"
+#define LPOutFragLaplace    "bilateral exponential ('Laplace')"
+#define LPOutFragPosExp     "exponential"
+
+
 	// Indices for STR# resource
 enum {
 	strIndexInBang		= lpStrIndexLastStandard + 1,
@@ -514,12 +519,17 @@ ExpoAssist(objExpran* me, void* box, long iDir, long iArgNum, char* oCStr)
             }
         }
         else {
-            switch(iArgNum) {
-                case 0: sprintf (oCStr, LPAssistOut1); break;
-                    //case 1: sprintf(s, "..."); break;
+            switch(me->sym) {
+                case -1: sprintf (oCStr, LPAssistOut1, LPOutFragNegExp); break;
+                case 0: sprintf (oCStr, LPAssistOut1, LPOutFragLaplace); break;
+                case 1: sprintf (oCStr, LPAssistOut1, LPOutFragPosExp); break;
             }
-            
         }
+        /*
+         #define LPOutFragNegExp        "negative exponential"
+         #define LPOutFragLaplace    "bilateral exponential (" LQUOTE "Laplace" RQUOTE ")"
+         #define LPOutFragPosExp        "exponential"
+         */
 	}
 
 

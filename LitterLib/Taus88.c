@@ -141,6 +141,7 @@ Taus88(
 		
 		}
 
+// TODO: vb - should be changed some day to return double
 	float
 	Taus88TriSig(void)
 		
@@ -164,6 +165,8 @@ Taus88(
 		// Typecast and move t into the range -1 ≤ t < 1
 		return *((float*) &t) - 3.0f; 
 		}
+
+
 #endif		// __MAX_MSP_OBJECT__
 
 

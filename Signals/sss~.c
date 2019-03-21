@@ -38,7 +38,6 @@ const char*			kClassName		= "lp.sss~";			// Class name
 #define LPAssistIn1			"Int (NN factor)"
 #define LPAssistOut1		"Signal (Pink noise)"
 
-const char* lpversion = "64-bit version. Copyright 2001-08 Peter Castine, Part of Litter Power 1.8";
 
 
 #ifdef __MWERKS__
@@ -164,7 +163,7 @@ int C74_EXPORT main(void)
         gObjectClass = c;
 	Taus88Init();
         
-        post("%s: %s", kClassName, lpversion);
+        post("%s: %s", kClassName, LPVERSION);
         return 0;
 	
 	}
@@ -362,7 +361,7 @@ void SssPerform64(tPink* me, t_object *dsp64, double **ins, long numins, double 
 	do {
 		//unsigned long*		curDie		= firstDie;
         t_uint32*           curDie		= firstDie;
-		int				 	bitCount	= CountBits(counter);
+		long				bitCount	= CountBits(counter);
 		unsigned			bit			= 0x01;
 		
 		switch (bitCount) {

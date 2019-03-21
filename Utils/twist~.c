@@ -18,13 +18,21 @@
  ******************************************************************************************/
 
 #pragma mark • Include Files
+// why were these missing? vb
+#include "LitterLib.h"
+#include "MoreMath.h"
+#include "MiscUtils.h"
 
-#include "TrialPeriodUtils.h"
+//#include "TrialPeriodUtils.h"
 
 #pragma mark • Constants
 
 const char	kClassName[]	= "lp.twist~";	    		// Class name
 
+#define LPAssistIn1			"Signal to waveshape, list sets amplitudes" ellipsisSymbol
+#define LPAssistOut1		"Signal (Waveshaped signal)"
+
+/*
 // Indices for STR# resource
 enum {
 	strIndexIn		= lpStrIndexLastStandard + 1,
@@ -38,7 +46,7 @@ enum {
 enum {
 	inletSigIn		= 0,
 	outletSigOut
-	};
+	};*/
 
 #pragma mark • Type Definitions
 
@@ -46,6 +54,23 @@ enum {
 
 typedef struct {
 	t_pxobject	coreObject;
+    
+    // why no members here? vb
+    /*
+     me->limCounter	= 0;
+     me->input		= 0.0;
+     me->inMin		= kDefInMin;
+     me->inMax		= kDefInMax;
+     me->slope		= kDefSlope;
+     me->offset		= kDefOffset;
+     me->curve		= kDefCurve;
+     me->outMin		= kDefOutMin;
+     me->outMax		= kDefOutMax;
+     me->action		= kDefAction;
+     me->mappingType	= kDefMapType;
+     me->symmetry	= kDefSymmetry;
+     me->flags		= kDefFlags;
+     */
 	
 	
 	} objCheby;
@@ -73,14 +98,15 @@ typedef struct {
  *	
  ******************************************************************************************/
 
-void
-main(void)
-	
+int C74_EXPORT main(void)
 	{
-	LITTER_CHECKTIMEOUT(kClassName);
+	//LITTER_CHECKTIMEOUT(kClassName);
+        
+        
+        t_class *c;
 	
 	// Standard Max/MSP/Litter setup() call
-	setup(	&gObjectClass,						// Pointer to our class definition
+	c = class_new(kClassName,						// Pointer to our class definition
 			(method) NewTwist,					// Instance creation function
 			(method) dsp_free,              	// Custom deallocation function
 			(short) sizeof(objCheby),			// Class object size
@@ -88,27 +114,33 @@ main(void)
 			A_GIMME,							// Variable-length argument list
 			0);
 	
-	dsp_initclass();
+	class_dspinit(c);
 	
 	// Messages
-	addmess	((method) TwistCoeffs	"list",		A_GIMME, 0);
-	addfloat((method) TwistConstFt);
-	addint	((method) TwistConstInt);
+	class_addmethod(c,(method) TwistCoeffs	"list",		A_GIMME, 0);
+	class_addmethod(c,(method) TwistConstFt, "float", A_FLOAT, 0);
+	class_addmethod(c,(method) TwistConstInt, "int", A_LONG, 0);
 	
-	addmess	((method) TwistTattle,	"dblclick",	A_CANT, 0);
-	addmess	((method) TwistTattle,	"tattle",	A_NOTHING);
-	addmess	((method) TwistAssist,	"assist",	A_CANT, 0);
-	addmess	((method) TwistInfo,		"info",		A_CANT, 0);
+	class_addmethod(c,(method) TwistTattle,	"dblclick",	A_CANT, 0);
+	class_addmethod(c,(method) TwistTattle,	"tattle",	A_NOTHING);
+	class_addmethod(c,(method) TwistAssist,	"assist",	A_CANT, 0);
+	class_addmethod(c,(method) TwistInfo,		"info",		A_CANT, 0);
 	
 	// MSP-Level messages
-	LITTER_TIMEBOMB addmess	((method) TwistDSP, 	"dsp",		A_CANT, 0);
+	class_addmethod(c,(method) TwistDSP64, 	"dsp64",		A_CANT, 0);
 
 	// Initialize Litter Library
-	LitterInit(kClassName, 0);
+	//LitterInit(kClassName, 0);
 
 	// Generate global symbols
 	//
 	TwistGenSymbols();
+        
+        class_register(CLASS_BOX, c);
+        gObjectClass = c;
+        
+        post("%s: %s", kClassName, LPVERSION);
+        return 0;
 
 	
 	}
@@ -127,9 +159,9 @@ main(void)
 
 objCheby*
 NewTwist(
-	Symbol*	sym,
+	t_symbol*	sym,
 	short	iArgC,
-	Atom*	iArgV)
+	t_atom*	iArgV)
 	
 	{
 	#pragma unused(sym)
@@ -152,7 +184,7 @@ NewTwist(
 	// Let Max allocate us, our inlets, and our outlets
 	//
 	
-	me = (objCheby*) newobject(gObjectClass);
+	me = object_alloc(gObjectClass);
 	if (me == NIL) {
 		error("%s: insufficient memory to create object", kClassName);
 		goto punt;
@@ -433,11 +465,11 @@ TwistAssist(
 			break;
 			}
 		}
-		
+	/*
 	if (strIndex > 0)
 		 LitterAssistResFrag(iDir, iArgNum, strIndexInLeft, 0, oCDestStr, strIndex);
 	else LitterAssist(iDir, iArgNum, strIndexInLeft, strIndexOutLeft, oCDestStr);
-	
+	*/
 	}
 
 	
@@ -450,7 +482,7 @@ TwistAssist(
  *	TwistDSP(me, ioDSPVectors, iConnectCounts)
  *
  ******************************************************************************************/
-
+/*
 void
 TwistDSP(
 	objCheby*	me,
@@ -485,7 +517,37 @@ TwistDSP(
 		}
 	
 	}
-	
+*/
+
+void TwistDSP64(objCheby *me, t_object *dsp64, short *iConnectCounts, double samplerate, long maxvectorsize, long flags)
+{
+    // in progress, vb...
+    if (iConnectCounts[outletSigOut] > 0) {
+        Boolean	isStatic = iConnectCounts[inlet1] == 0
+        && iConnectCounts[inlet2] == 0
+        && iConnectCounts[inletMinOut] == 0
+        && iConnectCounts[inletMaxOut] == 0
+        && iConnectCounts[inletCurve] == 0;
+        
+        if (isStatic)
+            dsp_add(TwistPerformStatic, 4,
+                    me, (long) ioDSPVectors[inletSigIn]->s_n,
+                    iConnectCounts[inletSigIn] > 0 ? ioDSPVectors[inletSigIn]->s_vec : NIL,
+                    ioDSPVectors[outletSigOut]->s_vec
+                    );
+        else dsp_add(TwistPerformDynamic, 9,
+                     me, (long) ioDSPVectors[inletSigIn]->s_n,
+                     iConnectCounts[inletSigIn] > 0	? ioDSPVectors[inletSigIn]->s_vec	: NIL,
+                     iConnectCounts[inlet1] > 0		? ioDSPVectors[inlet1]->s_vec		: NIL,
+                     iConnectCounts[inlet2] > 0		? ioDSPVectors[inlet2]->s_vec		: NIL,
+                     iConnectCounts[inletMinOut] > 0	? ioDSPVectors[inletMinOut]->s_vec	: NIL,
+                     iConnectCounts[inletMaxOut] > 0	? ioDSPVectors[inletMaxOut]->s_vec	: NIL,
+                     iConnectCounts[inletCurve] > 0	? ioDSPVectors[inletCurve]->s_vec	: NIL,
+                     ioDSPVectors[outletSigOut]->s_vec
+                     );
+    }
+    
+}
 
 /******************************************************************************************
  *

@@ -41,10 +41,6 @@
 		04E4A5220A95F9C7004B0E9C /* imLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A51C0A95F9C7004B0E9C /* imLib.c */; };
 		04E4A5230A95F9C7004B0E9C /* imLib.h in Headers */ = {isa = PBXBuildFile; fileRef = 04E4A51D0A95F9C7004B0E9C /* imLib.h */; };
 		04E4A5250A95F9C7004B0E9C /* tim~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A51F0A95F9C7004B0E9C /* tim~.c */; };
-		04E4A5260A95F9EB004B0E9C /* tim~.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A5190A95F9B1004B0E9C /* tim~.r */; };
-		04E4A5270A95F9F0004B0E9C /* frim~.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A5170A95F9B1004B0E9C /* frim~.r */; };
-		04E4A5280A95F9F4004B0E9C /* flim.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A5160A95F9B1004B0E9C /* flim.r */; };
-		04E4A5290A95F9F9004B0E9C /* noisify~.r in Rez */ = {isa = PBXBuildFile; fileRef = 04E4A5180A95F9B1004B0E9C /* noisify~.r */; };
 		04E4A52A0A95FA1D004B0E9C /* frim~.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A51B0A95F9C7004B0E9C /* frim~.c */; };
 		04E4A52B0A95FA23004B0E9C /* imLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A51C0A95F9C7004B0E9C /* imLib.c */; };
 		04E4A52C0A95FA3F004B0E9C /* flim.c in Sources */ = {isa = PBXBuildFile; fileRef = 04E4A51A0A95F9C7004B0E9C /* flim.c */; };
@@ -68,16 +64,16 @@
 		04C4544D0AA8E9740089E115 /* Litter Mach-O Prefix.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = "Litter Mach-O Prefix.h"; path = "Sources/Litter Prefix Headers/Litter Mach-O Prefix.h"; sourceTree = SOURCE_ROOT; };
 		04E4A4FA0A95F8D9004B0E9C /* lp.frim~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.frim~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
 		04E4A50F0A95F91A004B0E9C /* lp.emeric~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "lp.emeric~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
-		04E4A5160A95F9B1004B0E9C /* flim.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = flim.r; path = Resources/Mutators/flim.r; sourceTree = "<group>"; };
-		04E4A5170A95F9B1004B0E9C /* frim~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "frim~.r"; path = "Resources/Mutators/frim~.r"; sourceTree = "<group>"; };
-		04E4A5180A95F9B1004B0E9C /* noisify~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "noisify~.r"; path = "Resources/Mutators/noisify~.r"; sourceTree = "<group>"; };
-		04E4A5190A95F9B1004B0E9C /* tim~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "tim~.r"; path = "Resources/Mutators/tim~.r"; sourceTree = "<group>"; };
-		04E4A51A0A95F9C7004B0E9C /* flim.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = flim.c; path = Sources/Mutators/flim.c; sourceTree = "<group>"; };
-		04E4A51B0A95F9C7004B0E9C /* frim~.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "frim~.c"; path = "Sources/Mutators/frim~.c"; sourceTree = "<group>"; };
+		04E4A5160A95F9B1004B0E9C /* flim.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = flim.r; path = ../Resources/Mutators/flim.r; sourceTree = "<group>"; };
+		04E4A5170A95F9B1004B0E9C /* frim~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "frim~.r"; path = "../Resources/Mutators/frim~.r"; sourceTree = "<group>"; };
+		04E4A5180A95F9B1004B0E9C /* noisify~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "noisify~.r"; path = "../Resources/Mutators/noisify~.r"; sourceTree = "<group>"; };
+		04E4A5190A95F9B1004B0E9C /* tim~.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = "tim~.r"; path = "../Resources/Mutators/tim~.r"; sourceTree = "<group>"; };
+		04E4A51A0A95F9C7004B0E9C /* flim.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = flim.c; path = ../Mutators/flim.c; sourceTree = "<group>"; };
+		04E4A51B0A95F9C7004B0E9C /* frim~.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "frim~.c"; path = "../Mutators/frim~.c"; sourceTree = "<group>"; };
 		04E4A51C0A95F9C7004B0E9C /* imLib.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = imLib.c; path = ../Mutators/imLib.c; sourceTree = "<group>"; };
 		04E4A51D0A95F9C7004B0E9C /* imLib.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = imLib.h; path = ../Mutators/imLib.h; sourceTree = "<group>"; };
-		04E4A51E0A95F9C7004B0E9C /* noisify~.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "noisify~.c"; path = "Sources/Mutators/noisify~.c"; sourceTree = "<group>"; };
-		04E4A51F0A95F9C7004B0E9C /* tim~.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "tim~.c"; path = "Sources/Mutators/tim~.c"; sourceTree = "<group>"; };
+		04E4A51E0A95F9C7004B0E9C /* noisify~.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "noisify~.c"; path = "../Mutators/noisify~.c"; sourceTree = "<group>"; };
+		04E4A51F0A95F9C7004B0E9C /* tim~.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "tim~.c"; path = "../Mutators/tim~.c"; sourceTree = "<group>"; };
 		08EA7FFBFE8413EDC02AAC07 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		0F5B62020919440900A62EB9 /* MaxAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MaxAPI.framework; path = /Library/Frameworks/MaxAPI.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
@@ -141,7 +137,7 @@
 				04C4544D0AA8E9740089E115 /* Litter Mach-O Prefix.h */,
 			);
 			name = LitterLib;
-			path = Sources/LitterLib;
+			path = ../LitterLib;
 			sourceTree = "<group>";
 		};
 		089C166AFE841209C02AAC07 /* maximum */ = {
@@ -243,13 +239,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 042BE1290A94770D0008B638 /* Build configuration list for PBXNativeTarget "Value Interval (UB)" */;
 			buildPhases = (
-				042BE1180A94770D0008B638 /* ShellScript */,
 				042BE1190A94770D0008B638 /* Headers */,
 				042BE11A0A94770D0008B638 /* Resources */,
 				042BE11B0A94770D0008B638 /* Sources */,
 				042BE1220A94770D0008B638 /* Frameworks */,
-				042BE1260A94770D0008B638 /* Rez */,
-				042BE1280A94770D0008B638 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -265,13 +258,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 042BE5F20A94AB550008B638 /* Build configuration list for PBXNativeTarget "Time Domain (UB)" */;
 			buildPhases = (
-				042BE5E10A94AB550008B638 /* ShellScript */,
 				042BE5E20A94AB550008B638 /* Headers */,
 				042BE5E30A94AB550008B638 /* Resources */,
 				042BE5E40A94AB550008B638 /* Sources */,
 				042BE5EB0A94AB550008B638 /* Frameworks */,
-				042BE5EF0A94AB550008B638 /* Rez */,
-				042BE5F10A94AB550008B638 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -287,13 +277,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04E4A4F60A95F8D9004B0E9C /* Build configuration list for PBXNativeTarget "Frequency Domain (UB)" */;
 			buildPhases = (
-				04E4A4E80A95F8D9004B0E9C /* ShellScript */,
 				04E4A4E90A95F8D9004B0E9C /* Headers */,
 				04E4A4EA0A95F8D9004B0E9C /* Resources */,
 				04E4A4EB0A95F8D9004B0E9C /* Sources */,
 				04E4A4F00A95F8D9004B0E9C /* Frameworks */,
-				04E4A4F40A95F8D9004B0E9C /* Rez */,
-				04E4A4F50A95F8D9004B0E9C /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -309,13 +296,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04E4A50B0A95F91A004B0E9C /* Build configuration list for PBXNativeTarget "PV2Noise (UB)" */;
 			buildPhases = (
-				04E4A4FD0A95F91A004B0E9C /* ShellScript */,
 				04E4A4FE0A95F91A004B0E9C /* Headers */,
 				04E4A4FF0A95F91A004B0E9C /* Resources */,
 				04E4A5000A95F91A004B0E9C /* Sources */,
 				04E4A5050A95F91A004B0E9C /* Frameworks */,
-				04E4A5090A95F91A004B0E9C /* Rez */,
-				04E4A50A0A95F91A004B0E9C /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -385,160 +369,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXRezBuildPhase section */
-		042BE1260A94770D0008B638 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A5280A95F9F4004B0E9C /* flim.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		042BE5EF0A94AB550008B638 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A5260A95F9EB004B0E9C /* tim~.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		04E4A4F40A95F8D9004B0E9C /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A5270A95F9F0004B0E9C /* frim~.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		04E4A5090A95F91A004B0E9C /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				04E4A5290A95F9F9004B0E9C /* noisify~.r in Rez */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXRezBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		042BE1180A94770D0008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Mutators/flim.r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Mutators/flim.versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Mutators/flim.r >\"$SRCROOT\"/Resources/Mutators/flim.versioninfo.h";
-		};
-		042BE1280A94770D0008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Pro/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallIcon.bash;
-		};
-		042BE5E10A94AB550008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Mutators/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Mutators/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Mutators/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/Resources/Mutators/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		042BE5F10A94AB550008B638 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Starter/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallSPIcon.bash;
-		};
-		04E4A4E80A95F8D9004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Mutators/$(PRODUCT_SHORT_NAME).r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Mutators/$(PRODUCT_SHORT_NAME).versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Mutators/$PRODUCT_SHORT_NAME.r >\"$SRCROOT\"/Resources/Mutators/$PRODUCT_SHORT_NAME.versioninfo.h";
-		};
-		04E4A4F50A95F8D9004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Pro/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallIcon.bash;
-		};
-		04E4A4FD0A95F91A004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/Mutators/noisify~.r",
-			);
-			outputPaths = (
-				"$(SRCROOT)/Resources/Mutators/noisify~.versioninfo.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$SRCROOT\"/Resources/ExtractVersionInfo.sh <\"$SRCROOT\"/Resources/Mutators/noisify~.r >\"$SRCROOT\"/Resources/Mutators/noisify~.versioninfo.h";
-		};
-		04E4A50A0A95F91A004B0E9C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Resources/IconSuites/LitterIconSuite.mxo.Starter/*",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = Resources/InstallSPIcon.bash;
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		042BE11B0A94770D0008B638 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -605,9 +435,9 @@
 					"__IM_JITTER=0",
 					"$(inherited)",
 				);
-				INFOPLIST_PREFIX_HEADER = Resources/Mutators/flim.versioninfo.h;
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Mutators/flim.versioninfo.h";
 				PRODUCT_SHORT_NAME = vim;
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Development;
 		};
@@ -622,9 +452,9 @@
 					"__IM_JITTER=0",
 					"$(inherited)",
 				);
-				INFOPLIST_PREFIX_HEADER = Resources/Mutators/flim.versioninfo.h;
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Mutators/flim.versioninfo.h";
 				PRODUCT_SHORT_NAME = vim;
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Deployment;
 		};
@@ -639,9 +469,9 @@
 					"__IM_JITTER=0",
 					"$(inherited)",
 				);
-				INFOPLIST_PREFIX_HEADER = Resources/Mutators/flim.versioninfo.h;
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Mutators/flim.versioninfo.h";
 				PRODUCT_SHORT_NAME = vim;
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Default;
 		};
@@ -658,13 +488,14 @@
 					"$(inherited)",
 				);
 				PRODUCT_SHORT_NAME = "tim~";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Development;
 		};
 		042BE5F40A94AB550008B638 /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__MAX_MSP_OBJECT__,
@@ -675,7 +506,7 @@
 					"$(inherited)",
 				);
 				PRODUCT_SHORT_NAME = "tim~";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Deployment;
 		};
@@ -692,7 +523,7 @@
 					"$(inherited)",
 				);
 				PRODUCT_SHORT_NAME = "tim~";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Default;
 		};
@@ -709,7 +540,7 @@
 					"$(inherited)",
 				);
 				PRODUCT_SHORT_NAME = "frim~";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Development;
 		};
@@ -726,7 +557,7 @@
 					"$(inherited)",
 				);
 				PRODUCT_SHORT_NAME = "frim~";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Deployment;
 		};
@@ -743,7 +574,7 @@
 					"$(inherited)",
 				);
 				PRODUCT_SHORT_NAME = "frim~";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Default;
 		};
@@ -755,9 +586,9 @@
 					__MAX_MSP_OBJECT__,
 					"$(inherited)",
 				);
-				INFOPLIST_PREFIX_HEADER = "Resources/Mutators/noisify~.versioninfo.h";
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Mutators/noisify~.versioninfo.h";
 				PRODUCT_SHORT_NAME = "emeric~";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Development;
 		};
@@ -769,9 +600,9 @@
 					__MAX_MSP_OBJECT__,
 					"$(inherited)",
 				);
-				INFOPLIST_PREFIX_HEADER = "Resources/Mutators/noisify~.versioninfo.h";
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Mutators/noisify~.versioninfo.h";
 				PRODUCT_SHORT_NAME = "emeric~";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Deployment;
 		};
@@ -783,41 +614,47 @@
 					__MAX_MSP_OBJECT__,
 					"$(inherited)",
 				);
-				INFOPLIST_PREFIX_HEADER = "Resources/Mutators/noisify~.versioninfo.h";
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Mutators/noisify~.versioninfo.h";
 				PRODUCT_SHORT_NAME = "emeric~";
-				SDKROOT = macosx10.7;
+				SDKROOT = macosx;
 			};
 			name = Default;
 		};
 		0FF6670F096B494E00E9E0B4 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				C74SUPPORT = "$(SRCROOT)/../c74support";
+				C74_SYM_LINKER_FLAGS = "@$(C74SUPPORT)/max-includes/c74_linker_flags.txt";
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_LOCATION = YES;
 				DSTROOT = "$(PROJECT_DIR)";
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					/Library/Frameworks,
+					"\"$(C74SUPPORT)/max-includes\"",
+					"\"$(C74SUPPORT)/msp-includes\"",
+					"\"$(C74SUPPORT)/jit-includes\"",
 				);
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Sources/Litter Prefix Headers/Litter Mach-O Prefix.h";
+				GCC_PREFIX_HEADER = "$(C74SUPPORT)/max-includes/macho-prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"LITTER_USE_OBEX=1",
+					"DENORM_WANT_FIX=1",
+					"NO_TRANSLATION_SUPPORT=1",
 					"__LITTER_UB__=1",
-					"$(inherited)",
 				);
 				GENERATE_PKGINFO_FILE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					/Developer/SDKs/MacOS10.4.u.skd/Developer/Headers/FlatCarbon,
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"\"$(C74SUPPORT)/max-includes\"",
+					"\"$(C74SUPPORT)/msp-includes\"",
+					"\"$(C74SUPPORT)/jit-includes\"",
+					"\"$(SRCROOT)/../LitterLib\"",
 				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../C74 Support/Universal Binary\"/**";
-				INFOPLIST_FILE = Resources/Info.plist;
-				INFOPLIST_PREFIX_HEADER = "Resources/Mutators/$(PRODUCT_SHORT_NAME).versioninfo.h";
+				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Mutators/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/$(PROJECT)";
 				LIBRARY_STYLE = Bundle;
+				OTHER_LDFLAGS = "$(C74_SYM_LINKER_FLAGS)";
 				PRODUCT_NAME = "lp.$(PRODUCT_SHORT_NAME)";
 				REZ_PREFIX_FILE = /Developer/Headers/FlatCarbon/Types.r;
 				REZ_PREPROCESSOR_DEFINITIONS = "$(inherited) __LB_UB_VERSION__=1";
@@ -825,7 +662,7 @@
 					"$(inherited)",
 					/Developer/Headers/FlatCarbon,
 				);
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+				SDKROOT = macosx;
 				STRIP_INSTALLED_PRODUCT = NO;
 				SYMROOT = "$(PROJECT_DIR)/xcodebuild";
 				USER_HEADER_SEARCH_PATHS = "$(inherited) Sources/**";
@@ -842,34 +679,38 @@
 		0FF66710096B494E00E9E0B4 /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					ppc,
-					i386,
-				);
+				ARCHS = "$(ARCHS_STANDARD)";
+				C74SUPPORT = "$(SRCROOT)/../c74support";
+				C74_SYM_LINKER_FLAGS = "@$(C74SUPPORT)/max-includes/c74_linker_flags.txt";
+				DEPLOYMENT_LOCATION = YES;
 				DSTROOT = "$(PROJECT_DIR)";
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					/Library/Frameworks,
+					"\"$(C74SUPPORT)/max-includes\"",
+					"\"$(C74SUPPORT)/msp-includes\"",
+					"\"$(C74SUPPORT)/jit-includes\"",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Sources/Litter Prefix Headers/Litter Mach-O Prefix.h";
+				GCC_PREFIX_HEADER = "$(C74SUPPORT)/max-includes/macho-prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"LITTER_USE_OBEX=1",
+					"DENORM_WANT_FIX=1",
+					"NO_TRANSLATION_SUPPORT=1",
 					"__LITTER_UB__=1",
-					"$(inherited)",
 				);
 				GENERATE_PKGINFO_FILE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					/Developer/SDKs/MacOS10.4.u.skd/Developer/Headers/FlatCarbon,
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"\"$(C74SUPPORT)/max-includes\"",
+					"\"$(C74SUPPORT)/msp-includes\"",
+					"\"$(C74SUPPORT)/jit-includes\"",
+					"\"$(SRCROOT)/../LitterLib\"",
 				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../C74 Support/Universal Binary\"/**";
-				INFOPLIST_FILE = Resources/Info.plist;
-				INFOPLIST_PREFIX_HEADER = "Resources/Mutators/$(PRODUCT_SHORT_NAME).versioninfo.h";
+				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Mutators/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/$(PROJECT)";
 				LIBRARY_STYLE = Bundle;
+				OTHER_LDFLAGS = "$(C74_SYM_LINKER_FLAGS)";
 				PRODUCT_NAME = "lp.$(PRODUCT_SHORT_NAME)";
 				REZ_PREFIX_FILE = /Developer/Headers/FlatCarbon/Types.r;
 				REZ_PREPROCESSOR_DEFINITIONS = "$(inherited) __LB_UB_VERSION__=1";
@@ -877,7 +718,7 @@
 					"$(inherited)",
 					/Developer/Headers/FlatCarbon,
 				);
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+				SDKROOT = macosx;
 				SYMROOT = "$(PROJECT_DIR)/xcodebuild";
 				USER_HEADER_SEARCH_PATHS = "$(inherited) Sources/**";
 				WRAPPER_EXTENSION = mxo;
@@ -887,29 +728,36 @@
 		0FF66711096B494E00E9E0B4 /* Default */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				C74SUPPORT = "$(SRCROOT)/../c74support";
+				C74_SYM_LINKER_FLAGS = "@$(C74SUPPORT)/max-includes/c74_linker_flags.txt";
+				DEPLOYMENT_LOCATION = YES;
 				DSTROOT = "$(PROJECT_DIR)";
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					/Library/Frameworks,
+					"\"$(C74SUPPORT)/max-includes\"",
+					"\"$(C74SUPPORT)/msp-includes\"",
+					"\"$(C74SUPPORT)/jit-includes\"",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Sources/Litter Prefix Headers/Litter Mach-O Prefix.h";
+				GCC_PREFIX_HEADER = "$(C74SUPPORT)/max-includes/macho-prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"LITTER_USE_OBEX=1",
+					"DENORM_WANT_FIX=1",
+					"NO_TRANSLATION_SUPPORT=1",
 					"__LITTER_UB__=1",
-					"$(inherited)",
 				);
 				GENERATE_PKGINFO_FILE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					/Developer/SDKs/MacOS10.4.u.skd/Developer/Headers/FlatCarbon,
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"\"$(C74SUPPORT)/max-includes\"",
+					"\"$(C74SUPPORT)/msp-includes\"",
+					"\"$(C74SUPPORT)/jit-includes\"",
+					"\"$(SRCROOT)/../LitterLib\"",
 				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "\"../C74 Support/Universal Binary\"/**";
-				INFOPLIST_FILE = Resources/Info.plist;
-				INFOPLIST_PREFIX_HEADER = "Resources/Mutators/$(PRODUCT_SHORT_NAME).versioninfo.h";
+				INFOPLIST_FILE = "$(SRCROOT)/../Resources/Info.plist";
+				INFOPLIST_PREFIX_HEADER = "$(SRCROOT)/../Resources/Mutators/$(PRODUCT_SHORT_NAME).versioninfo.h";
 				INFOPLIST_PREPROCESS = YES;
-				INSTALL_PATH = "/sysbuild/$(CONFIGURATION)/externals";
+				INSTALL_PATH = "/../sysbuild/$(CONFIGURATION)/$(PROJECT)";
 				LIBRARY_STYLE = Bundle;
+				OTHER_LDFLAGS = "$(C74_SYM_LINKER_FLAGS)";
 				PRODUCT_NAME = "lp.$(PRODUCT_SHORT_NAME)";
 				REZ_PREFIX_FILE = /Developer/Headers/FlatCarbon/Types.r;
 				REZ_PREPROCESSOR_DEFINITIONS = "$(inherited) __LB_UB_VERSION__=1";
@@ -917,7 +765,7 @@
 					"$(inherited)",
 					/Developer/Headers/FlatCarbon,
 				);
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+				SDKROOT = macosx;
 				SYMROOT = "$(PROJECT_DIR)/xcodebuild";
 				USER_HEADER_SEARCH_PATHS = "$(inherited) Sources/**";
 				WRAPPER_EXTENSION = mxo;
